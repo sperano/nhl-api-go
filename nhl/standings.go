@@ -89,7 +89,7 @@ type StandingsResponse struct {
 // SeasonInfo represents season metadata including standings date range.
 // Used in the seasons manifest to identify valid season periods.
 type SeasonInfo struct {
-	ID             int64  `json:"id"`
+	ID             Season `json:"id"`
 	StandingsStart string `json:"standingsStart"`
 	StandingsEnd   string `json:"standingsEnd"`
 }

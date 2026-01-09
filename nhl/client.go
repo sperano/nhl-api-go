@@ -171,24 +171,24 @@ func (c *Client) LeagueStandingsForDate(ctx context.Context, date GameDate) ([]S
 }
 
 // LeagueStandingsForSeason returns league standings for a specific season.
-// The season ID should be in YYYYYYYY format (e.g., 20232024).
-func (c *Client) LeagueStandingsForSeason(ctx context.Context, seasonID int64) ([]Standing, error) {
+func (c *Client) LeagueStandingsForSeason(ctx context.Context, season Season) ([]Standing, error) {
 	seasons, err := c.SeasonStandingManifest(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Find the season info for the requested season
+	seasonID := season.ToInt64()
 	var seasonInfo *SeasonInfo
 	for i := range seasons {
-		if seasons[i].ID == seasonID {
+		if seasons[i].ID.ToInt64() == seasonID {
 			seasonInfo = &seasons[i]
 			break
 		}
 	}
 
 	if seasonInfo == nil {
-		return nil, fmt.Errorf("invalid season ID: %d", seasonID)
+		return nil, fmt.Errorf("invalid season: %s", season.String())
 	}
 
 	// Fetch standings for the end date of the season
@@ -301,7 +301,7 @@ func (c *Client) extractDailySchedule(weeklySchedule *WeeklyScheduleResponse, da
 // ===== Game Data Methods =====
 
 // Boxscore returns detailed boxscore data for a game.
-func (c *Client) Boxscore(ctx context.Context, gameID int64) (*Boxscore, error) {
+func (c *Client) Boxscore(ctx context.Context, gameID GameID) (*Boxscore, error) {
 	var response Boxscore
 	if err := c.fetchGamecenter(ctx, gameID, "boxscore", &response); err != nil {
 		return nil, err
@@ -310,7 +310,7 @@ func (c *Client) Boxscore(ctx context.Context, gameID int64) (*Boxscore, error) 
 }
 
 // PlayByPlay returns play-by-play data for a game.
-func (c *Client) PlayByPlay(ctx context.Context, gameID int64) (*PlayByPlay, error) {
+func (c *Client) PlayByPlay(ctx context.Context, gameID GameID) (*PlayByPlay, error) {
 	var response PlayByPlay
 	if err := c.fetchGamecenter(ctx, gameID, "play-by-play", &response); err != nil {
 		return nil, err
@@ -319,7 +319,7 @@ func (c *Client) PlayByPlay(ctx context.Context, gameID int64) (*PlayByPlay, err
 }
 
 // Landing returns game landing/matchup data (lighter than play-by-play).
-func (c *Client) Landing(ctx context.Context, gameID int64) (*GameMatchup, error) {
+func (c *Client) Landing(ctx context.Context, gameID GameID) (*GameMatchup, error) {
 	var response GameMatchup
 	if err := c.fetchGamecenter(ctx, gameID, "landing", &response); err != nil {
 		return nil, err
@@ -328,9 +328,9 @@ func (c *Client) Landing(ctx context.Context, gameID int64) (*GameMatchup, error
 }
 
 // GameStory returns narrative game story content.
-func (c *Client) GameStory(ctx context.Context, gameID int64) (*GameStory, error) {
+func (c *Client) GameStory(ctx context.Context, gameID GameID) (*GameStory, error) {
 	var response GameStory
-	resource := fmt.Sprintf("wsc/game-story/%d", gameID)
+	resource := fmt.Sprintf("wsc/game-story/%s", gameID.String())
 	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
 		return nil, err
 	}
@@ -338,7 +338,7 @@ func (c *Client) GameStory(ctx context.Context, gameID int64) (*GameStory, error
 }
 
 // SeasonSeries returns season series matchup data including head-to-head records.
-func (c *Client) SeasonSeries(ctx context.Context, gameID int64) (*SeasonSeriesMatchup, error) {
+func (c *Client) SeasonSeries(ctx context.Context, gameID GameID) (*SeasonSeriesMatchup, error) {
 	var response SeasonSeriesMatchup
 	if err := c.fetchGamecenter(ctx, gameID, "right-rail", &response); err != nil {
 		return nil, err
@@ -347,10 +347,10 @@ func (c *Client) SeasonSeries(ctx context.Context, gameID int64) (*SeasonSeriesM
 }
 
 // ShiftChart returns shift chart data for a game.
-func (c *Client) ShiftChart(ctx context.Context, gameID int64) (*ShiftChart, error) {
+func (c *Client) ShiftChart(ctx context.Context, gameID GameID) (*ShiftChart, error) {
 	cayenneExpr := fmt.Sprintf(
-		"gameId=%d and ((duration != '00:00' and typeCode = 517) or typeCode != 517)",
-		gameID,
+		"gameId=%s and ((duration != '00:00' and typeCode = 517) or typeCode != 517)",
+		gameID.String(),
 	)
 
 	params := map[string]string{
@@ -366,8 +366,8 @@ func (c *Client) ShiftChart(ctx context.Context, gameID int64) (*ShiftChart, err
 }
 
 // fetchGamecenter is a helper to fetch data from gamecenter endpoints.
-func (c *Client) fetchGamecenter(ctx context.Context, gameID int64, resource string, result interface{}) error {
-	fullResource := fmt.Sprintf("gamecenter/%d/%s", gameID, resource)
+func (c *Client) fetchGamecenter(ctx context.Context, gameID GameID, resource string, result interface{}) error {
+	fullResource := fmt.Sprintf("gamecenter/%s/%s", gameID.String(), resource)
 	return c.getJSON(ctx, EndpointAPIWebV1, fullResource, nil, result)
 }
 
@@ -375,9 +375,9 @@ func (c *Client) fetchGamecenter(ctx context.Context, gameID int64, resource str
 
 // PlayerLanding returns comprehensive player profile data.
 // The playerID should be an NHL player ID (e.g., 8478402 for Connor McDavid).
-func (c *Client) PlayerLanding(ctx context.Context, playerID int64) (*PlayerLanding, error) {
+func (c *Client) PlayerLanding(ctx context.Context, playerID PlayerID) (*PlayerLanding, error) {
 	var response PlayerLanding
-	resource := fmt.Sprintf("player/%d/landing", playerID)
+	resource := fmt.Sprintf("player/%s/landing", playerID.String())
 	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
 		return nil, err
 	}
@@ -385,10 +385,9 @@ func (c *Client) PlayerLanding(ctx context.Context, playerID int64) (*PlayerLand
 }
 
 // PlayerGameLog returns a game-by-game log for a player's season.
-// The season should be in YYYYYYYY format (e.g., 20232024).
-func (c *Client) PlayerGameLog(ctx context.Context, playerID int64, season int, gameType GameType) (*PlayerGameLog, error) {
+func (c *Client) PlayerGameLog(ctx context.Context, playerID PlayerID, season Season, gameType GameType) (*PlayerGameLog, error) {
 	var response PlayerGameLog
-	resource := fmt.Sprintf("player/%d/game-log/%d/%d", playerID, season, gameType.ToInt())
+	resource := fmt.Sprintf("player/%s/game-log/%s/%d", playerID.String(), season.ToAPIString(), gameType.ToInt())
 	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
 		return nil, err
 	}
@@ -446,10 +445,9 @@ func (c *Client) RosterCurrent(ctx context.Context, teamAbbr string) (*Roster, e
 }
 
 // RosterSeason returns the roster for a team in a specific season.
-// The season should be in YYYYYYYY format (e.g., 20232024).
-func (c *Client) RosterSeason(ctx context.Context, teamAbbr string, season int) (*Roster, error) {
+func (c *Client) RosterSeason(ctx context.Context, teamAbbr string, season Season) (*Roster, error) {
 	var response Roster
-	resource := fmt.Sprintf("roster/%s/%d", teamAbbr, season)
+	resource := fmt.Sprintf("roster/%s/%s", teamAbbr, season.ToAPIString())
 	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
 		return nil, err
 	}
@@ -457,10 +455,9 @@ func (c *Client) RosterSeason(ctx context.Context, teamAbbr string, season int) 
 }
 
 // ClubStats returns player statistics for a team in a specific season.
-// The season should be in YYYYYYYY format (e.g., 20232024).
-func (c *Client) ClubStats(ctx context.Context, teamAbbr string, season int, gameType GameType) (*ClubStats, error) {
+func (c *Client) ClubStats(ctx context.Context, teamAbbr string, season Season, gameType GameType) (*ClubStats, error) {
 	var response ClubStats
-	resource := fmt.Sprintf("club-stats/%s/%d/%d", teamAbbr, season, gameType.ToInt())
+	resource := fmt.Sprintf("club-stats/%s/%s/%d", teamAbbr, season.ToAPIString(), gameType.ToInt())
 	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
 		return nil, err
 	}

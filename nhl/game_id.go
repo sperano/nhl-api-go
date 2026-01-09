@@ -9,7 +9,7 @@ import (
 // GameID is a wrapper type for NHL game identifiers.
 // Game IDs are 10-digit integers in the format: SSSGTNNNN where:
 // - SSS is the first 4 digits of the season (e.g., 2023 for 2023-2024)
-// - GT is the game type (01=preseason, 02=regular, 03=playoffs, 04=all-star)
+// - GT is the game type (01=preseason, 02=regular, 03=playoffs, 04=all-star, 12=PWHL showcase)
 // - NNNN is the game number
 type GameID int64
 
@@ -109,14 +109,14 @@ func (g GameID) Validate() error {
 		return fmt.Errorf("game ID must be 10 digits, got: %d", id)
 	}
 
-	// Validate game type (01-04)
-	gameType, err := g.GameType()
+	// Validate game type
+	gameTypeInt, err := g.GameType()
 	if err != nil {
 		return err
 	}
 
-	if gameType < 1 || gameType > 4 {
-		return fmt.Errorf("invalid game type: %02d (must be 01-04)", gameType)
+	if !GameType(gameTypeInt).IsValid() {
+		return fmt.Errorf("invalid game type: %02d", gameTypeInt)
 	}
 
 	return nil

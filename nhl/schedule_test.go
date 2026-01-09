@@ -17,7 +17,7 @@ func intPtr(i int) *int {
 
 // teamBuilder provides a fluent interface for building test ScheduleTeam instances.
 type teamBuilder struct {
-	id        int64
+	id        TeamID
 	abbrev    string
 	placeName *LocalizedString
 	logo      string
@@ -27,7 +27,7 @@ type teamBuilder struct {
 // newTeamBuilder creates a new teamBuilder with sensible defaults.
 func newTeamBuilder(abbrev string) *teamBuilder {
 	return &teamBuilder{
-		id:        1,
+		id:        TeamID(1),
 		abbrev:    abbrev,
 		placeName: nil,
 		logo:      "https://assets.nhle.com/logos/nhl/svg/" + abbrev + "_light.svg",
@@ -37,7 +37,7 @@ func newTeamBuilder(abbrev string) *teamBuilder {
 
 // withID sets the team ID.
 func (b *teamBuilder) withID(id int64) *teamBuilder {
-	b.id = id
+	b.id = TeamID(id)
 	return b
 }
 
@@ -66,7 +66,7 @@ func (b *teamBuilder) build() ScheduleTeam {
 
 // scheduleGameBuilder provides a fluent interface for building test ScheduleGame instances.
 type scheduleGameBuilder struct {
-	id           int64
+	id           GameID
 	gameType     GameType
 	gameDate     *string
 	startTimeUTC string
@@ -78,7 +78,7 @@ type scheduleGameBuilder struct {
 // newScheduleGameBuilder creates a new scheduleGameBuilder with sensible defaults.
 func newScheduleGameBuilder(awayAbbrev, homeAbbrev string) *scheduleGameBuilder {
 	return &scheduleGameBuilder{
-		id:           2023020001,
+		id:           GameID(2023020001),
 		gameType:     GameTypeRegularSeason,
 		gameDate:     nil,
 		startTimeUTC: "23:00:00Z",
@@ -90,7 +90,7 @@ func newScheduleGameBuilder(awayAbbrev, homeAbbrev string) *scheduleGameBuilder 
 
 // withID sets the game ID.
 func (b *scheduleGameBuilder) withID(id int64) *scheduleGameBuilder {
-	b.id = id
+	b.id = GameID(id)
 	return b
 }
 
@@ -133,7 +133,7 @@ func (b *scheduleGameBuilder) build() ScheduleGame {
 
 // gameScoreBuilder provides a fluent interface for building test GameScore instances.
 type gameScoreBuilder struct {
-	id        int64
+	id        GameID
 	gameType  GameType
 	gameState GameState
 	awayTeam  ScheduleTeam
@@ -143,7 +143,7 @@ type gameScoreBuilder struct {
 // newGameScoreBuilder creates a new gameScoreBuilder with sensible defaults.
 func newGameScoreBuilder(awayAbbrev, homeAbbrev string) *gameScoreBuilder {
 	return &gameScoreBuilder{
-		id:        2023020001,
+		id:        GameID(2023020001),
 		gameType:  GameTypeRegularSeason,
 		gameState: GameStateFuture,
 		awayTeam:  newTeamBuilder(awayAbbrev).withID(7).build(),
@@ -153,7 +153,7 @@ func newGameScoreBuilder(awayAbbrev, homeAbbrev string) *gameScoreBuilder {
 
 // withID sets the game ID.
 func (b *gameScoreBuilder) withID(id int64) *gameScoreBuilder {
-	b.id = id
+	b.id = GameID(id)
 	return b
 }
 

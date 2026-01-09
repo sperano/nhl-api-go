@@ -8,7 +8,7 @@ import (
 
 // ClubSkaterStats represents skater season statistics for a team.
 type ClubSkaterStats struct {
-	PlayerID            int64           `json:"playerId"`
+	PlayerID            PlayerID        `json:"playerId"`
 	Headshot            string          `json:"headshot"`
 	FirstName           LocalizedString `json:"firstName"`
 	LastName            LocalizedString `json:"lastName"`
@@ -44,7 +44,7 @@ func (s ClubSkaterStats) String() string {
 
 // ClubGoalieStats represents goalie season statistics for a team.
 type ClubGoalieStats struct {
-	PlayerID            int64           `json:"playerId"`
+	PlayerID            PlayerID        `json:"playerId"`
 	Headshot            string          `json:"headshot"`
 	FirstName           LocalizedString `json:"firstName"`
 	LastName            LocalizedString `json:"lastName"`
@@ -90,7 +90,7 @@ type ClubStats struct {
 
 // SeasonGameTypes represents season game type availability for a team.
 type SeasonGameTypes struct {
-	Season    int        `json:"season"`
+	Season    Season     `json:"season"`
 	GameTypes []GameType `json:"gameTypes"`
 }
 
@@ -106,7 +106,11 @@ func (s *SeasonGameTypes) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	s.Season = raw.Season
+	season, err := SeasonFromInt(raw.Season)
+	if err != nil {
+		return fmt.Errorf("unmarshaling season: %w", err)
+	}
+	s.Season = season
 	s.GameTypes = make([]GameType, 0, len(raw.GameTypes))
 
 	for _, gt := range raw.GameTypes {
@@ -135,7 +139,7 @@ func (s SeasonGameTypes) MarshalJSON() ([]byte, error) {
 		Season    int   `json:"season"`
 		GameTypes []int `json:"gameTypes"`
 	}{
-		Season:    s.Season,
+		Season:    s.Season.ToInt(),
 		GameTypes: gameTypeInts,
 	}
 
@@ -148,5 +152,5 @@ func (s SeasonGameTypes) String() string {
 	for i, gt := range s.GameTypes {
 		gameTypeStrs[i] = gt.String()
 	}
-	return fmt.Sprintf("%d: %s", s.Season, strings.Join(gameTypeStrs, ", "))
+	return fmt.Sprintf("%s: %s", s.Season.String(), strings.Join(gameTypeStrs, ", "))
 }

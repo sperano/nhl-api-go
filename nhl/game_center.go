@@ -94,33 +94,33 @@ func (g *GameSituation) String() string {
 
 // PlayByPlay represents the play-by-play response with all game events.
 type PlayByPlay struct {
-	ID                  int64               `json:"id"`
-	Season              int64               `json:"season"`
-	GameType            GameType            `json:"gameType"`
-	LimitedScoring      bool                `json:"limitedScoring"`
-	GameDate            string              `json:"gameDate"`
-	Venue               LocalizedString     `json:"venue"`
-	VenueLocation       LocalizedString     `json:"venueLocation"`
-	StartTimeUTC        string              `json:"startTimeUTC"`
-	EasternUTCOffset    string              `json:"easternUTCOffset"`
-	VenueUTCOffset      string              `json:"venueUTCOffset"`
-	TVBroadcasts        []TVBroadcast       `json:"tvBroadcasts"`
-	GameState           GameState           `json:"gameState"`
-	GameScheduleState   GameScheduleState   `json:"gameScheduleState"`
-	PeriodDescriptor    PeriodDescriptor    `json:"periodDescriptor"`
-	SpecialEvent        *SpecialEvent       `json:"specialEvent,omitempty"`
-	AwayTeam            BoxscoreTeam        `json:"awayTeam"`
-	HomeTeam            BoxscoreTeam        `json:"homeTeam"`
-	ShootoutInUse       bool                `json:"shootoutInUse"`
-	OTInUse             bool                `json:"otInUse"`
-	Clock               GameClock           `json:"clock"`
-	DisplayPeriod       int                 `json:"displayPeriod"`
-	MaxPeriods          int                 `json:"maxPeriods"`
-	GameOutcome         *GameOutcome        `json:"gameOutcome,omitempty"`
-	Plays               []PlayEvent         `json:"plays"`
-	RosterSpots         []RosterSpot        `json:"rosterSpots"`
-	RegPeriods          *int                `json:"regPeriods,omitempty"`
-	Summary             *GameSummary        `json:"summary,omitempty"`
+	ID                GameID            `json:"id"`
+	Season            Season            `json:"season"`
+	GameType          GameType          `json:"gameType"`
+	LimitedScoring    bool              `json:"limitedScoring"`
+	GameDate          string            `json:"gameDate"`
+	Venue             LocalizedString   `json:"venue"`
+	VenueLocation     LocalizedString   `json:"venueLocation"`
+	StartTimeUTC      string            `json:"startTimeUTC"`
+	EasternUTCOffset  string            `json:"easternUTCOffset"`
+	VenueUTCOffset    string            `json:"venueUTCOffset"`
+	TVBroadcasts      []TVBroadcast     `json:"tvBroadcasts"`
+	GameState         GameState         `json:"gameState"`
+	GameScheduleState GameScheduleState `json:"gameScheduleState"`
+	PeriodDescriptor  PeriodDescriptor  `json:"periodDescriptor"`
+	SpecialEvent      *SpecialEvent     `json:"specialEvent,omitempty"`
+	AwayTeam          BoxscoreTeam      `json:"awayTeam"`
+	HomeTeam          BoxscoreTeam      `json:"homeTeam"`
+	ShootoutInUse     bool              `json:"shootoutInUse"`
+	OTInUse           bool              `json:"otInUse"`
+	Clock             GameClock         `json:"clock"`
+	DisplayPeriod     int               `json:"displayPeriod"`
+	MaxPeriods        int               `json:"maxPeriods"`
+	GameOutcome       *GameOutcome      `json:"gameOutcome,omitempty"`
+	Plays             []PlayEvent       `json:"plays"`
+	RosterSpots       []RosterSpot      `json:"rosterSpots"`
+	RegPeriods        *int              `json:"regPeriods,omitempty"`
+	Summary           *GameSummary      `json:"summary,omitempty"`
 }
 
 // RecentPlays returns the most recent N plays (most recent first).
@@ -192,7 +192,7 @@ func (p *PlayByPlay) PlaysInPeriod(period int) []*PlayEvent {
 
 // GetPlayer returns a player from the roster by player ID.
 // Returns nil if the player is not found.
-func (p *PlayByPlay) GetPlayer(playerID int64) *RosterSpot {
+func (p *PlayByPlay) GetPlayer(playerID PlayerID) *RosterSpot {
 	for i := range p.RosterSpots {
 		if p.RosterSpots[i].PlayerID == playerID {
 			return &p.RosterSpots[i]
@@ -202,7 +202,7 @@ func (p *PlayByPlay) GetPlayer(playerID int64) *RosterSpot {
 }
 
 // TeamRoster returns all players for a specific team ID.
-func (p *PlayByPlay) TeamRoster(teamID int64) []*RosterSpot {
+func (p *PlayByPlay) TeamRoster(teamID TeamID) []*RosterSpot {
 	roster := make([]*RosterSpot, 0)
 	for i := range p.RosterSpots {
 		if p.RosterSpots[i].TeamID == teamID {
@@ -228,17 +228,17 @@ type GameOutcome struct {
 
 // PlayEvent represents an individual play event in the game.
 type PlayEvent struct {
-	EventID               int64              `json:"eventId"`
-	PeriodDescriptor      PeriodDescriptor   `json:"periodDescriptor"`
-	TimeInPeriod          string             `json:"timeInPeriod"`
-	TimeRemaining         string             `json:"timeRemaining"`
-	SituationCode         string             `json:"situationCode"`
-	HomeTeamDefendingSide DefendingSide      `json:"homeTeamDefendingSide"`
-	TypeCode              int                `json:"typeCode"`
-	TypeDescKey           PlayEventType      `json:"typeDescKey"`
-	SortOrder             int                `json:"sortOrder"`
-	Details               *PlayEventDetails  `json:"details,omitempty"`
-	PPTReplayURL          *string            `json:"pptReplayUrl,omitempty"`
+	EventID               int64             `json:"eventId"`
+	PeriodDescriptor      PeriodDescriptor  `json:"periodDescriptor"`
+	TimeInPeriod          string            `json:"timeInPeriod"`
+	TimeRemaining         string            `json:"timeRemaining"`
+	SituationCode         string            `json:"situationCode"`
+	HomeTeamDefendingSide DefendingSide     `json:"homeTeamDefendingSide"`
+	TypeCode              int               `json:"typeCode"`
+	TypeDescKey           PlayEventType     `json:"typeDescKey"`
+	SortOrder             int               `json:"sortOrder"`
+	Details               *PlayEventDetails `json:"details,omitempty"`
+	PPTReplayURL          *string           `json:"pptReplayUrl,omitempty"`
 }
 
 // Situation parses the situation code into a GameSituation.
@@ -250,58 +250,58 @@ func (p *PlayEvent) Situation() *GameSituation {
 // PlayEventDetails represents details for a play event (varies by event type).
 type PlayEventDetails struct {
 	// Coordinate details
-	XCoord           *int       `json:"xCoord,omitempty"`
-	YCoord           *int       `json:"yCoord,omitempty"`
-	ZoneCode         *ZoneCode  `json:"zoneCode,omitempty"`
-	EventOwnerTeamID *int64     `json:"eventOwnerTeamId,omitempty"`
+	XCoord           *int      `json:"xCoord,omitempty"`
+	YCoord           *int      `json:"yCoord,omitempty"`
+	ZoneCode         *ZoneCode `json:"zoneCode,omitempty"`
+	EventOwnerTeamID *TeamID   `json:"eventOwnerTeamId,omitempty"`
 
 	// Shot details
-	ShotType         *string `json:"shotType,omitempty"`
-	ShootingPlayerID *int64  `json:"shootingPlayerId,omitempty"`
-	GoalieInNetID    *int64  `json:"goalieInNetId,omitempty"`
+	ShotType         *string   `json:"shotType,omitempty"`
+	ShootingPlayerID *PlayerID `json:"shootingPlayerId,omitempty"`
+	GoalieInNetID    *PlayerID `json:"goalieInNetId,omitempty"`
 
 	// Blocked shot details
-	BlockingPlayerID *int64 `json:"blockingPlayerId,omitempty"`
+	BlockingPlayerID *PlayerID `json:"blockingPlayerId,omitempty"`
 
 	// Goal details
-	ScoringPlayerID        *int64  `json:"scoringPlayerId,omitempty"`
-	ScoringPlayerTotal     *int    `json:"scoringPlayerTotal,omitempty"`
-	Assist1PlayerID        *int64  `json:"assist1PlayerId,omitempty"`
-	Assist1PlayerTotal     *int    `json:"assist1PlayerTotal,omitempty"`
-	Assist2PlayerID        *int64  `json:"assist2PlayerId,omitempty"`
-	Assist2PlayerTotal     *int    `json:"assist2PlayerTotal,omitempty"`
-	AwayScore              *int    `json:"awayScore,omitempty"`
-	HomeScore              *int    `json:"homeScore,omitempty"`
-	HighlightClip          *int64  `json:"highlightClip,omitempty"`
-	HighlightClipSharingURL *string `json:"highlightClipSharingUrl,omitempty"`
-	DiscreteClip           *int64  `json:"discreteClip,omitempty"`
+	ScoringPlayerID         *PlayerID `json:"scoringPlayerId,omitempty"`
+	ScoringPlayerTotal      *int      `json:"scoringPlayerTotal,omitempty"`
+	Assist1PlayerID         *PlayerID `json:"assist1PlayerId,omitempty"`
+	Assist1PlayerTotal      *int      `json:"assist1PlayerTotal,omitempty"`
+	Assist2PlayerID         *PlayerID `json:"assist2PlayerId,omitempty"`
+	Assist2PlayerTotal      *int      `json:"assist2PlayerTotal,omitempty"`
+	AwayScore               *int      `json:"awayScore,omitempty"`
+	HomeScore               *int      `json:"homeScore,omitempty"`
+	HighlightClip           *int64    `json:"highlightClip,omitempty"`
+	HighlightClipSharingURL *string   `json:"highlightClipSharingUrl,omitempty"`
+	DiscreteClip            *int64    `json:"discreteClip,omitempty"`
 
 	// Penalty details
-	TypeCode             *string `json:"typeCode,omitempty"`
-	DescKey              *string `json:"descKey,omitempty"`
-	Duration             *int    `json:"duration,omitempty"`
-	CommittedByPlayerID  *int64  `json:"committedByPlayerId,omitempty"`
-	DrawnByPlayerID      *int64  `json:"drawnByPlayerId,omitempty"`
+	TypeCode            *string   `json:"typeCode,omitempty"`
+	DescKey             *string   `json:"descKey,omitempty"`
+	Duration            *int      `json:"duration,omitempty"`
+	CommittedByPlayerID *PlayerID `json:"committedByPlayerId,omitempty"`
+	DrawnByPlayerID     *PlayerID `json:"drawnByPlayerId,omitempty"`
 
 	// Hit details
-	HittingPlayerID *int64 `json:"hittingPlayerId,omitempty"`
-	HitteePlayerID  *int64 `json:"hitteePlayerId,omitempty"`
+	HittingPlayerID *PlayerID `json:"hittingPlayerId,omitempty"`
+	HitteePlayerID  *PlayerID `json:"hitteePlayerId,omitempty"`
 
 	// Faceoff details
-	WinningPlayerID *int64 `json:"winningPlayerId,omitempty"`
-	LosingPlayerID  *int64 `json:"losingPlayerId,omitempty"`
+	WinningPlayerID *PlayerID `json:"winningPlayerId,omitempty"`
+	LosingPlayerID  *PlayerID `json:"losingPlayerId,omitempty"`
 
 	// General details
-	PlayerID *int64  `json:"playerId,omitempty"`
-	Reason   *string `json:"reason,omitempty"`
-	AwaySOG  *int    `json:"awaySOG,omitempty"`
-	HomeSOG  *int    `json:"homeSOG,omitempty"`
+	PlayerID *PlayerID `json:"playerId,omitempty"`
+	Reason   *string   `json:"reason,omitempty"`
+	AwaySOG  *int      `json:"awaySOG,omitempty"`
+	HomeSOG  *int      `json:"homeSOG,omitempty"`
 }
 
 // RosterSpot represents player information in the roster.
 type RosterSpot struct {
-	TeamID        int64           `json:"teamId"`
-	PlayerID      int64           `json:"playerId"`
+	TeamID        TeamID          `json:"teamId"`
+	PlayerID      PlayerID        `json:"playerId"`
 	FirstName     LocalizedString `json:"firstName"`
 	LastName      LocalizedString `json:"lastName"`
 	SweaterNumber int             `json:"sweaterNumber"`
@@ -311,52 +311,52 @@ type RosterSpot struct {
 
 // GameMatchup represents the game matchup/landing response.
 type GameMatchup struct {
-	ID                  int64               `json:"id"`
-	Season              int64               `json:"season"`
-	GameType            GameType            `json:"gameType"`
-	LimitedScoring      bool                `json:"limitedScoring"`
-	GameDate            string              `json:"gameDate"`
-	Venue               LocalizedString     `json:"venue"`
-	VenueLocation       LocalizedString     `json:"venueLocation"`
-	StartTimeUTC        string              `json:"startTimeUTC"`
-	EasternUTCOffset    string              `json:"easternUTCOffset"`
-	VenueUTCOffset      string              `json:"venueUTCOffset"`
-	VenueTimezone       string              `json:"venueTimezone"`
-	PeriodDescriptor    PeriodDescriptor    `json:"periodDescriptor"`
-	TVBroadcasts        []TVBroadcast       `json:"tvBroadcasts"`
-	GameState           GameState           `json:"gameState"`
-	GameScheduleState   GameScheduleState   `json:"gameScheduleState"`
-	SpecialEvent        *SpecialEvent       `json:"specialEvent,omitempty"`
-	AwayTeam            MatchupTeam         `json:"awayTeam"`
-	HomeTeam            MatchupTeam         `json:"homeTeam"`
-	ShootoutInUse       bool                `json:"shootoutInUse"`
-	MaxPeriods          int                 `json:"maxPeriods"`
-	RegPeriods          int                 `json:"regPeriods"`
-	OTInUse             bool                `json:"otInUse"`
-	TiesInUse           bool                `json:"tiesInUse"`
-	Summary             *GameSummary        `json:"summary,omitempty"`
-	Clock               *GameClock          `json:"clock,omitempty"`
+	ID                GameID            `json:"id"`
+	Season            Season            `json:"season"`
+	GameType          GameType          `json:"gameType"`
+	LimitedScoring    bool              `json:"limitedScoring"`
+	GameDate          string            `json:"gameDate"`
+	Venue             LocalizedString   `json:"venue"`
+	VenueLocation     LocalizedString   `json:"venueLocation"`
+	StartTimeUTC      string            `json:"startTimeUTC"`
+	EasternUTCOffset  string            `json:"easternUTCOffset"`
+	VenueUTCOffset    string            `json:"venueUTCOffset"`
+	VenueTimezone     string            `json:"venueTimezone"`
+	PeriodDescriptor  PeriodDescriptor  `json:"periodDescriptor"`
+	TVBroadcasts      []TVBroadcast     `json:"tvBroadcasts"`
+	GameState         GameState         `json:"gameState"`
+	GameScheduleState GameScheduleState `json:"gameScheduleState"`
+	SpecialEvent      *SpecialEvent     `json:"specialEvent,omitempty"`
+	AwayTeam          MatchupTeam       `json:"awayTeam"`
+	HomeTeam          MatchupTeam       `json:"homeTeam"`
+	ShootoutInUse     bool              `json:"shootoutInUse"`
+	MaxPeriods        int               `json:"maxPeriods"`
+	RegPeriods        int               `json:"regPeriods"`
+	OTInUse           bool              `json:"otInUse"`
+	TiesInUse         bool              `json:"tiesInUse"`
+	Summary           *GameSummary      `json:"summary,omitempty"`
+	Clock             *GameClock        `json:"clock,omitempty"`
 }
 
 // MatchupTeam represents team information in game matchup.
 type MatchupTeam struct {
-	ID                        int64           `json:"id"`
-	CommonName                LocalizedString `json:"commonName"`
-	Abbrev                    string          `json:"abbrev"`
-	PlaceName                 LocalizedString `json:"placeName"`
-	PlaceNameWithPreposition  LocalizedString `json:"placeNameWithPreposition"`
-	Score                     int             `json:"score"`
-	SOG                       int             `json:"sog"`
-	Logo                      string          `json:"logo"`
-	DarkLogo                  string          `json:"darkLogo"`
+	ID                       TeamID          `json:"id"`
+	CommonName               LocalizedString `json:"commonName"`
+	Abbrev                   string          `json:"abbrev"`
+	PlaceName                LocalizedString `json:"placeName"`
+	PlaceNameWithPreposition LocalizedString `json:"placeNameWithPreposition"`
+	Score                    int             `json:"score"`
+	SOG                      int             `json:"sog"`
+	Logo                     string          `json:"logo"`
+	DarkLogo                 string          `json:"darkLogo"`
 }
 
 // GameSummary represents game summary with scoring and penalties.
 type GameSummary struct {
-	Scoring    []PeriodScoring     `json:"scoring"`
-	Shootout   *[]ShootoutAttempt  `json:"shootout,omitempty"`
-	ThreeStars *[]ThreeStar        `json:"threeStars,omitempty"`
-	Penalties  []PeriodPenalties   `json:"penalties"`
+	Scoring    []PeriodScoring    `json:"scoring"`
+	Shootout   *[]ShootoutAttempt `json:"shootout,omitempty"`
+	ThreeStars *[]ThreeStar       `json:"threeStars,omitempty"`
+	Penalties  []PeriodPenalties  `json:"penalties"`
 }
 
 // PeriodScoring represents scoring summary for a period.
@@ -370,7 +370,7 @@ type GoalSummary struct {
 	SituationCode           string           `json:"situationCode"`
 	EventID                 int64            `json:"eventId"`
 	Strength                string           `json:"strength"`
-	PlayerID                int64            `json:"playerId"`
+	PlayerID                PlayerID         `json:"playerId"`
 	FirstName               LocalizedString  `json:"firstName"`
 	LastName                LocalizedString  `json:"lastName"`
 	Name                    LocalizedString  `json:"name"`
@@ -393,7 +393,7 @@ type GoalSummary struct {
 
 // AssistSummary represents assist summary information.
 type AssistSummary struct {
-	PlayerID      int64           `json:"playerId"`
+	PlayerID      PlayerID        `json:"playerId"`
 	FirstName     LocalizedString `json:"firstName"`
 	LastName      LocalizedString `json:"lastName"`
 	Name          LocalizedString `json:"name"`
@@ -404,7 +404,7 @@ type AssistSummary struct {
 // ShootoutAttempt represents shootout attempt information.
 type ShootoutAttempt struct {
 	Sequence   int             `json:"sequence"`
-	PlayerID   int64           `json:"playerId"`
+	PlayerID   PlayerID        `json:"playerId"`
 	TeamAbbrev LocalizedString `json:"teamAbbrev"`
 	FirstName  LocalizedString `json:"firstName"`
 	LastName   LocalizedString `json:"lastName"`
@@ -416,26 +416,26 @@ type ShootoutAttempt struct {
 
 // ThreeStar represents three stars selection.
 type ThreeStar struct {
-	Star                 int      `json:"star"`
-	PlayerID             int64    `json:"playerId"`
-	TeamAbbrev           string   `json:"teamAbbrev"`
-	Headshot             string   `json:"headshot"`
-	Name                 LocalizedString `json:"name"`
-	SweaterNo            int      `json:"sweaterNo"`
-	Position             Position `json:"position"`
+	Star       int             `json:"star"`
+	PlayerID   PlayerID        `json:"playerId"`
+	TeamAbbrev string          `json:"teamAbbrev"`
+	Headshot   string          `json:"headshot"`
+	Name       LocalizedString `json:"name"`
+	SweaterNo  int             `json:"sweaterNo"`
+	Position   Position        `json:"position"`
 	// Skater stats
-	Goals                *int     `json:"goals,omitempty"`
-	Assists              *int     `json:"assists,omitempty"`
-	Points               *int     `json:"points,omitempty"`
+	Goals   *int `json:"goals,omitempty"`
+	Assists *int `json:"assists,omitempty"`
+	Points  *int `json:"points,omitempty"`
 	// Goalie stats
-	GoalsAgainstAverage  *float64 `json:"goalsAgainstAverage,omitempty"`
-	SavePctg             *float64 `json:"savePctg,omitempty"`
+	GoalsAgainstAverage *float64 `json:"goalsAgainstAverage,omitempty"`
+	SavePctg            *float64 `json:"savePctg,omitempty"`
 }
 
 // PeriodPenalties represents penalty summary for a period.
 type PeriodPenalties struct {
-	PeriodDescriptor PeriodDescriptor  `json:"periodDescriptor"`
-	Penalties        []PenaltySummary  `json:"penalties"`
+	PeriodDescriptor PeriodDescriptor `json:"periodDescriptor"`
+	Penalties        []PenaltySummary `json:"penalties"`
 }
 
 // PenaltySummary represents penalty summary information.
@@ -465,54 +465,54 @@ type ShiftChart struct {
 
 // ShiftEntry represents an individual shift entry for a player.
 type ShiftEntry struct {
-	ID               int64   `json:"id"`
-	DetailCode       int     `json:"detailCode"`
-	Duration         string  `json:"duration"`
-	EndTime          string  `json:"endTime"`
-	EventDescription *string `json:"eventDescription,omitempty"`
-	EventNumber      int64   `json:"eventNumber"`
-	FirstName        string  `json:"firstName"`
-	GameID           int64   `json:"gameId"`
-	HexValue         string  `json:"hexValue"`
-	LastName         string  `json:"lastName"`
-	Period           int     `json:"period"`
-	PlayerID         int64   `json:"playerId"`
-	ShiftNumber      int     `json:"shiftNumber"`
-	StartTime        string  `json:"startTime"`
-	TeamAbbrev       string  `json:"teamAbbrev"`
-	TeamID           int64   `json:"teamId"`
-	TeamName         string  `json:"teamName"`
-	TypeCode         int     `json:"typeCode"`
+	ID               int64    `json:"id"`
+	DetailCode       int      `json:"detailCode"`
+	Duration         string   `json:"duration"`
+	EndTime          string   `json:"endTime"`
+	EventDescription *string  `json:"eventDescription,omitempty"`
+	EventNumber      int64    `json:"eventNumber"`
+	FirstName        string   `json:"firstName"`
+	GameID           GameID   `json:"gameId"`
+	HexValue         string   `json:"hexValue"`
+	LastName         string   `json:"lastName"`
+	Period           int      `json:"period"`
+	PlayerID         PlayerID `json:"playerId"`
+	ShiftNumber      int      `json:"shiftNumber"`
+	StartTime        string   `json:"startTime"`
+	TeamAbbrev       string   `json:"teamAbbrev"`
+	TeamID           TeamID   `json:"teamId"`
+	TeamName         string   `json:"teamName"`
+	TypeCode         int      `json:"typeCode"`
 }
 
 // SeasonSeriesMatchup represents season series matchup.
 type SeasonSeriesMatchup struct {
-	SeasonSeries     []SeriesGame    `json:"seasonSeries"`
-	SeasonSeriesWins SeriesWins      `json:"seasonSeriesWins"`
-	GameInfo         SeriesGameInfo  `json:"gameInfo"`
+	SeasonSeries     []SeriesGame   `json:"seasonSeries"`
+	SeasonSeriesWins SeriesWins     `json:"seasonSeriesWins"`
+	GameInfo         SeriesGameInfo `json:"gameInfo"`
 }
 
 // SeriesGame represents an individual game in the season series.
 type SeriesGame struct {
-	ID                  int64               `json:"id"`
-	Season              int64               `json:"season"`
-	GameType            GameType            `json:"gameType"`
-	GameDate            string              `json:"gameDate"`
-	StartTimeUTC        string              `json:"startTimeUTC"`
-	EasternUTCOffset    string              `json:"easternUTCOffset"`
-	VenueUTCOffset      string              `json:"venueUTCOffset"`
-	GameState           GameState           `json:"gameState"`
-	GameScheduleState   GameScheduleState   `json:"gameScheduleState"`
-	AwayTeam            SeriesTeam          `json:"awayTeam"`
-	HomeTeam            SeriesTeam          `json:"homeTeam"`
-	PeriodDescriptor    PeriodDescriptor    `json:"periodDescriptor"`
-	GameCenterLink      string              `json:"gameCenterLink"`
-	GameOutcome         GameOutcome         `json:"gameOutcome"`
+	ID                GameID            `json:"id"`
+	Season            Season            `json:"season"`
+	GameType          GameType          `json:"gameType"`
+	GameDate          string            `json:"gameDate"`
+	StartTimeUTC      string            `json:"startTimeUTC"`
+	EasternUTCOffset  string            `json:"easternUTCOffset"`
+	VenueUTCOffset    string            `json:"venueUTCOffset"`
+	GameState         GameState         `json:"gameState"`
+	GameScheduleState GameScheduleState `json:"gameScheduleState"`
+	AwayTeam          SeriesTeam        `json:"awayTeam"`
+	HomeTeam          SeriesTeam        `json:"homeTeam"`
+	PeriodDescriptor  PeriodDescriptor  `json:"periodDescriptor"`
+	GameCenterLink    string            `json:"gameCenterLink"`
+	GameOutcome       GameOutcome       `json:"gameOutcome"`
 }
 
 // SeriesTeam represents team information in season series.
 type SeriesTeam struct {
-	ID     int64  `json:"id"`
+	ID     TeamID `json:"id"`
 	Abbrev string `json:"abbrev"`
 	Logo   string `json:"logo"`
 	Score  int    `json:"score"`
@@ -540,40 +540,40 @@ type TeamGameInfo struct {
 
 // ScratchedPlayer represents scratched player information.
 type ScratchedPlayer struct {
-	ID        int64           `json:"id"`
+	ID        PlayerID        `json:"id"`
 	FirstName LocalizedString `json:"firstName"`
 	LastName  LocalizedString `json:"lastName"`
 }
 
 // GameStory represents game story.
 type GameStory struct {
-	ID                  int64               `json:"id"`
-	Season              int64               `json:"season"`
-	GameType            GameType            `json:"gameType"`
-	LimitedScoring      bool                `json:"limitedScoring"`
-	GameDate            string              `json:"gameDate"`
-	Venue               LocalizedString     `json:"venue"`
-	VenueLocation       LocalizedString     `json:"venueLocation"`
-	StartTimeUTC        string              `json:"startTimeUTC"`
-	EasternUTCOffset    string              `json:"easternUTCOffset"`
-	VenueUTCOffset      string              `json:"venueUTCOffset"`
-	VenueTimezone       string              `json:"venueTimezone"`
-	TVBroadcasts        []TVBroadcast       `json:"tvBroadcasts"`
-	GameState           GameState           `json:"gameState"`
-	GameScheduleState   GameScheduleState   `json:"gameScheduleState"`
-	AwayTeam            StoryTeam           `json:"awayTeam"`
-	HomeTeam            StoryTeam           `json:"homeTeam"`
-	ShootoutInUse       bool                `json:"shootoutInUse"`
-	MaxPeriods          int                 `json:"maxPeriods"`
-	RegPeriods          int                 `json:"regPeriods"`
-	OTInUse             bool                `json:"otInUse"`
-	TiesInUse           bool                `json:"tiesInUse"`
-	Summary             *GameSummary        `json:"summary,omitempty"`
+	ID                GameID            `json:"id"`
+	Season            Season            `json:"season"`
+	GameType          GameType          `json:"gameType"`
+	LimitedScoring    bool              `json:"limitedScoring"`
+	GameDate          string            `json:"gameDate"`
+	Venue             LocalizedString   `json:"venue"`
+	VenueLocation     LocalizedString   `json:"venueLocation"`
+	StartTimeUTC      string            `json:"startTimeUTC"`
+	EasternUTCOffset  string            `json:"easternUTCOffset"`
+	VenueUTCOffset    string            `json:"venueUTCOffset"`
+	VenueTimezone     string            `json:"venueTimezone"`
+	TVBroadcasts      []TVBroadcast     `json:"tvBroadcasts"`
+	GameState         GameState         `json:"gameState"`
+	GameScheduleState GameScheduleState `json:"gameScheduleState"`
+	AwayTeam          StoryTeam         `json:"awayTeam"`
+	HomeTeam          StoryTeam         `json:"homeTeam"`
+	ShootoutInUse     bool              `json:"shootoutInUse"`
+	MaxPeriods        int               `json:"maxPeriods"`
+	RegPeriods        int               `json:"regPeriods"`
+	OTInUse           bool              `json:"otInUse"`
+	TiesInUse         bool              `json:"tiesInUse"`
+	Summary           *GameSummary      `json:"summary,omitempty"`
 }
 
 // StoryTeam represents team information in game story.
 type StoryTeam struct {
-	ID        int64           `json:"id"`
+	ID        TeamID          `json:"id"`
 	Name      LocalizedString `json:"name"`
 	Abbrev    string          `json:"abbrev"`
 	PlaceName LocalizedString `json:"placeName"`

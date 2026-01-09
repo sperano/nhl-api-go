@@ -904,13 +904,13 @@ func TestPlayByPlay_GetPlayer(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		playerID int64
+		playerID PlayerID
 		wantNil  bool
 		wantName string
 	}{
-		{"existing player", 8474593, false, "Jacob"},
-		{"another existing player", 8476474, false, "John"},
-		{"non-existing player", 9999999, true, ""},
+		{"existing player", PlayerID(8474593), false, "Jacob"},
+		{"another existing player", PlayerID(8476474), false, "John"},
+		{"non-existing player", PlayerID(9999999), true, ""},
 	}
 
 	for _, tt := range tests {
@@ -938,21 +938,21 @@ func TestPlayByPlay_GetPlayer(t *testing.T) {
 func TestPlayByPlay_TeamRoster(t *testing.T) {
 	pbp := &PlayByPlay{
 		RosterSpots: []RosterSpot{
-			{PlayerID: 1, TeamID: 1},
-			{PlayerID: 2, TeamID: 1},
-			{PlayerID: 3, TeamID: 2},
-			{PlayerID: 4, TeamID: 2},
-			{PlayerID: 5, TeamID: 2},
+			{PlayerID: PlayerID(1), TeamID: TeamID(1)},
+			{PlayerID: PlayerID(2), TeamID: TeamID(1)},
+			{PlayerID: PlayerID(3), TeamID: TeamID(2)},
+			{PlayerID: PlayerID(4), TeamID: TeamID(2)},
+			{PlayerID: PlayerID(5), TeamID: TeamID(2)},
 		},
 	}
 
 	tests := []struct {
-		teamID    int64
+		teamID    TeamID
 		wantCount int
 	}{
-		{1, 2},
-		{2, 3},
-		{3, 0},
+		{TeamID(1), 2},
+		{TeamID(2), 3},
+		{TeamID(3), 0},
 	}
 
 	for _, tt := range tests {

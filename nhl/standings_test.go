@@ -415,8 +415,8 @@ func TestSeasonInfoDeserialization(t *testing.T) {
 		t.Fatalf("failed to unmarshal SeasonInfo: %v", err)
 	}
 
-	if season.ID != 20232024 {
-		t.Errorf("expected ID = 20232024, got %d", season.ID)
+	if season.ID != NewSeason(2023) {
+		t.Errorf("expected ID = 20232024, got %s", season.ID)
 	}
 	if season.StandingsStart != "2023-10-10" {
 		t.Errorf("expected StandingsStart = 2023-10-10, got %s", season.StandingsStart)
@@ -451,11 +451,11 @@ func TestSeasonsResponseDeserialization(t *testing.T) {
 		t.Fatalf("expected 2 seasons, got %d", len(response.Seasons))
 	}
 
-	if response.Seasons[0].ID != 20222023 {
-		t.Errorf("expected first season ID = 20222023, got %d", response.Seasons[0].ID)
+	if response.Seasons[0].ID != NewSeason(2022) {
+		t.Errorf("expected first season ID = 20222023, got %s", response.Seasons[0].ID)
 	}
-	if response.Seasons[1].ID != 20232024 {
-		t.Errorf("expected second season ID = 20232024, got %d", response.Seasons[1].ID)
+	if response.Seasons[1].ID != NewSeason(2023) {
+		t.Errorf("expected second season ID = 20232024, got %s", response.Seasons[1].ID)
 	}
 }
 
@@ -495,7 +495,7 @@ func TestStandingSerialization(t *testing.T) {
 
 func TestSeasonInfoSerialization(t *testing.T) {
 	season := SeasonInfo{
-		ID:             20232024,
+		ID:             NewSeason(2023),
 		StandingsStart: "2023-10-10",
 		StandingsEnd:   "2024-04-18",
 	}
@@ -511,7 +511,7 @@ func TestSeasonInfoSerialization(t *testing.T) {
 	}
 
 	if unmarshaled.ID != season.ID {
-		t.Errorf("expected ID = %d, got %d", season.ID, unmarshaled.ID)
+		t.Errorf("expected ID = %s, got %s", season.ID, unmarshaled.ID)
 	}
 	if unmarshaled.StandingsStart != season.StandingsStart {
 		t.Errorf("expected StandingsStart = %s, got %s", season.StandingsStart, unmarshaled.StandingsStart)
@@ -557,7 +557,7 @@ func TestSeasonsResponseSerialization(t *testing.T) {
 	response := SeasonsResponse{
 		Seasons: []SeasonInfo{
 			{
-				ID:             20232024,
+				ID:             NewSeason(2023),
 				StandingsStart: "2023-10-10",
 				StandingsEnd:   "2024-04-18",
 			},

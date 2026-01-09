@@ -367,9 +367,9 @@ func TestFromYears(t *testing.T) {
 
 func TestSeason_ToAPIString(t *testing.T) {
 	tests := []struct {
-		name      string
-		season    Season
-		expected  string
+		name     string
+		season   Season
+		expected string
 	}{
 		{
 			name:     "2023-2024 season",
@@ -444,14 +444,14 @@ func TestParse(t *testing.T) {
 			wantErr:   false,
 		},
 		{
-			name:      "invalid dash format",
-			input:     "2023-2025",
-			wantErr:   true,
+			name:    "invalid dash format",
+			input:   "2023-2025",
+			wantErr: true,
 		},
 		{
-			name:      "invalid concatenated format",
-			input:     "20232025",
-			wantErr:   true,
+			name:    "invalid concatenated format",
+			input:   "20232025",
+			wantErr: true,
 		},
 		{
 			name:    "invalid format too short",

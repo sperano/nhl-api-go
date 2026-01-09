@@ -70,15 +70,15 @@ func (p Position) IsValid() bool {
 }
 
 // PositionFromString parses a string into a Position.
-// Accepts both codes ("C", "LW", etc.) and full names ("Center", "Left Wing", etc.).
+// Accepts codes ("C", "L", "LW", "R", "RW", "D", "G") and full names ("Center", "Left Wing", etc.).
 // Returns an error if the string is not a valid Position.
 func PositionFromString(s string) (Position, error) {
 	switch s {
 	case "C", "Center":
 		return PositionCenter, nil
-	case "LW", "Left Wing", "LeftWing":
+	case "L", "LW", "Left Wing", "LeftWing":
 		return PositionLeftWing, nil
-	case "RW", "Right Wing", "RightWing":
+	case "R", "RW", "Right Wing", "RightWing":
 		return PositionRightWing, nil
 	case "D", "Defense", "Defenseman":
 		return PositionDefense, nil
@@ -258,7 +258,7 @@ func GoalieDecisionFromString(s string) (GoalieDecision, error) {
 		return GoalieDecisionLoss, nil
 	case "T", "Tie":
 		return GoalieDecisionTie, nil
-	case "OTL", "Overtime Loss", "OvertimeLoss":
+	case "O", "OTL", "Overtime Loss", "OvertimeLoss":
 		return GoalieDecisionOvertimeLoss, nil
 	default:
 		return "", fmt.Errorf("invalid goalie decision: %q", s)
@@ -659,6 +659,8 @@ const (
 	GameScheduleStateTBD GameScheduleState = "TBD"
 	// GameScheduleStateCompleted represents a completed game.
 	GameScheduleStateCompleted GameScheduleState = "COMPLETED"
+	// GameScheduleStateCancelled represents a cancelled game.
+	GameScheduleStateCancelled GameScheduleState = "CNCL"
 )
 
 // String returns the string representation of the GameScheduleState.
@@ -670,7 +672,8 @@ func (g GameScheduleState) String() string {
 func (g GameScheduleState) IsValid() bool {
 	switch g {
 	case GameScheduleStateOK, GameScheduleStateDontPlay, GameScheduleStatePostponed,
-		GameScheduleStateSuspended, GameScheduleStateTBD, GameScheduleStateCompleted:
+		GameScheduleStateSuspended, GameScheduleStateTBD, GameScheduleStateCompleted,
+		GameScheduleStateCancelled:
 		return true
 	default:
 		return false

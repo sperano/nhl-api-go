@@ -73,11 +73,11 @@ func TestBoxscore_Deserialization(t *testing.T) {
 		t.Fatalf("Failed to unmarshal boxscore: %v", err)
 	}
 
-	if boxscore.ID != 2024020001 {
+	if boxscore.ID != GameID(2024020001) {
 		t.Errorf("ID = %d, want 2024020001", boxscore.ID)
 	}
-	if boxscore.Season != 20242025 {
-		t.Errorf("Season = %d, want 20242025", boxscore.Season)
+	if boxscore.Season != NewSeason(2024) {
+		t.Errorf("Season = %v, want 2024-2025", boxscore.Season)
 	}
 	if boxscore.GameType != GameTypeRegularSeason {
 		t.Errorf("GameType = %v, want %v", boxscore.GameType, GameTypeRegularSeason)
@@ -139,7 +139,7 @@ func TestSkaterStats_Deserialization(t *testing.T) {
 		t.Fatalf("Failed to unmarshal skater stats: %v", err)
 	}
 
-	if stats.PlayerID != 8480002 {
+	if stats.PlayerID != PlayerID(8480002) {
 		t.Errorf("PlayerID = %d, want 8480002", stats.PlayerID)
 	}
 	if stats.SweaterNumber != 13 {
@@ -197,7 +197,7 @@ func TestGoalieStats_Deserialization(t *testing.T) {
 		t.Fatalf("Failed to unmarshal goalie stats: %v", err)
 	}
 
-	if stats.PlayerID != 8474593 {
+	if stats.PlayerID != PlayerID(8474593) {
 		t.Errorf("PlayerID = %d, want 8474593", stats.PlayerID)
 	}
 	if stats.SweaterNumber != 25 {
@@ -354,7 +354,7 @@ func TestBoxscoreTeam_Deserialization(t *testing.T) {
 		t.Fatalf("Failed to unmarshal boxscore team: %v", err)
 	}
 
-	if team.ID != 8 {
+	if team.ID != TeamID(8) {
 		t.Errorf("ID = %d, want 8", team.ID)
 	}
 	if team.CommonName.Default != "Canadiens" {
@@ -373,12 +373,12 @@ func TestBoxscoreTeam_Deserialization(t *testing.T) {
 
 func TestGameClock_Deserialization(t *testing.T) {
 	tests := []struct {
-		name               string
-		jsonData           string
-		wantTimeRemaining  string
-		wantSecondsRemain  int
-		wantRunning        bool
-		wantIntermission   bool
+		name              string
+		jsonData          string
+		wantTimeRemaining string
+		wantSecondsRemain int
+		wantRunning       bool
+		wantIntermission  bool
 	}{
 		{
 			name: "running clock",
@@ -632,7 +632,7 @@ func TestGoalieStats_MissingOptionalFields(t *testing.T) {
 		t.Fatalf("Failed to unmarshal goalie stats: %v", err)
 	}
 
-	if stats.PlayerID != 8475123 {
+	if stats.PlayerID != PlayerID(8475123) {
 		t.Errorf("PlayerID = %d, want 8475123", stats.PlayerID)
 	}
 	if stats.SavePctg != nil {
@@ -692,7 +692,7 @@ func TestTeamPlayerStats_Deserialization(t *testing.T) {
 	if len(stats.Goalies) != 0 {
 		t.Errorf("len(Goalies) = %d, want 0", len(stats.Goalies))
 	}
-	if stats.Forwards[0].PlayerID != 8480002 {
+	if stats.Forwards[0].PlayerID != PlayerID(8480002) {
 		t.Errorf("Forwards[0].PlayerID = %d, want 8480002", stats.Forwards[0].PlayerID)
 	}
 }
@@ -745,7 +745,7 @@ func TestTeamGameStats_FromSkaters(t *testing.T) {
 	teamStats := TeamPlayerStats{
 		Forwards: []SkaterStats{
 			{
-				PlayerID:           1,
+				PlayerID:           PlayerID(1),
 				SweaterNumber:      13,
 				Name:               LocalizedString{Default: "Player 1"},
 				Position:           PositionCenter,
@@ -767,7 +767,7 @@ func TestTeamGameStats_FromSkaters(t *testing.T) {
 		},
 		Defense: []SkaterStats{
 			{
-				PlayerID:           2,
+				PlayerID:           PlayerID(2),
 				SweaterNumber:      44,
 				Name:               LocalizedString{Default: "Player 2"},
 				Position:           PositionDefense,
@@ -822,25 +822,25 @@ func TestTeamGameStats_WithGoalies(t *testing.T) {
 		Defense:  []SkaterStats{},
 		Goalies: []GoalieStats{
 			{
-				PlayerID:                   1,
-				SweaterNumber:              35,
-				Name:                       LocalizedString{Default: "Goalie 1"},
-				Position:                   PositionGoalie,
-				EvenStrengthShotsAgainst:   "20/22",
-				PowerPlayShotsAgainst:      "3/5",
-				ShorthandedShotsAgainst:    "0/0",
-				SaveShotsAgainst:           "23/27",
-				SavePctg:                   floatPtr(0.852),
-				EvenStrengthGoalsAgainst:   2,
-				PowerPlayGoalsAgainst:      2,
-				ShorthandedGoalsAgainst:    0,
-				PIM:                        &pim,
-				GoalsAgainst:               4,
-				TOI:                        "60:00",
-				Starter:                    boolPtr(true),
-				Decision:                   goalieDecisionPtr(GoalieDecisionLoss),
-				ShotsAgainst:               27,
-				Saves:                      23,
+				PlayerID:                 PlayerID(1),
+				SweaterNumber:            35,
+				Name:                     LocalizedString{Default: "Goalie 1"},
+				Position:                 PositionGoalie,
+				EvenStrengthShotsAgainst: "20/22",
+				PowerPlayShotsAgainst:    "3/5",
+				ShorthandedShotsAgainst:  "0/0",
+				SaveShotsAgainst:         "23/27",
+				SavePctg:                 floatPtr(0.852),
+				EvenStrengthGoalsAgainst: 2,
+				PowerPlayGoalsAgainst:    2,
+				ShorthandedGoalsAgainst:  0,
+				PIM:                      &pim,
+				GoalsAgainst:             4,
+				TOI:                      "60:00",
+				Starter:                  boolPtr(true),
+				Decision:                 goalieDecisionPtr(GoalieDecisionLoss),
+				ShotsAgainst:             27,
+				Saves:                    23,
 			},
 		},
 	}
@@ -1014,8 +1014,8 @@ func TestSkaterStats_NegativePlusMinus(t *testing.T) {
 
 func TestBoxscore_RoundTripJSON(t *testing.T) {
 	original := Boxscore{
-		ID:                2024020001,
-		Season:            20242025,
+		ID:                GameID(2024020001),
+		Season:            NewSeason(2024),
 		GameType:          GameTypeRegularSeason,
 		LimitedScoring:    false,
 		GameDate:          "2024-10-04",
@@ -1033,14 +1033,14 @@ func TestBoxscore_RoundTripJSON(t *testing.T) {
 			MaxRegulationPeriods: 3,
 		},
 		AwayTeam: BoxscoreTeam{
-			ID:         1,
+			ID:         TeamID(1),
 			CommonName: LocalizedString{Default: "Devils"},
 			Abbrev:     "NJD",
 			Score:      2,
 			SOG:        15,
 		},
 		HomeTeam: BoxscoreTeam{
-			ID:         7,
+			ID:         TeamID(7),
 			CommonName: LocalizedString{Default: "Sabres"},
 			Abbrev:     "BUF",
 			Score:      1,

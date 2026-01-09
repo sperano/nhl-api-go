@@ -2,9 +2,9 @@ package nhl
 
 // PlayerLanding represents comprehensive player profile data from the NHL API.
 type PlayerLanding struct {
-	PlayerID           int64            `json:"playerId"`
+	PlayerID           PlayerID         `json:"playerId"`
 	IsActive           bool             `json:"isActive"`
-	CurrentTeamID      *int             `json:"currentTeamId,omitempty"`
+	CurrentTeamID      *TeamID          `json:"currentTeamId,omitempty"`
 	CurrentTeamAbbrev  *string          `json:"currentTeamAbbrev,omitempty"`
 	FirstName          LocalizedString  `json:"firstName"`
 	LastName           LocalizedString  `json:"lastName"`
@@ -39,7 +39,7 @@ type DraftDetails struct {
 
 // FeaturedStats represents featured statistics prominently shown on a player's page.
 type FeaturedStats struct {
-	Season        int          `json:"season"`
+	Season        Season       `json:"season"`
 	RegularSeason PlayerStats  `json:"regularSeason"`
 	Playoffs      *PlayerStats `json:"playoffs,omitempty"`
 }
@@ -81,7 +81,7 @@ type PlayerStats struct {
 
 // SeasonTotal represents season-by-season statistics for a player.
 type SeasonTotal struct {
-	Season         int              `json:"season"`
+	Season         Season           `json:"season"`
 	GameType       GameType         `json:"gameTypeId"`
 	LeagueAbbrev   string           `json:"leagueAbbrev"`
 	TeamName       LocalizedString  `json:"teamName"`
@@ -103,12 +103,12 @@ type Award struct {
 
 // AwardSeason represents a season when an award was won.
 type AwardSeason struct {
-	SeasonID int `json:"seasonId"`
+	SeasonID Season `json:"seasonId"`
 }
 
 // GameLog represents a game log entry for a single game.
 type GameLog struct {
-	GameID           int64    `json:"gameId"`
+	GameID           GameID   `json:"gameId"`
 	GameDate         string   `json:"gameDate"`
 	TeamAbbrev       string   `json:"teamAbbrev"`
 	HomeRoadFlag     HomeRoad `json:"homeRoadFlag"`
@@ -130,18 +130,18 @@ type GameLog struct {
 // PlayerGameLog represents a player's game log for a season.
 type PlayerGameLog struct {
 	// PlayerID is not included in the API response, tracked manually
-	PlayerID int64     `json:"-"`
-	Season   int       `json:"seasonId"`
+	PlayerID PlayerID  `json:"-"`
+	Season   Season    `json:"seasonId"`
 	GameType GameType  `json:"gameTypeId"`
 	GameLog  []GameLog `json:"gameLog"`
 }
 
 // PlayerSearchResult represents a player search result from the NHL API.
 type PlayerSearchResult struct {
-	PlayerID           string   `json:"playerId"`
+	PlayerID           PlayerID `json:"playerId"`
 	Name               string   `json:"name"`
 	Position           Position `json:"positionCode"`
-	TeamID             *string  `json:"teamId,omitempty"`
+	TeamID             *TeamID  `json:"teamId,omitempty"`
 	TeamAbbrev         *string  `json:"teamAbbrev,omitempty"`
 	SweaterNumber      *int     `json:"sweaterNumber,omitempty"`
 	Active             bool     `json:"active"`

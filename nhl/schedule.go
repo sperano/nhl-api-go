@@ -4,7 +4,7 @@ import "fmt"
 
 // ScheduleGame represents a game in the NHL schedule with comprehensive game information.
 type ScheduleGame struct {
-	ID           int64        `json:"id"`
+	ID           GameID       `json:"id"`
 	GameType     GameType     `json:"gameType"`
 	GameDate     *string      `json:"gameDate,omitempty"`
 	StartTimeUTC string       `json:"startTimeUTC"`
@@ -25,7 +25,7 @@ func (s ScheduleGame) String() string {
 // ScheduleTeam represents team information within a schedule context.
 // Contains basic team identification and optional score information.
 type ScheduleTeam struct {
-	ID        int64            `json:"id"`
+	ID        TeamID           `json:"id"`
 	Abbrev    string           `json:"abbrev"`
 	PlaceName *LocalizedString `json:"placeName,omitempty"`
 	Logo      string           `json:"logo"`
@@ -74,7 +74,7 @@ type DailyScores struct {
 // GameScore represents a single game's score information.
 // Similar to ScheduleGame but focused on score display.
 type GameScore struct {
-	ID        int64        `json:"id"`
+	ID        GameID       `json:"id"`
 	GameType  GameType     `json:"gameType"`
 	GameState GameState    `json:"gameState"`
 	AwayTeam  ScheduleTeam `json:"awayTeam"`

@@ -323,8 +323,8 @@ func TestFeaturedStatsDeserialization(t *testing.T) {
 		t.Fatalf("failed to unmarshal: %v", err)
 	}
 
-	if stats.Season != 20232024 {
-		t.Errorf("expected Season=20232024, got %d", stats.Season)
+	if stats.Season != NewSeason(2023) {
+		t.Errorf("expected Season=20232024, got %s", stats.Season)
 	}
 	if stats.RegularSeason.GamesPlayed == nil || *stats.RegularSeason.GamesPlayed != 76 {
 		t.Errorf("expected RegularSeason.GamesPlayed=76, got %v", stats.RegularSeason.GamesPlayed)
@@ -393,8 +393,8 @@ func TestSeasonTotalDeserialization(t *testing.T) {
 		t.Fatalf("failed to unmarshal: %v", err)
 	}
 
-	if seasonTotal.Season != 20232024 {
-		t.Errorf("expected Season=20232024, got %d", seasonTotal.Season)
+	if seasonTotal.Season != NewSeason(2023) {
+		t.Errorf("expected Season=20232024, got %s", seasonTotal.Season)
 	}
 	if seasonTotal.GameType != GameTypeRegularSeason {
 		t.Errorf("expected GameType=RegularSeason, got %v", seasonTotal.GameType)
@@ -439,11 +439,11 @@ func TestAwardDeserialization(t *testing.T) {
 	if len(award.Seasons) != 2 {
 		t.Fatalf("expected 2 seasons, got %d", len(award.Seasons))
 	}
-	if award.Seasons[0].SeasonID != 20142015 {
-		t.Errorf("expected Seasons[0].SeasonID=20142015, got %d", award.Seasons[0].SeasonID)
+	if award.Seasons[0].SeasonID != NewSeason(2014) {
+		t.Errorf("expected Seasons[0].SeasonID=20142015, got %s", award.Seasons[0].SeasonID)
 	}
-	if award.Seasons[1].SeasonID != 20162017 {
-		t.Errorf("expected Seasons[1].SeasonID=20162017, got %d", award.Seasons[1].SeasonID)
+	if award.Seasons[1].SeasonID != NewSeason(2016) {
+		t.Errorf("expected Seasons[1].SeasonID=20162017, got %s", award.Seasons[1].SeasonID)
 	}
 }
 
@@ -537,8 +537,8 @@ func TestPlayerGameLogDeserialization(t *testing.T) {
 		t.Fatalf("failed to unmarshal: %v", err)
 	}
 
-	if playerGameLog.Season != 20232024 {
-		t.Errorf("expected Season=20232024, got %d", playerGameLog.Season)
+	if playerGameLog.Season != NewSeason(2023) {
+		t.Errorf("expected Season=20232024, got %s", playerGameLog.Season)
 	}
 	if playerGameLog.GameType != GameTypeRegularSeason {
 		t.Errorf("expected GameType=RegularSeason, got %v", playerGameLog.GameType)
@@ -546,15 +546,15 @@ func TestPlayerGameLogDeserialization(t *testing.T) {
 	if len(playerGameLog.GameLog) != 1 {
 		t.Fatalf("expected 1 game log, got %d", len(playerGameLog.GameLog))
 	}
-	if playerGameLog.GameLog[0].GameID != 2023020001 {
+	if playerGameLog.GameLog[0].GameID != GameID(2023020001) {
 		t.Errorf("expected GameLog[0].GameID=2023020001, got %d", playerGameLog.GameLog[0].GameID)
 	}
 }
 
 func TestPlayerGameLogPlayerIDNotSerialized(t *testing.T) {
 	playerGameLog := PlayerGameLog{
-		PlayerID: 8478402,
-		Season:   20232024,
+		PlayerID: PlayerID(8478402),
+		Season:   NewSeason(2023),
 		GameType: GameTypeRegularSeason,
 		GameLog:  []GameLog{},
 	}
@@ -599,8 +599,8 @@ func TestPlayerSearchResultDeserialization(t *testing.T) {
 				"birthCountry": "CAN"
 			}`,
 			validate: func(t *testing.T, result PlayerSearchResult) {
-				if result.PlayerID != "8478402" {
-					t.Errorf("expected PlayerID=8478402, got %s", result.PlayerID)
+				if result.PlayerID != PlayerID(8478402) {
+					t.Errorf("expected PlayerID=8478402, got %d", result.PlayerID)
 				}
 				if result.Name != "Connor McDavid" {
 					t.Errorf("expected Name=Connor McDavid, got %s", result.Name)
@@ -608,7 +608,7 @@ func TestPlayerSearchResultDeserialization(t *testing.T) {
 				if result.Position != PositionCenter {
 					t.Errorf("expected Position=C, got %v", result.Position)
 				}
-				if result.TeamID == nil || *result.TeamID != "22" {
+				if result.TeamID == nil || *result.TeamID != TeamID(22) {
 					t.Errorf("expected TeamID=22, got %v", result.TeamID)
 				}
 				if result.TeamAbbrev == nil || *result.TeamAbbrev != "EDM" {
@@ -643,8 +643,8 @@ func TestPlayerSearchResultDeserialization(t *testing.T) {
 				"active": true
 			}`,
 			validate: func(t *testing.T, result PlayerSearchResult) {
-				if result.PlayerID != "8475790" {
-					t.Errorf("expected PlayerID=8475790, got %s", result.PlayerID)
+				if result.PlayerID != PlayerID(8475790) {
+					t.Errorf("expected PlayerID=8475790, got %d", result.PlayerID)
 				}
 				if result.Name != "Sidney Crosby" {
 					t.Errorf("expected Name=Sidney Crosby, got %s", result.Name)
@@ -672,8 +672,8 @@ func TestPlayerSearchResultDeserialization(t *testing.T) {
 				"active": false
 			}`,
 			validate: func(t *testing.T, result PlayerSearchResult) {
-				if result.PlayerID != "8471675" {
-					t.Errorf("expected PlayerID=8471675, got %s", result.PlayerID)
+				if result.PlayerID != PlayerID(8471675) {
+					t.Errorf("expected PlayerID=8471675, got %d", result.PlayerID)
 				}
 				if result.Name != "Jaromir Jagr" {
 					t.Errorf("expected Name=Jaromir Jagr, got %s", result.Name)

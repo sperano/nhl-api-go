@@ -39,7 +39,7 @@ func TestClubSkaterStatsDeserialization(t *testing.T) {
 		t.Fatalf("Failed to unmarshal ClubSkaterStats: %v", err)
 	}
 
-	if stats.PlayerID != 8475233 {
+	if stats.PlayerID != PlayerID(8475233) {
 		t.Errorf("Expected PlayerID 8475233, got %d", stats.PlayerID)
 	}
 	if stats.FirstName.Default != "David" {
@@ -104,7 +104,7 @@ func TestClubGoalieStatsDeserialization(t *testing.T) {
 		t.Fatalf("Failed to unmarshal ClubGoalieStats: %v", err)
 	}
 
-	if stats.PlayerID != 8478470 {
+	if stats.PlayerID != PlayerID(8478470) {
 		t.Errorf("Expected PlayerID 8478470, got %d", stats.PlayerID)
 	}
 	if stats.FirstName.Default != "Sam" {
@@ -214,8 +214,8 @@ func TestSeasonGameTypesDeserialization(t *testing.T) {
 		t.Fatalf("Failed to unmarshal SeasonGameTypes: %v", err)
 	}
 
-	if season.Season != 20242025 {
-		t.Errorf("Expected Season 20242025, got %d", season.Season)
+	if season.Season != NewSeason(2024) {
+		t.Errorf("Expected Season 20242025, got %s", season.Season)
 	}
 	if len(season.GameTypes) != 2 {
 		t.Fatalf("Expected 2 game types, got %d", len(season.GameTypes))
@@ -237,50 +237,50 @@ func TestSeasonGameTypesDisplay(t *testing.T) {
 		{
 			name: "Regular season and playoffs",
 			season: SeasonGameTypes{
-				Season:    20242025,
+				Season:    NewSeason(2024),
 				GameTypes: []GameType{GameTypeRegularSeason, GameTypePlayoffs},
 			},
-			expected: "20242025: Regular Season, Playoffs",
+			expected: "2024-2025: Regular Season, Playoffs",
 		},
 		{
 			name: "Regular season only",
 			season: SeasonGameTypes{
-				Season:    20232024,
+				Season:    NewSeason(2023),
 				GameTypes: []GameType{GameTypeRegularSeason},
 			},
-			expected: "20232024: Regular Season",
+			expected: "2023-2024: Regular Season",
 		},
 		{
 			name: "All-star only",
 			season: SeasonGameTypes{
-				Season:    20232024,
+				Season:    NewSeason(2023),
 				GameTypes: []GameType{GameTypeAllStar},
 			},
-			expected: "20232024: All-Star",
+			expected: "2023-2024: All-Star",
 		},
 		{
 			name: "Preseason only",
 			season: SeasonGameTypes{
-				Season:    20242025,
+				Season:    NewSeason(2024),
 				GameTypes: []GameType{GameTypePreseason},
 			},
-			expected: "20242025: Preseason",
+			expected: "2024-2025: Preseason",
 		},
 		{
 			name: "All types mixed order",
 			season: SeasonGameTypes{
-				Season:    20242025,
+				Season:    NewSeason(2024),
 				GameTypes: []GameType{GameTypePreseason, GameTypeRegularSeason, GameTypeAllStar, GameTypePlayoffs},
 			},
-			expected: "20242025: Preseason, Regular Season, All-Star, Playoffs",
+			expected: "2024-2025: Preseason, Regular Season, All-Star, Playoffs",
 		},
 		{
 			name: "Empty game types",
 			season: SeasonGameTypes{
-				Season:    20242025,
+				Season:    NewSeason(2024),
 				GameTypes: []GameType{},
 			},
-			expected: "20242025: ",
+			expected: "2024-2025: ",
 		},
 	}
 
@@ -296,7 +296,7 @@ func TestSeasonGameTypesDisplay(t *testing.T) {
 
 func TestSkaterStatsDisplay(t *testing.T) {
 	stats := ClubSkaterStats{
-		PlayerID:            8475233,
+		PlayerID:            PlayerID(8475233),
 		Headshot:            "test.png",
 		FirstName:           LocalizedString{Default: "David"},
 		LastName:            LocalizedString{Default: "Savard"},
@@ -327,7 +327,7 @@ func TestSkaterStatsDisplay(t *testing.T) {
 
 func TestGoalieStatsDisplay(t *testing.T) {
 	stats := ClubGoalieStats{
-		PlayerID:            8478470,
+		PlayerID:            PlayerID(8478470),
 		Headshot:            "test.png",
 		FirstName:           LocalizedString{Default: "Sam"},
 		LastName:            LocalizedString{Default: "Montembeault"},
@@ -425,7 +425,7 @@ func TestSeasonGameTypesUnknownGameType(t *testing.T) {
 
 func TestClubSkaterStatsSerializationRoundTrip(t *testing.T) {
 	original := ClubSkaterStats{
-		PlayerID:            8475233,
+		PlayerID:            PlayerID(8475233),
 		Headshot:            "test.png",
 		FirstName:           LocalizedString{Default: "David"},
 		LastName:            LocalizedString{Default: "Savard"},
@@ -470,7 +470,7 @@ func TestClubSkaterStatsSerializationRoundTrip(t *testing.T) {
 
 func TestClubGoalieStatsSerializationRoundTrip(t *testing.T) {
 	original := ClubGoalieStats{
-		PlayerID:            8478470,
+		PlayerID:            PlayerID(8478470),
 		Headshot:            "test.png",
 		FirstName:           LocalizedString{Default: "Sam"},
 		LastName:            LocalizedString{Default: "Montembeault"},
@@ -541,7 +541,7 @@ func TestClubStatsSerializationRoundTrip(t *testing.T) {
 
 func TestSeasonGameTypesSerializationRoundTrip(t *testing.T) {
 	original := SeasonGameTypes{
-		Season:    20242025,
+		Season:    NewSeason(2024),
 		GameTypes: []GameType{GameTypeRegularSeason, GameTypePlayoffs},
 	}
 
@@ -556,7 +556,7 @@ func TestSeasonGameTypesSerializationRoundTrip(t *testing.T) {
 	}
 
 	if decoded.Season != original.Season {
-		t.Errorf("Season mismatch: expected %d, got %d", original.Season, decoded.Season)
+		t.Errorf("Season mismatch: expected %s, got %s", original.Season, decoded.Season)
 	}
 	if len(decoded.GameTypes) != len(original.GameTypes) {
 		t.Fatalf("GameTypes length mismatch: expected %d, got %d", len(original.GameTypes), len(decoded.GameTypes))
@@ -570,7 +570,7 @@ func TestSeasonGameTypesSerializationRoundTrip(t *testing.T) {
 
 func TestSeasonGameTypesMarshalAsIntegers(t *testing.T) {
 	season := SeasonGameTypes{
-		Season:    20242025,
+		Season:    NewSeason(2024),
 		GameTypes: []GameType{GameTypeRegularSeason, GameTypePlayoffs},
 	}
 
@@ -588,7 +588,7 @@ func TestSeasonGameTypesMarshalAsIntegers(t *testing.T) {
 
 func TestSeasonGameTypesMarshalInvalidGameType(t *testing.T) {
 	season := SeasonGameTypes{
-		Season:    20242025,
+		Season:    NewSeason(2024),
 		GameTypes: []GameType{GameType(99)}, // Invalid game type
 	}
 
@@ -600,7 +600,7 @@ func TestSeasonGameTypesMarshalInvalidGameType(t *testing.T) {
 
 func TestClubSkaterStatsEquality(t *testing.T) {
 	stats1 := ClubSkaterStats{
-		PlayerID:    8475233,
+		PlayerID:    PlayerID(8475233),
 		Headshot:    "test.png",
 		FirstName:   LocalizedString{Default: "David"},
 		LastName:    LocalizedString{Default: "Savard"},
@@ -626,7 +626,7 @@ func TestClubSkaterStatsEquality(t *testing.T) {
 
 func TestClubGoalieStatsEquality(t *testing.T) {
 	stats1 := ClubGoalieStats{
-		PlayerID:    8478470,
+		PlayerID:    PlayerID(8478470),
 		Headshot:    "test.png",
 		FirstName:   LocalizedString{Default: "Sam"},
 		LastName:    LocalizedString{Default: "Montembeault"},
@@ -669,17 +669,17 @@ func TestClubStatsEquality(t *testing.T) {
 
 func TestSeasonGameTypesEquality(t *testing.T) {
 	season1 := SeasonGameTypes{
-		Season:    20242025,
+		Season:    NewSeason(2024),
 		GameTypes: []GameType{GameTypeRegularSeason},
 	}
 
 	season2 := SeasonGameTypes{
-		Season:    20242025,
+		Season:    NewSeason(2024),
 		GameTypes: []GameType{GameTypeRegularSeason},
 	}
 
 	season3 := SeasonGameTypes{
-		Season:    20232024,
+		Season:    NewSeason(2023),
 		GameTypes: []GameType{GameTypeRegularSeason},
 	}
 

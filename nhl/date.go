@@ -225,10 +225,23 @@ func (s Season) MarshalJSON() ([]byte, error) {
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
+// Seasons can be unmarshaled from either integers (20232024) or strings ("20232024" or "2023-2024").
 func (s *Season) UnmarshalJSON(data []byte) error {
+	// Try unmarshaling as integer first (common API format)
+	var i int64
+	if err := json.Unmarshal(data, &i); err == nil {
+		season, err := SeasonFromInt64(i)
+		if err != nil {
+			return err
+		}
+		*s = season
+		return nil
+	}
+
+	// Try unmarshaling as string
 	var str string
 	if err := json.Unmarshal(data, &str); err != nil {
-		return err
+		return fmt.Errorf("season must be an integer or string: %w", err)
 	}
 
 	season, err := Parse(str)

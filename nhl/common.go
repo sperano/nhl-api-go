@@ -61,25 +61,25 @@ type Division struct {
 
 // Franchise represents an NHL franchise.
 type Franchise struct {
-	ID              int64  `json:"id"`
-	FullName        string `json:"fullName"`
-	TeamCommonName  string `json:"teamCommonName"`
-	TeamPlaceName   string `json:"teamPlaceName"`
+	ID             int64  `json:"id"`
+	FullName       string `json:"fullName"`
+	TeamCommonName string `json:"teamCommonName"`
+	TeamPlaceName  string `json:"teamPlaceName"`
 }
 
 // Team represents an NHL team with all its metadata.
 type Team struct {
-	ID              int64           `json:"id"`
-	FranchiseID     int64           `json:"franchiseId"`
-	FullName        string          `json:"fullName"`
-	LeagueAbbrev    string          `json:"leagueAbbrev"`
-	RawTricode      string          `json:"rawTricode"`
-	Tricode         string          `json:"tricode"`
-	TeamPlaceName   LocalizedString `json:"teamPlaceName"`
-	TeamCommonName  LocalizedString `json:"teamCommonName"`
-	TeamLogo        string          `json:"teamLogo"`
-	Conference      Conference      `json:"conference"`
-	Division        Division        `json:"division"`
+	ID             TeamID          `json:"id"`
+	FranchiseID    int64           `json:"franchiseId"`
+	FullName       string          `json:"fullName"`
+	LeagueAbbrev   string          `json:"leagueAbbrev"`
+	RawTricode     string          `json:"rawTricode"`
+	Tricode        string          `json:"tricode"`
+	TeamPlaceName  LocalizedString `json:"teamPlaceName"`
+	TeamCommonName LocalizedString `json:"teamCommonName"`
+	TeamLogo       string          `json:"teamLogo"`
+	Conference     Conference      `json:"conference"`
+	Division       Division        `json:"division"`
 }
 
 // Roster represents a team's roster organized by position.
@@ -105,19 +105,19 @@ func (r *Roster) PlayerCount() int {
 
 // RosterPlayer represents a player on a team's roster.
 type RosterPlayer struct {
-	ID                  int64            `json:"id"`
-	Headshot            string           `json:"headshot"`
-	FirstName           LocalizedString  `json:"firstName"`
-	LastName            LocalizedString  `json:"lastName"`
-	SweaterNumber       int              `json:"sweaterNumber"`
-	Position            Position         `json:"position"`
-	ShootsCatches       Handedness       `json:"shootsCatches"`
-	HeightInInches      int              `json:"heightInInches"`
-	WeightInPounds      int              `json:"weightInPounds"`
-	BirthDate           string           `json:"birthDate"`
-	BirthCity           *LocalizedString `json:"birthCity,omitempty"`
-	BirthStateProvince  *LocalizedString `json:"birthStateProvince,omitempty"`
-	BirthCountry        string           `json:"birthCountry"`
+	ID                 PlayerID         `json:"id"`
+	Headshot           string           `json:"headshot"`
+	FirstName          LocalizedString  `json:"firstName"`
+	LastName           LocalizedString  `json:"lastName"`
+	SweaterNumber      int              `json:"sweaterNumber"`
+	Position           Position         `json:"position"`
+	ShootsCatches      Handedness       `json:"shootsCatches"`
+	HeightInInches     int              `json:"heightInInches"`
+	WeightInPounds     int              `json:"weightInPounds"`
+	BirthDate          string           `json:"birthDate"`
+	BirthCity          *LocalizedString `json:"birthCity,omitempty"`
+	BirthStateProvince *LocalizedString `json:"birthStateProvince,omitempty"`
+	BirthCountry       string           `json:"birthCountry"`
 }
 
 // FullName returns the player's full name (first name + last name).

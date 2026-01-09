@@ -388,9 +388,9 @@ func TestRosterPlayer_UnmarshalJSON_OptionalFields(t *testing.T) {
 // TestRosterPlayer_FullName tests the FullName method.
 func TestRosterPlayer_FullName(t *testing.T) {
 	tests := []struct {
-		name      string
-		player    RosterPlayer
-		expected  string
+		name     string
+		player   RosterPlayer
+		expected string
 	}{
 		{
 			name: "standard name",

@@ -2,25 +2,25 @@ package nhl
 
 // Boxscore represents the boxscore response with detailed game and player statistics.
 type Boxscore struct {
-	ID                  int64               `json:"id"`
-	Season              int64               `json:"season"`
-	GameType            GameType            `json:"gameType"`
-	LimitedScoring      bool                `json:"limitedScoring"`
-	GameDate            string              `json:"gameDate"`
-	Venue               LocalizedString     `json:"venue"`
-	VenueLocation       LocalizedString     `json:"venueLocation"`
-	StartTimeUTC        string              `json:"startTimeUTC"`
-	EasternUTCOffset    string              `json:"easternUTCOffset"`
-	VenueUTCOffset      string              `json:"venueUTCOffset"`
-	TVBroadcasts        []TVBroadcast       `json:"tvBroadcasts"`
-	GameState           GameState           `json:"gameState"`
-	GameScheduleState   GameScheduleState   `json:"gameScheduleState"`
-	PeriodDescriptor    PeriodDescriptor    `json:"periodDescriptor"`
-	SpecialEvent        *SpecialEvent       `json:"specialEvent,omitempty"`
-	AwayTeam            BoxscoreTeam        `json:"awayTeam"`
-	HomeTeam            BoxscoreTeam        `json:"homeTeam"`
-	Clock               GameClock           `json:"clock"`
-	PlayerByGameStats   PlayerByGameStats   `json:"playerByGameStats"`
+	ID                GameID            `json:"id"`
+	Season            Season            `json:"season"`
+	GameType          GameType          `json:"gameType"`
+	LimitedScoring    bool              `json:"limitedScoring"`
+	GameDate          string            `json:"gameDate"`
+	Venue             LocalizedString   `json:"venue"`
+	VenueLocation     LocalizedString   `json:"venueLocation"`
+	StartTimeUTC      string            `json:"startTimeUTC"`
+	EasternUTCOffset  string            `json:"easternUTCOffset"`
+	VenueUTCOffset    string            `json:"venueUTCOffset"`
+	TVBroadcasts      []TVBroadcast     `json:"tvBroadcasts"`
+	GameState         GameState         `json:"gameState"`
+	GameScheduleState GameScheduleState `json:"gameScheduleState"`
+	PeriodDescriptor  PeriodDescriptor  `json:"periodDescriptor"`
+	SpecialEvent      *SpecialEvent     `json:"specialEvent,omitempty"`
+	AwayTeam          BoxscoreTeam      `json:"awayTeam"`
+	HomeTeam          BoxscoreTeam      `json:"homeTeam"`
+	Clock             GameClock         `json:"clock"`
+	PlayerByGameStats PlayerByGameStats `json:"playerByGameStats"`
 }
 
 // TVBroadcast represents TV broadcast information for a game.
@@ -34,9 +34,9 @@ type TVBroadcast struct {
 
 // SpecialEvent represents special event information for a game.
 type SpecialEvent struct {
-	ParentID      int64           `json:"parentId"`
-	Name          LocalizedString `json:"name"`
-	LightLogoURL  LocalizedString `json:"lightLogoUrl"`
+	ParentID     int64           `json:"parentId"`
+	Name         LocalizedString `json:"name"`
+	LightLogoURL LocalizedString `json:"lightLogoUrl"`
 }
 
 // PeriodDescriptor represents period descriptor with game period information.
@@ -48,15 +48,15 @@ type PeriodDescriptor struct {
 
 // BoxscoreTeam represents team information in the boxscore.
 type BoxscoreTeam struct {
-	ID                        int64           `json:"id"`
-	CommonName                LocalizedString `json:"commonName"`
-	Abbrev                    string          `json:"abbrev"`
-	Score                     int             `json:"score"`
-	SOG                       int             `json:"sog"`
-	Logo                      string          `json:"logo"`
-	DarkLogo                  string          `json:"darkLogo"`
-	PlaceName                 LocalizedString `json:"placeName"`
-	PlaceNameWithPreposition  LocalizedString `json:"placeNameWithPreposition"`
+	ID                       TeamID          `json:"id"`
+	CommonName               LocalizedString `json:"commonName"`
+	Abbrev                   string          `json:"abbrev"`
+	Score                    int             `json:"score"`
+	SOG                      int             `json:"sog"`
+	Logo                     string          `json:"logo"`
+	DarkLogo                 string          `json:"darkLogo"`
+	PlaceName                LocalizedString `json:"placeName"`
+	PlaceNameWithPreposition LocalizedString `json:"placeNameWithPreposition"`
 }
 
 // GameClock represents game clock information.
@@ -82,16 +82,16 @@ type TeamPlayerStats struct {
 
 // TeamGameStats represents aggregated team statistics for game comparison.
 type TeamGameStats struct {
-	ShotsOnGoal             int
-	FaceoffWins             int
-	FaceoffTotal            int
-	PowerPlayGoals          int
-	PowerPlayOpportunities  int
-	PenaltyMinutes          int
-	Hits                    int
-	BlockedShots            int
-	Giveaways               int
-	Takeaways               int
+	ShotsOnGoal            int
+	FaceoffWins            int
+	FaceoffTotal           int
+	PowerPlayGoals         int
+	PowerPlayOpportunities int
+	PenaltyMinutes         int
+	Hits                   int
+	BlockedShots           int
+	Giveaways              int
+	Takeaways              int
 }
 
 // FromTeamPlayerStats calculates aggregated team statistics from individual player stats.
@@ -168,45 +168,45 @@ func (t *TeamGameStats) PowerPlayPercentage() float64 {
 
 // SkaterStats represents skater (forward/defense) statistics.
 type SkaterStats struct {
-	PlayerID            int64           `json:"playerId"`
-	SweaterNumber       int             `json:"sweaterNumber"`
-	Name                LocalizedString `json:"name"`
-	Position            Position        `json:"position"`
-	Goals               int             `json:"goals"`
-	Assists             int             `json:"assists"`
-	Points              int             `json:"points"`
-	PlusMinus           int             `json:"plusMinus"`
-	PIM                 int             `json:"pim"`
-	Hits                int             `json:"hits"`
-	PowerPlayGoals      int             `json:"powerPlayGoals"`
-	SOG                 int             `json:"sog"`
-	FaceoffWinningPctg  float64         `json:"faceoffWinningPctg"`
-	TOI                 string          `json:"toi"`
-	BlockedShots        int             `json:"blockedShots"`
-	Shifts              int             `json:"shifts"`
-	Giveaways           int             `json:"giveaways"`
-	Takeaways           int             `json:"takeaways"`
+	PlayerID           PlayerID        `json:"playerId"`
+	SweaterNumber      int             `json:"sweaterNumber"`
+	Name               LocalizedString `json:"name"`
+	Position           Position        `json:"position"`
+	Goals              int             `json:"goals"`
+	Assists            int             `json:"assists"`
+	Points             int             `json:"points"`
+	PlusMinus          int             `json:"plusMinus"`
+	PIM                int             `json:"pim"`
+	Hits               int             `json:"hits"`
+	PowerPlayGoals     int             `json:"powerPlayGoals"`
+	SOG                int             `json:"sog"`
+	FaceoffWinningPctg float64         `json:"faceoffWinningPctg"`
+	TOI                string          `json:"toi"`
+	BlockedShots       int             `json:"blockedShots"`
+	Shifts             int             `json:"shifts"`
+	Giveaways          int             `json:"giveaways"`
+	Takeaways          int             `json:"takeaways"`
 }
 
 // GoalieStats represents goalie statistics.
 type GoalieStats struct {
-	PlayerID                   int64            `json:"playerId"`
-	SweaterNumber              int              `json:"sweaterNumber"`
-	Name                       LocalizedString  `json:"name"`
-	Position                   Position         `json:"position"`
-	EvenStrengthShotsAgainst   string           `json:"evenStrengthShotsAgainst"`
-	PowerPlayShotsAgainst      string           `json:"powerPlayShotsAgainst"`
-	ShorthandedShotsAgainst    string           `json:"shorthandedShotsAgainst"`
-	SaveShotsAgainst           string           `json:"saveShotsAgainst"`
-	SavePctg                   *float64         `json:"savePctg,omitempty"`
-	EvenStrengthGoalsAgainst   int              `json:"evenStrengthGoalsAgainst"`
-	PowerPlayGoalsAgainst      int              `json:"powerPlayGoalsAgainst"`
-	ShorthandedGoalsAgainst    int              `json:"shorthandedGoalsAgainst"`
-	PIM                        *int             `json:"pim,omitempty"`
-	GoalsAgainst               int              `json:"goalsAgainst"`
-	TOI                        string           `json:"toi"`
-	Starter                    *bool            `json:"starter,omitempty"`
-	Decision                   *GoalieDecision  `json:"decision,omitempty"`
-	ShotsAgainst               int              `json:"shotsAgainst"`
-	Saves                      int              `json:"saves"`
+	PlayerID                 PlayerID        `json:"playerId"`
+	SweaterNumber            int             `json:"sweaterNumber"`
+	Name                     LocalizedString `json:"name"`
+	Position                 Position        `json:"position"`
+	EvenStrengthShotsAgainst string          `json:"evenStrengthShotsAgainst"`
+	PowerPlayShotsAgainst    string          `json:"powerPlayShotsAgainst"`
+	ShorthandedShotsAgainst  string          `json:"shorthandedShotsAgainst"`
+	SaveShotsAgainst         string          `json:"saveShotsAgainst"`
+	SavePctg                 *float64        `json:"savePctg,omitempty"`
+	EvenStrengthGoalsAgainst int             `json:"evenStrengthGoalsAgainst"`
+	PowerPlayGoalsAgainst    int             `json:"powerPlayGoalsAgainst"`
+	ShorthandedGoalsAgainst  int             `json:"shorthandedGoalsAgainst"`
+	PIM                      *int            `json:"pim,omitempty"`
+	GoalsAgainst             int             `json:"goalsAgainst"`
+	TOI                      string          `json:"toi"`
+	Starter                  *bool           `json:"starter,omitempty"`
+	Decision                 *GoalieDecision `json:"decision,omitempty"`
+	ShotsAgainst             int             `json:"shotsAgainst"`
+	Saves                    int             `json:"saves"`
 }

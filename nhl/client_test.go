@@ -223,11 +223,14 @@ func TestGetJSON_HTTPErrors(t *testing.T) {
 			// Make request and check error type
 			fullURL := server.URL + "/test"
 			req, _ := http.NewRequestWithContext(ctx, http.MethodGet, fullURL, nil)
-			resp, _ := client.httpClient.Do(req)
+			resp, err := client.httpClient.Do(req)
+			if err != nil {
+				t.Fatalf("unexpected http error: %v", err)
+			}
 			defer resp.Body.Close()
 
 			// Manually check the error condition
-			err := ErrorFromStatusCode(resp.StatusCode, "Request to /test failed")
+			err = ErrorFromStatusCode(resp.StatusCode, "Request to /test failed")
 
 			if err == nil {
 				t.Fatal("expected error, got nil")
@@ -302,7 +305,7 @@ func TestExtractDailySchedule(t *testing.T) {
 				Date: "2024-01-08",
 				Games: []ScheduleGame{
 					{
-						ID:       2023020001,
+						ID:       GameID(2023020001),
 						GameType: GameTypeRegularSeason,
 					},
 				},
@@ -477,7 +480,7 @@ func TestClientMethodSignatures(t *testing.T) {
 	// Standings methods
 	var _ func(context.Context) ([]Standing, error) = client.CurrentLeagueStandings
 	var _ func(context.Context, GameDate) ([]Standing, error) = client.LeagueStandingsForDate
-	var _ func(context.Context, int64) ([]Standing, error) = client.LeagueStandingsForSeason
+	var _ func(context.Context, Season) ([]Standing, error) = client.LeagueStandingsForSeason
 	var _ func(context.Context) ([]SeasonInfo, error) = client.SeasonStandingManifest
 	var _ func(context.Context, GameDate) ([]Team, error) = client.Teams
 
@@ -488,23 +491,23 @@ func TestClientMethodSignatures(t *testing.T) {
 	var _ func(context.Context, GameDate) (*DailyScores, error) = client.DailyScores
 
 	// Game data methods
-	var _ func(context.Context, int64) (*Boxscore, error) = client.Boxscore
-	var _ func(context.Context, int64) (*PlayByPlay, error) = client.PlayByPlay
-	var _ func(context.Context, int64) (*GameMatchup, error) = client.Landing
-	var _ func(context.Context, int64) (*GameStory, error) = client.GameStory
-	var _ func(context.Context, int64) (*SeasonSeriesMatchup, error) = client.SeasonSeries
-	var _ func(context.Context, int64) (*ShiftChart, error) = client.ShiftChart
+	var _ func(context.Context, GameID) (*Boxscore, error) = client.Boxscore
+	var _ func(context.Context, GameID) (*PlayByPlay, error) = client.PlayByPlay
+	var _ func(context.Context, GameID) (*GameMatchup, error) = client.Landing
+	var _ func(context.Context, GameID) (*GameStory, error) = client.GameStory
+	var _ func(context.Context, GameID) (*SeasonSeriesMatchup, error) = client.SeasonSeries
+	var _ func(context.Context, GameID) (*ShiftChart, error) = client.ShiftChart
 
 	// Player methods
-	var _ func(context.Context, int64) (*PlayerLanding, error) = client.PlayerLanding
-	var _ func(context.Context, int64, int, GameType) (*PlayerGameLog, error) = client.PlayerGameLog
+	var _ func(context.Context, PlayerID) (*PlayerLanding, error) = client.PlayerLanding
+	var _ func(context.Context, PlayerID, Season, GameType) (*PlayerGameLog, error) = client.PlayerGameLog
 	var _ func(context.Context, string, *int) ([]PlayerSearchResult, error) = client.SearchPlayer
 
 	// Team/Franchise methods
 	var _ func(context.Context) ([]Franchise, error) = client.Franchises
 	var _ func(context.Context, string) (*Roster, error) = client.RosterCurrent
-	var _ func(context.Context, string, int) (*Roster, error) = client.RosterSeason
-	var _ func(context.Context, string, int, GameType) (*ClubStats, error) = client.ClubStats
+	var _ func(context.Context, string, Season) (*Roster, error) = client.RosterSeason
+	var _ func(context.Context, string, Season, GameType) (*ClubStats, error) = client.ClubStats
 	var _ func(context.Context, string) ([]SeasonGameTypes, error) = client.ClubStatsSeason
 
 	_ = ctx
@@ -616,9 +619,9 @@ func BenchmarkExtractDailySchedule(b *testing.B) {
 			{
 				Date: "2024-01-08",
 				Games: []ScheduleGame{
-					{ID: 2023020001, GameType: GameTypeRegularSeason},
-					{ID: 2023020002, GameType: GameTypeRegularSeason},
-					{ID: 2023020003, GameType: GameTypeRegularSeason},
+					{ID: GameID(2023020001), GameType: GameTypeRegularSeason},
+					{ID: GameID(2023020002), GameType: GameTypeRegularSeason},
+					{ID: GameID(2023020003), GameType: GameTypeRegularSeason},
 				},
 			},
 		},
@@ -720,7 +723,7 @@ func TestLeagueStandingsForSeason(t *testing.T) {
 
 	seasonsResponse := SeasonsResponse{
 		Seasons: []SeasonInfo{
-			{ID: 20232024, StandingsStart: "2023-10-10", StandingsEnd: "2024-04-18"},
+			{ID: NewSeason(2023), StandingsStart: "2023-10-10", StandingsEnd: "2024-04-18"},
 		},
 	}
 
@@ -738,7 +741,7 @@ func TestLeagueStandingsForSeason(t *testing.T) {
 	client := NewClientWithBaseURL(server.URL)
 
 	ctx := context.Background()
-	result, err := client.LeagueStandingsForSeason(ctx, 20232024)
+	result, err := client.LeagueStandingsForSeason(ctx, NewSeason(2023))
 
 	if err != nil {
 		t.Fatalf("LeagueStandingsForSeason() error = %v", err)
@@ -751,8 +754,8 @@ func TestLeagueStandingsForSeason(t *testing.T) {
 
 func TestSeasonStandingManifest(t *testing.T) {
 	seasonInfo := []SeasonInfo{
-		{ID: 20232024, StandingsStart: "2023-10-10", StandingsEnd: "2024-04-18"},
-		{ID: 20222023, StandingsStart: "2022-10-07", StandingsEnd: "2023-04-13"},
+		{ID: NewSeason(2023), StandingsStart: "2023-10-10", StandingsEnd: "2024-04-18"},
+		{ID: NewSeason(2022), StandingsStart: "2022-10-07", StandingsEnd: "2023-04-13"},
 	}
 
 	response := SeasonsResponse{
@@ -813,7 +816,7 @@ func TestDailySchedule(t *testing.T) {
 				Date: "2024-01-08",
 				Games: []ScheduleGame{
 					{
-						ID:        2023020001,
+						ID:        GameID(2023020001),
 						GameType:  GameTypeRegularSeason,
 						GameState: GameStateLive,
 					},
@@ -914,8 +917,8 @@ func TestDailyScores(t *testing.T) {
 
 func TestBoxscore(t *testing.T) {
 	boxscore := &Boxscore{
-		ID:                2023020001,
-		Season:            20232024,
+		ID:                GameID(2023020001),
+		Season:            NewSeason(2023),
 		GameType:          GameTypeRegularSeason,
 		GameDate:          "2023-10-10",
 		GameState:         GameStateFinal,
@@ -937,21 +940,21 @@ func TestBoxscore(t *testing.T) {
 	client := NewClientWithBaseURL(server.URL)
 
 	ctx := context.Background()
-	result, err := client.Boxscore(ctx, 2023020001)
+	result, err := client.Boxscore(ctx, GameID(2023020001))
 
 	if err != nil {
 		t.Fatalf("Boxscore() error = %v", err)
 	}
 
-	if result.ID != 2023020001 {
+	if result.ID != GameID(2023020001) {
 		t.Errorf("expected ID 2023020001, got %d", result.ID)
 	}
 }
 
 func TestPlayByPlay(t *testing.T) {
 	playByPlay := &PlayByPlay{
-		ID:                2023020001,
-		Season:            20232024,
+		ID:                GameID(2023020001),
+		Season:            NewSeason(2023),
 		GameType:          GameTypeRegularSeason,
 		GameDate:          "2023-10-10",
 		GameState:         GameStateFinal,
@@ -974,21 +977,21 @@ func TestPlayByPlay(t *testing.T) {
 	client := NewClientWithBaseURL(server.URL)
 
 	ctx := context.Background()
-	result, err := client.PlayByPlay(ctx, 2023020001)
+	result, err := client.PlayByPlay(ctx, GameID(2023020001))
 
 	if err != nil {
 		t.Fatalf("PlayByPlay() error = %v", err)
 	}
 
-	if result.ID != 2023020001 {
+	if result.ID != GameID(2023020001) {
 		t.Errorf("expected ID 2023020001, got %d", result.ID)
 	}
 }
 
 func TestLanding(t *testing.T) {
 	landing := &GameMatchup{
-		ID:                2023020001,
-		Season:            20232024,
+		ID:                GameID(2023020001),
+		Season:            NewSeason(2023),
 		GameType:          GameTypeRegularSeason,
 		GameDate:          "2023-10-10",
 		GameState:         GameStateFinal,
@@ -1008,21 +1011,21 @@ func TestLanding(t *testing.T) {
 	client := NewClientWithBaseURL(server.URL)
 
 	ctx := context.Background()
-	result, err := client.Landing(ctx, 2023020001)
+	result, err := client.Landing(ctx, GameID(2023020001))
 
 	if err != nil {
 		t.Fatalf("Landing() error = %v", err)
 	}
 
-	if result.ID != 2023020001 {
+	if result.ID != GameID(2023020001) {
 		t.Errorf("expected ID 2023020001, got %d", result.ID)
 	}
 }
 
 func TestGameStory(t *testing.T) {
 	gameStory := &GameStory{
-		ID:                2023020001,
-		Season:            20232024,
+		ID:                GameID(2023020001),
+		Season:            NewSeason(2023),
 		GameType:          GameTypeRegularSeason,
 		GameDate:          "2023-10-10",
 		GameState:         GameStateFinal,
@@ -1036,13 +1039,13 @@ func TestGameStory(t *testing.T) {
 	client := NewClientWithBaseURL(server.URL)
 
 	ctx := context.Background()
-	result, err := client.GameStory(ctx, 2023020001)
+	result, err := client.GameStory(ctx, GameID(2023020001))
 
 	if err != nil {
 		t.Fatalf("GameStory() error = %v", err)
 	}
 
-	if result.ID != 2023020001 {
+	if result.ID != GameID(2023020001) {
 		t.Errorf("expected ID 2023020001, got %d", result.ID)
 	}
 }
@@ -1058,7 +1061,7 @@ func TestSeasonSeries(t *testing.T) {
 	client := NewClientWithBaseURL(server.URL)
 
 	ctx := context.Background()
-	result, err := client.SeasonSeries(ctx, 2023020001)
+	result, err := client.SeasonSeries(ctx, GameID(2023020001))
 
 	if err != nil {
 		t.Fatalf("SeasonSeries() error = %v", err)
@@ -1080,7 +1083,7 @@ func TestShiftChart(t *testing.T) {
 	client := NewClientWithBaseURL(server.URL)
 
 	ctx := context.Background()
-	result, err := client.ShiftChart(ctx, 2023020001)
+	result, err := client.ShiftChart(ctx, GameID(2023020001))
 
 	if err != nil {
 		t.Fatalf("ShiftChart() error = %v", err)
@@ -1093,7 +1096,7 @@ func TestShiftChart(t *testing.T) {
 
 func TestPlayerLanding(t *testing.T) {
 	playerLanding := &PlayerLanding{
-		PlayerID:       8478402,
+		PlayerID:       PlayerID(8478402),
 		IsActive:       true,
 		Position:       PositionCenter,
 		ShootsCatches:  HandednessLeft,
@@ -1108,22 +1111,22 @@ func TestPlayerLanding(t *testing.T) {
 	client := NewClientWithBaseURL(server.URL)
 
 	ctx := context.Background()
-	result, err := client.PlayerLanding(ctx, 8478402)
+	result, err := client.PlayerLanding(ctx, PlayerID(8478402))
 
 	if err != nil {
 		t.Fatalf("PlayerLanding() error = %v", err)
 	}
 
-	if result.PlayerID != 8478402 {
+	if result.PlayerID != PlayerID(8478402) {
 		t.Errorf("expected PlayerID 8478402, got %d", result.PlayerID)
 	}
 }
 
 func TestPlayerGameLog(t *testing.T) {
 	gameLog := &PlayerGameLog{
-		PlayerID: 8478402,
+		PlayerID: PlayerID(8478402),
 		GameLog:  []GameLog{},
-		Season:   20232024,
+		Season:   NewSeason(2023),
 		GameType: GameTypeRegularSeason,
 	}
 
@@ -1133,21 +1136,21 @@ func TestPlayerGameLog(t *testing.T) {
 	client := NewClientWithBaseURL(server.URL)
 
 	ctx := context.Background()
-	result, err := client.PlayerGameLog(ctx, 8478402, 20232024, GameTypeRegularSeason)
+	result, err := client.PlayerGameLog(ctx, PlayerID(8478402), NewSeason(2023), GameTypeRegularSeason)
 
 	if err != nil {
 		t.Fatalf("PlayerGameLog() error = %v", err)
 	}
 
-	if result.PlayerID != 8478402 {
+	if result.PlayerID != PlayerID(8478402) {
 		t.Errorf("expected PlayerID 8478402, got %d", result.PlayerID)
 	}
 }
 
 func TestSearchPlayer(t *testing.T) {
 	searchResults := []PlayerSearchResult{
-		{PlayerID: "8478402", Name: "Connor McDavid", Position: PositionCenter},
-		{PlayerID: "8477934", Name: "Leon Draisaitl", Position: PositionCenter},
+		{PlayerID: PlayerID(8478402), Name: "Connor McDavid", Position: PositionCenter},
+		{PlayerID: PlayerID(8477934), Name: "Leon Draisaitl", Position: PositionCenter},
 	}
 
 	server := httptest.NewServer(makeJSONResponse(http.StatusOK, searchResults))
@@ -1170,7 +1173,7 @@ func TestSearchPlayer(t *testing.T) {
 
 func TestSearchPlayer_NoLimit(t *testing.T) {
 	searchResults := []PlayerSearchResult{
-		{PlayerID: "8478402", Name: "Connor McDavid", Position: PositionCenter},
+		{PlayerID: PlayerID(8478402), Name: "Connor McDavid", Position: PositionCenter},
 	}
 
 	server := httptest.NewServer(makeJSONResponse(http.StatusOK, searchResults))
@@ -1254,7 +1257,7 @@ func TestRosterSeason(t *testing.T) {
 	client := NewClientWithBaseURL(server.URL)
 
 	ctx := context.Background()
-	result, err := client.RosterSeason(ctx, "EDM", 20232024)
+	result, err := client.RosterSeason(ctx, "EDM", NewSeason(2023))
 
 	if err != nil {
 		t.Fatalf("RosterSeason() error = %v", err)
@@ -1277,7 +1280,7 @@ func TestClubStats(t *testing.T) {
 	client := NewClientWithBaseURL(server.URL)
 
 	ctx := context.Background()
-	result, err := client.ClubStats(ctx, "TOR", 20232024, GameTypeRegularSeason)
+	result, err := client.ClubStats(ctx, "TOR", NewSeason(2023), GameTypeRegularSeason)
 
 	if err != nil {
 		t.Fatalf("ClubStats() error = %v", err)
@@ -1290,8 +1293,8 @@ func TestClubStats(t *testing.T) {
 
 func TestClubStatsSeason(t *testing.T) {
 	seasons := []SeasonGameTypes{
-		{Season: 20232024, GameTypes: []GameType{GameTypeRegularSeason}},
-		{Season: 20222023, GameTypes: []GameType{GameTypeRegularSeason}},
+		{Season: NewSeason(2023), GameTypes: []GameType{GameTypeRegularSeason}},
+		{Season: NewSeason(2022), GameTypes: []GameType{GameTypeRegularSeason}},
 	}
 
 	server := httptest.NewServer(makeJSONResponse(http.StatusOK, seasons))
@@ -1317,7 +1320,7 @@ func TestClient_ErrorPaths(t *testing.T) {
 	t.Run("LeagueStandingsForSeason - invalid season", func(t *testing.T) {
 		seasonsResponse := SeasonsResponse{
 			Seasons: []SeasonInfo{
-				{ID: 20222023, StandingsStart: "2022-10-07", StandingsEnd: "2023-04-13"},
+				{ID: NewSeason(2022), StandingsStart: "2022-10-07", StandingsEnd: "2023-04-13"},
 			},
 		}
 
@@ -1328,7 +1331,7 @@ func TestClient_ErrorPaths(t *testing.T) {
 		ctx := context.Background()
 
 		// Request a season that doesn't exist in the manifest
-		_, err := client.LeagueStandingsForSeason(ctx, 19992000)
+		_, err := client.LeagueStandingsForSeason(ctx, NewSeason(1999))
 		if err == nil {
 			t.Error("LeagueStandingsForSeason() should error for invalid season")
 		}
@@ -1451,7 +1454,7 @@ func TestClient_ErrorPaths(t *testing.T) {
 		client := NewClientWithBaseURL(server.URL)
 		ctx := context.Background()
 
-		_, err := client.Boxscore(ctx, 2023020001)
+		_, err := client.Boxscore(ctx, GameID(2023020001))
 		if err == nil {
 			t.Error("Boxscore() should error on HTTP error")
 		}
@@ -1464,7 +1467,7 @@ func TestClient_ErrorPaths(t *testing.T) {
 		client := NewClientWithBaseURL(server.URL)
 		ctx := context.Background()
 
-		_, err := client.PlayByPlay(ctx, 2023020001)
+		_, err := client.PlayByPlay(ctx, GameID(2023020001))
 		if err == nil {
 			t.Error("PlayByPlay() should error on HTTP error")
 		}
@@ -1477,7 +1480,7 @@ func TestClient_ErrorPaths(t *testing.T) {
 		client := NewClientWithBaseURL(server.URL)
 		ctx := context.Background()
 
-		_, err := client.Landing(ctx, 2023020001)
+		_, err := client.Landing(ctx, GameID(2023020001))
 		if err == nil {
 			t.Error("Landing() should error on HTTP error")
 		}
@@ -1490,7 +1493,7 @@ func TestClient_ErrorPaths(t *testing.T) {
 		client := NewClientWithBaseURL(server.URL)
 		ctx := context.Background()
 
-		_, err := client.GameStory(ctx, 2023020001)
+		_, err := client.GameStory(ctx, GameID(2023020001))
 		if err == nil {
 			t.Error("GameStory() should error on HTTP error")
 		}
@@ -1503,7 +1506,7 @@ func TestClient_ErrorPaths(t *testing.T) {
 		client := NewClientWithBaseURL(server.URL)
 		ctx := context.Background()
 
-		_, err := client.SeasonSeries(ctx, 2023020001)
+		_, err := client.SeasonSeries(ctx, GameID(2023020001))
 		if err == nil {
 			t.Error("SeasonSeries() should error on HTTP error")
 		}
@@ -1516,7 +1519,7 @@ func TestClient_ErrorPaths(t *testing.T) {
 		client := NewClientWithBaseURL(server.URL)
 		ctx := context.Background()
 
-		_, err := client.ShiftChart(ctx, 2023020001)
+		_, err := client.ShiftChart(ctx, GameID(2023020001))
 		if err == nil {
 			t.Error("ShiftChart() should error on HTTP error")
 		}
@@ -1529,7 +1532,7 @@ func TestClient_ErrorPaths(t *testing.T) {
 		client := NewClientWithBaseURL(server.URL)
 		ctx := context.Background()
 
-		_, err := client.PlayerLanding(ctx, 8478402)
+		_, err := client.PlayerLanding(ctx, PlayerID(8478402))
 		if err == nil {
 			t.Error("PlayerLanding() should error on HTTP error")
 		}
@@ -1542,7 +1545,7 @@ func TestClient_ErrorPaths(t *testing.T) {
 		client := NewClientWithBaseURL(server.URL)
 		ctx := context.Background()
 
-		_, err := client.PlayerGameLog(ctx, 8478402, 20232024, GameTypeRegularSeason)
+		_, err := client.PlayerGameLog(ctx, PlayerID(8478402), NewSeason(2023), GameTypeRegularSeason)
 		if err == nil {
 			t.Error("PlayerGameLog() should error on HTTP error")
 		}
@@ -1594,7 +1597,7 @@ func TestClient_ErrorPaths(t *testing.T) {
 		client := NewClientWithBaseURL(server.URL)
 		ctx := context.Background()
 
-		_, err := client.RosterSeason(ctx, "EDM", 20232024)
+		_, err := client.RosterSeason(ctx, "EDM", NewSeason(2023))
 		if err == nil {
 			t.Error("RosterSeason() should error on HTTP error")
 		}
@@ -1607,7 +1610,7 @@ func TestClient_ErrorPaths(t *testing.T) {
 		client := NewClientWithBaseURL(server.URL)
 		ctx := context.Background()
 
-		_, err := client.ClubStats(ctx, "EDM", 20232024, GameTypeRegularSeason)
+		_, err := client.ClubStats(ctx, "EDM", NewSeason(2023), GameTypeRegularSeason)
 		if err == nil {
 			t.Error("ClubStats() should error on HTTP error")
 		}
@@ -1683,7 +1686,7 @@ func TestLeagueStandingsForSeason_ManifestError(t *testing.T) {
 	client := NewClientWithBaseURL(server.URL)
 	ctx := context.Background()
 
-	_, err := client.LeagueStandingsForSeason(ctx, 20232024)
+	_, err := client.LeagueStandingsForSeason(ctx, NewSeason(2023))
 	if err == nil {
 		t.Error("LeagueStandingsForSeason() should error when manifest fetch fails")
 	}
@@ -1692,7 +1695,7 @@ func TestLeagueStandingsForSeason_ManifestError(t *testing.T) {
 func TestLeagueStandingsForSeason_StandingsFetchError(t *testing.T) {
 	seasonsResponse := SeasonsResponse{
 		Seasons: []SeasonInfo{
-			{ID: 20232024, StandingsStart: "2023-10-10", StandingsEnd: "2024-04-18"},
+			{ID: NewSeason(2023), StandingsStart: "2023-10-10", StandingsEnd: "2024-04-18"},
 		},
 	}
 
@@ -1706,7 +1709,7 @@ func TestLeagueStandingsForSeason_StandingsFetchError(t *testing.T) {
 	client := NewClientWithBaseURL(server.URL)
 	ctx := context.Background()
 
-	_, err := client.LeagueStandingsForSeason(ctx, 20232024)
+	_, err := client.LeagueStandingsForSeason(ctx, NewSeason(2023))
 	if err == nil {
 		t.Error("LeagueStandingsForSeason() should error when standings fetch fails")
 	}
