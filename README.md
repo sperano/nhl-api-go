@@ -5,7 +5,7 @@ A Go client library for the NHL Stats API.
 ## Installation
 
 ```bash
-go get github.com/ericblue/nhl-api-go
+go get github.com/sperano/nhl-api-go
 ```
 
 ## Usage
@@ -16,7 +16,7 @@ package main
 import (
     "context"
     "fmt"
-    "github.com/ericblue/nhl-api-go/nhl"
+    "github.com/sperano/nhl-api-go/nhl"
 )
 
 func main() {

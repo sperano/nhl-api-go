@@ -45,9 +45,13 @@ This is a Go client library for the NHL Stats API. All code lives in the `nhl` p
 
 **Strongly-typed enums**: `GameType`, `GameState`, `Position`, `Handedness`, `PeriodType`, `HomeRoad`, `ZoneCode`, `PlayEventType`, `GameScheduleState`, `DefendingSide` - all implement custom JSON marshaling/unmarshaling and validation.
 
-**Date/Season handling**: `GameDate` and `Season` types handle NHL-specific date formats (YYYY-MM-DD) and season formats (YYYYYYYY like 20232024).
+**ID wrapper types** (prevent mixing up different identifier types):
+- `GameID` (`game_id.go`): 10-digit game identifiers encoding season, game type, and game number. Use `GameID(2024020001)`.
+- `PlayerID` (`player_id.go`): Player identifiers. Unmarshals from int or string JSON. Use `PlayerID(8478402)`.
+- `TeamID` (`team_id.go`): Team identifiers. Use `TeamID(10)`.
+- `Season` (`season.go`): Season values like 20232024. Use `NewSeason(2023)` for the 2023-2024 season. Unmarshals from int, int64, or string JSON. `String()` returns `"2023-2024"` format.
 
-**GameID**: Wrapper for 10-digit game identifiers encoding season, game type, and game number.
+**Date handling**: `GameDate` handles NHL-specific date format (YYYY-MM-DD).
 
 **LocalizedString**: Handles NHL API's `{"default": "value"}` format for internationalized strings.
 
