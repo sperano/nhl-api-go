@@ -17,6 +17,8 @@ const (
 	GameTypePlayoffs GameType = 3
 	// GameTypeAllStar represents an all-star game.
 	GameTypeAllStar GameType = 4
+	// GameTypeWorldCup represents a World Cup of Hockey game.
+	GameTypeWorldCup GameType = 6
 	// GameTypeOlympics represents an Olympic tournament game.
 	GameTypeOlympics GameType = 9
 	// GameTypeYoungStars represents a YoungStars game (rookies/sophomores) during All-Star Weekend.
@@ -45,6 +47,8 @@ func (g GameType) String() string {
 		return "Playoffs"
 	case GameTypeAllStar:
 		return "All-Star"
+	case GameTypeWorldCup:
+		return "World Cup"
 	case GameTypeOlympics:
 		return "Olympics"
 	case GameTypeYoungStars:
@@ -63,7 +67,7 @@ func (g GameType) String() string {
 // IsValid returns true if the GameType is one of the known valid types.
 func (g GameType) IsValid() bool {
 	switch g {
-	case GameTypePreseason, GameTypeRegularSeason, GameTypePlayoffs, GameTypeAllStar, GameTypeOlympics, GameTypeYoungStars, GameTypePWHLShowcase, GameTypeWomensAllStar, GameType4Nations:
+	case GameTypePreseason, GameTypeRegularSeason, GameTypePlayoffs, GameTypeAllStar, GameTypeWorldCup, GameTypeOlympics, GameTypeYoungStars, GameTypePWHLShowcase, GameTypeWomensAllStar, GameType4Nations:
 		return true
 	default:
 		return false
@@ -104,6 +108,8 @@ func GameTypeFromString(s string) (GameType, error) {
 		return GameTypePlayoffs, nil
 	case "4", "All-Star", "AllStar":
 		return GameTypeAllStar, nil
+	case "6", "World Cup", "WorldCup":
+		return GameTypeWorldCup, nil
 	case "9", "Olympics":
 		return GameTypeOlympics, nil
 	case "10", "YoungStars", "Young Stars":
