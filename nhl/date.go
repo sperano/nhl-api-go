@@ -131,14 +131,14 @@ func NewSeason(startYear int) Season {
 }
 
 // FromYears creates a Season from start and end years.
-// The start year is validated to match the expected end year.
+// Validates that endYear is either startYear (single calendar year season)
+// or startYear + 1 (typical cross-year season like 2023-2024).
 func FromYears(startYear, endYear int) (Season, error) {
-	expectedEnd := startYear + 1
-	if endYear != expectedEnd {
-		return Season{}, fmt.Errorf("invalid season years: %d-%d (expected %d-%d)",
-			startYear, endYear, startYear, expectedEnd)
+	if endYear == startYear || endYear == startYear+1 {
+		return NewSeason(startYear), nil
 	}
-	return NewSeason(startYear), nil
+	return Season{}, fmt.Errorf("invalid season years: %d-%d (expected %d-%d or %d-%d)",
+		startYear, endYear, startYear, startYear, startYear, startYear+1)
 }
 
 // StartYear returns the start year of the season.
