@@ -185,10 +185,17 @@ func MustHandednessFromString(s string) Handedness {
 }
 
 // UnmarshalJSON implements custom JSON unmarshaling for Handedness.
+// Empty strings are accepted to support players with missing data from the NHL API.
 func (h *Handedness) UnmarshalJSON(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
 		return err
+	}
+
+	// Allow empty strings for players with missing handedness data
+	if s == "" {
+		*h = Handedness("")
+		return nil
 	}
 
 	handedness, err := HandednessFromString(s)
@@ -201,11 +208,10 @@ func (h *Handedness) UnmarshalJSON(data []byte) error {
 }
 
 // MarshalJSON implements custom JSON marshaling for Handedness.
+// Empty handedness marshals as an empty string to support players with
+// missing data from the NHL API.
 func (h Handedness) MarshalJSON() ([]byte, error) {
-	if !h.IsValid() {
-		return nil, fmt.Errorf("cannot marshal invalid handedness: %q", string(h))
-	}
-	return json.Marshal(h.Code())
+	return json.Marshal(string(h))
 }
 
 // GoalieDecision represents the decision (result) for a goalie in a game.

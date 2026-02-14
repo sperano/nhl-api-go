@@ -1406,11 +1406,26 @@ func TestPosition_MarshalJSON_Invalid(t *testing.T) {
 	}
 }
 
-func TestHandedness_MarshalJSON_Invalid(t *testing.T) {
+func TestHandedness_MarshalJSON_Empty(t *testing.T) {
+	// Empty handedness should marshal successfully to support players
+	// with missing data from the NHL API (e.g., player 8449312)
+	empty := Handedness("")
+	data, err := json.Marshal(empty)
+	if err != nil {
+		t.Errorf("MarshalJSON() unexpected error: %v", err)
+	}
+	if string(data) != `""` {
+		t.Errorf("MarshalJSON() = %s, want \"\"", string(data))
+	}
+
+	// Non-empty invalid values also marshal as-is
 	invalid := Handedness("INVALID")
-	_, err := json.Marshal(invalid)
-	if err == nil {
-		t.Error("MarshalJSON() should error for invalid handedness")
+	data, err = json.Marshal(invalid)
+	if err != nil {
+		t.Errorf("MarshalJSON() unexpected error: %v", err)
+	}
+	if string(data) != `"INVALID"` {
+		t.Errorf("MarshalJSON() = %s, want \"INVALID\"", string(data))
 	}
 }
 
