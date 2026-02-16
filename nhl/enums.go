@@ -15,6 +15,8 @@ const (
 	PositionLeftWing Position = "LW"
 	// PositionRightWing represents a right wing forward.
 	PositionRightWing Position = "RW"
+	// PositionForward represents a generic forward (used in historical data).
+	PositionForward Position = "F"
 	// PositionDefense represents a defenseman.
 	PositionDefense Position = "D"
 	// PositionGoalie represents a goaltender.
@@ -35,6 +37,8 @@ func (p Position) Name() string {
 		return "Left Wing"
 	case PositionRightWing:
 		return "Right Wing"
+	case PositionForward:
+		return "Forward"
 	case PositionDefense:
 		return "Defense"
 	case PositionGoalie:
@@ -49,9 +53,9 @@ func (p Position) String() string {
 	return p.Name()
 }
 
-// IsForward returns true if the position is a forward (C, LW, or RW).
+// IsForward returns true if the position is a forward (C, LW, RW, or F).
 func (p Position) IsForward() bool {
-	return p == PositionCenter || p == PositionLeftWing || p == PositionRightWing
+	return p == PositionCenter || p == PositionLeftWing || p == PositionRightWing || p == PositionForward
 }
 
 // IsSkater returns true if the position is a skater (not a goalie).
@@ -62,7 +66,7 @@ func (p Position) IsSkater() bool {
 // IsValid returns true if the Position is one of the known valid positions.
 func (p Position) IsValid() bool {
 	switch p {
-	case PositionCenter, PositionLeftWing, PositionRightWing, PositionDefense, PositionGoalie:
+	case PositionCenter, PositionLeftWing, PositionRightWing, PositionForward, PositionDefense, PositionGoalie:
 		return true
 	default:
 		return false
@@ -70,7 +74,7 @@ func (p Position) IsValid() bool {
 }
 
 // PositionFromString parses a string into a Position.
-// Accepts codes ("C", "L", "LW", "R", "RW", "D", "G") and full names ("Center", "Left Wing", etc.).
+// Accepts codes ("C", "L", "LW", "R", "RW", "F", "D", "G") and full names ("Center", "Left Wing", etc.).
 // Returns an error if the string is not a valid Position.
 func PositionFromString(s string) (Position, error) {
 	switch s {
@@ -80,6 +84,8 @@ func PositionFromString(s string) (Position, error) {
 		return PositionLeftWing, nil
 	case "R", "RW", "Right Wing", "RightWing":
 		return PositionRightWing, nil
+	case "F", "Forward":
+		return PositionForward, nil
 	case "D", "Defense", "Defenseman":
 		return PositionDefense, nil
 	case "G", "Goalie", "Goaltender":
