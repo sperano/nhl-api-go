@@ -1469,6 +1469,18 @@ func TestDefendingSide_MarshalJSON_Invalid(t *testing.T) {
 	}
 }
 
+func TestDefendingSide_MarshalJSON_Empty(t *testing.T) {
+	// Empty strings are allowed for historical games that lack defending side data
+	empty := DefendingSide("")
+	data, err := json.Marshal(empty)
+	if err != nil {
+		t.Errorf("MarshalJSON() should allow empty string, got error: %v", err)
+	}
+	if string(data) != `""` {
+		t.Errorf("MarshalJSON() = %s, want \"\"", string(data))
+	}
+}
+
 func TestGameScheduleState_MarshalJSON_Invalid(t *testing.T) {
 	invalid := GameScheduleState("INVALID")
 	_, err := json.Marshal(invalid)

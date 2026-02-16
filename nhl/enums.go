@@ -642,7 +642,12 @@ func (d *DefendingSide) UnmarshalJSON(data []byte) error {
 }
 
 // MarshalJSON implements custom JSON marshaling for DefendingSide.
+// Empty strings are allowed for historical games that lack this data.
 func (d DefendingSide) MarshalJSON() ([]byte, error) {
+	// Allow empty strings for old games that don't have defending side data
+	if d == "" {
+		return json.Marshal("")
+	}
 	if !d.IsValid() {
 		return nil, fmt.Errorf("cannot marshal invalid defending side: %q", string(d))
 	}
