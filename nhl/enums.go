@@ -626,10 +626,17 @@ func MustDefendingSideFromString(s string) DefendingSide {
 }
 
 // UnmarshalJSON implements custom JSON unmarshaling for DefendingSide.
+// Empty strings are allowed for historical games that lack this data.
 func (d *DefendingSide) UnmarshalJSON(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
 		return err
+	}
+
+	// Allow empty strings for old games that don't have defending side data
+	if s == "" {
+		*d = ""
+		return nil
 	}
 
 	side, err := DefendingSideFromString(s)

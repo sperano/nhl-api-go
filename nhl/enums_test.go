@@ -1673,6 +1673,17 @@ func TestDefendingSide_UnmarshalJSON_InvalidValue(t *testing.T) {
 	}
 }
 
+func TestDefendingSide_UnmarshalJSON_Empty(t *testing.T) {
+	var d DefendingSide
+	err := json.Unmarshal([]byte(`""`), &d)
+	if err != nil {
+		t.Errorf("UnmarshalJSON() should allow empty string for historical games: %v", err)
+	}
+	if d != "" {
+		t.Errorf("UnmarshalJSON() = %q, want empty string", d)
+	}
+}
+
 func TestGameScheduleState_UnmarshalJSON_InvalidValue(t *testing.T) {
 	var g GameScheduleState
 	err := json.Unmarshal([]byte(`"INVALID"`), &g)
