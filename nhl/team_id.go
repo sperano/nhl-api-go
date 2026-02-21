@@ -2,7 +2,6 @@ package nhl
 
 import (
 	"encoding/json"
-	"fmt"
 	"strconv"
 )
 
@@ -34,24 +33,10 @@ func (t TeamID) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON implements json.Unmarshaler.
 // TeamIDs can be unmarshaled from either integers or strings.
 func (t *TeamID) UnmarshalJSON(data []byte) error {
-	// Try unmarshaling as integer first
-	var i int64
-	if err := json.Unmarshal(data, &i); err == nil {
-		*t = TeamID(i)
-		return nil
-	}
-
-	// Try unmarshaling as string
-	var s string
-	if err := json.Unmarshal(data, &s); err != nil {
-		return fmt.Errorf("team ID must be an integer or string: %w", err)
-	}
-
-	i, err := strconv.ParseInt(s, 10, 64)
+	i, err := unmarshalNumericID(data, "team ID")
 	if err != nil {
-		return fmt.Errorf("invalid team ID string: %w", err)
+		return err
 	}
-
 	*t = TeamID(i)
 	return nil
 }
@@ -63,11 +48,10 @@ func TeamIDFromInt(i int) TeamID {
 
 // TeamIDFromString parses a TeamID from a string.
 func TeamIDFromString(s string) (TeamID, error) {
-	i, err := strconv.ParseInt(s, 10, 64)
+	i, err := parseNumericID(s, "team ID")
 	if err != nil {
-		return 0, fmt.Errorf("invalid team ID string: %w", err)
+		return 0, err
 	}
-
 	return TeamID(i), nil
 }
 

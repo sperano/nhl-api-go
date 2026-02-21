@@ -37,24 +37,10 @@ func (g GameID) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON implements json.Unmarshaler.
 // GameIDs can be unmarshaled from either integers or strings.
 func (g *GameID) UnmarshalJSON(data []byte) error {
-	// Try unmarshaling as integer first
-	var i int64
-	if err := json.Unmarshal(data, &i); err == nil {
-		*g = GameID(i)
-		return nil
-	}
-
-	// Try unmarshaling as string
-	var s string
-	if err := json.Unmarshal(data, &s); err != nil {
-		return fmt.Errorf("game ID must be an integer or string: %w", err)
-	}
-
-	i, err := strconv.ParseInt(s, 10, 64)
+	i, err := unmarshalNumericID(data, "game ID")
 	if err != nil {
-		return fmt.Errorf("invalid game ID string: %w", err)
+		return err
 	}
-
 	*g = GameID(i)
 	return nil
 }
@@ -129,11 +115,10 @@ func GameIDFromInt(i int) GameID {
 
 // GameIDFromString parses a GameID from a string.
 func GameIDFromString(s string) (GameID, error) {
-	i, err := strconv.ParseInt(s, 10, 64)
+	i, err := parseNumericID(s, "game ID")
 	if err != nil {
-		return 0, fmt.Errorf("invalid game ID string: %w", err)
+		return 0, err
 	}
-
 	return GameID(i), nil
 }
 
