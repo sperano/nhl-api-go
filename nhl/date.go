@@ -1,6 +1,8 @@
 package nhl
 
 import (
+	"bytes"
+	"encoding/gob"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -161,6 +163,22 @@ func (s Season) ToAPIString() string {
 // Returns the season in "YYYY-YYYY" format.
 func (s Season) String() string {
 	return fmt.Sprintf("%d-%d", s.startYear, s.EndYear())
+}
+
+// GobEncode implements gob.GobEncoder for Season.
+func (s Season) GobEncode() ([]byte, error) {
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	if err := enc.Encode(s.startYear); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+// GobDecode implements gob.GobDecoder for Season.
+func (s *Season) GobDecode(data []byte) error {
+	dec := gob.NewDecoder(bytes.NewReader(data))
+	return dec.Decode(&s.startYear)
 }
 
 // Parse parses a season string in either "YYYY-YYYY" or "YYYYYYYY" format.

@@ -1,6 +1,8 @@
 package nhl
 
 import (
+	"bytes"
+	"encoding/gob"
 	"encoding/json"
 	"strings"
 	"testing"
@@ -801,5 +803,66 @@ func TestSeason_UnmarshalJSON_InvalidFormat(t *testing.T) {
 	err := json.Unmarshal([]byte(`"invalid-format"`), &s)
 	if err == nil {
 		t.Error("UnmarshalJSON() should error on invalid season format")
+	}
+}
+
+func TestSeason_Gob(t *testing.T) {
+	original := NewSeason(2023)
+
+	// Encode
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	if err := enc.Encode(original); err != nil {
+		t.Fatalf("GobEncode() error = %v", err)
+	}
+
+	// Decode
+	var decoded Season
+	dec := gob.NewDecoder(&buf)
+	if err := dec.Decode(&decoded); err != nil {
+		t.Fatalf("GobDecode() error = %v", err)
+	}
+
+	if decoded.StartYear() != original.StartYear() {
+		t.Errorf("GobDecode() StartYear = %d, want %d", decoded.StartYear(), original.StartYear())
+	}
+}
+
+func TestSeason_GobInStruct(t *testing.T) {
+	// Test that Season can be gob-encoded when embedded in another struct
+	type Container struct {
+		Name   string
+		Season Season
+		Value  int
+	}
+
+	original := Container{
+		Name:   "test",
+		Season: NewSeason(2024),
+		Value:  42,
+	}
+
+	// Encode
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	if err := enc.Encode(original); err != nil {
+		t.Fatalf("Encode() error = %v", err)
+	}
+
+	// Decode
+	var decoded Container
+	dec := gob.NewDecoder(&buf)
+	if err := dec.Decode(&decoded); err != nil {
+		t.Fatalf("Decode() error = %v", err)
+	}
+
+	if decoded.Name != original.Name {
+		t.Errorf("Name = %s, want %s", decoded.Name, original.Name)
+	}
+	if decoded.Season.StartYear() != original.Season.StartYear() {
+		t.Errorf("Season.StartYear() = %d, want %d", decoded.Season.StartYear(), original.Season.StartYear())
+	}
+	if decoded.Value != original.Value {
+		t.Errorf("Value = %d, want %d", decoded.Value, original.Value)
 	}
 }
