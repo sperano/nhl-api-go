@@ -418,10 +418,10 @@ func TestSeasonInfoDeserialization(t *testing.T) {
 	if season.ID != NewSeason(2023) {
 		t.Errorf("expected ID = 20232024, got %s", season.ID)
 	}
-	if season.StandingsStart != FromYMD(2023, 10, 10) {
+	if !season.StandingsStart.Equal(NewDateYMD(2023, 10, 10)) {
 		t.Errorf("expected StandingsStart = 2023-10-10, got %s", season.StandingsStart)
 	}
-	if season.StandingsEnd != FromYMD(2024, 4, 18) {
+	if !season.StandingsEnd.Equal(NewDateYMD(2024, 4, 18)) {
 		t.Errorf("expected StandingsEnd = 2024-04-18, got %s", season.StandingsEnd)
 	}
 }
@@ -496,8 +496,8 @@ func TestStandingSerialization(t *testing.T) {
 func TestSeasonInfoSerialization(t *testing.T) {
 	season := SeasonInfo{
 		ID:             NewSeason(2023),
-		StandingsStart: FromYMD(2023, 10, 10),
-		StandingsEnd:   FromYMD(2024, 4, 18),
+		StandingsStart: NewDateYMD(2023, 10, 10),
+		StandingsEnd:   NewDateYMD(2024, 4, 18),
 	}
 
 	data, err := json.Marshal(season)
@@ -513,7 +513,7 @@ func TestSeasonInfoSerialization(t *testing.T) {
 	if unmarshaled.ID != season.ID {
 		t.Errorf("expected ID = %s, got %s", season.ID, unmarshaled.ID)
 	}
-	if unmarshaled.StandingsStart != season.StandingsStart {
+	if !unmarshaled.StandingsStart.Equal(season.StandingsStart) {
 		t.Errorf("expected StandingsStart = %s, got %s", season.StandingsStart, unmarshaled.StandingsStart)
 	}
 }
@@ -558,8 +558,8 @@ func TestSeasonsResponseSerialization(t *testing.T) {
 		Seasons: []SeasonInfo{
 			{
 				ID:             NewSeason(2023),
-				StandingsStart: FromYMD(2023, 10, 10),
-				StandingsEnd:   FromYMD(2024, 4, 18),
+				StandingsStart: NewDateYMD(2023, 10, 10),
+				StandingsEnd:   NewDateYMD(2024, 4, 18),
 			},
 		},
 	}

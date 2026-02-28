@@ -89,14 +89,15 @@ type StandingsResponse struct {
 // SeasonInfo represents season metadata including standings date range.
 // Used in the seasons manifest to identify valid season periods.
 type SeasonInfo struct {
-	ID             Season   `json:"id"`
-	StandingsStart GameDate `json:"standingsStart"`
-	StandingsEnd   GameDate `json:"standingsEnd"`
+	ID             Season `json:"id"`
+	StandingsStart Date   `json:"standingsStart"`
+	StandingsEnd   Date   `json:"standingsEnd"`
 }
 
 func (s SeasonInfo) Label() string {
 	startYear := s.ID.StartYear()
-	return fmt.Sprintf("%d-%02d", startYear, startYear+1)
+	endYearShort := (startYear + 1) % 100
+	return fmt.Sprintf("%d-%02d", startYear, endYearShort)
 }
 
 // SeasonsResponse represents the API response for the seasons manifest.

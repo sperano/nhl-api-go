@@ -723,7 +723,7 @@ func TestLeagueStandingsForSeason(t *testing.T) {
 
 	seasonsResponse := SeasonsResponse{
 		Seasons: []SeasonInfo{
-			{ID: NewSeason(2023), StandingsStart: FromYMD(2023, 10, 10), StandingsEnd: FromYMD(2024, 4, 18)},
+			{ID: NewSeason(2023), StandingsStart: NewDateYMD(2023, 10, 10), StandingsEnd: NewDateYMD(2024, 4, 18)},
 		},
 	}
 
@@ -754,8 +754,8 @@ func TestLeagueStandingsForSeason(t *testing.T) {
 
 func TestSeasonStandingManifest(t *testing.T) {
 	seasonInfo := []SeasonInfo{
-		{ID: NewSeason(2023), StandingsStart: FromYMD(2023, 10, 10), StandingsEnd: FromYMD(2024, 4, 18)},
-		{ID: NewSeason(2022), StandingsStart: FromYMD(2022, 10, 7), StandingsEnd: FromYMD(2023, 4, 13)},
+		{ID: NewSeason(2023), StandingsStart: NewDateYMD(2023, 10, 10), StandingsEnd: NewDateYMD(2024, 4, 18)},
+		{ID: NewSeason(2022), StandingsStart: NewDateYMD(2022, 10, 7), StandingsEnd: NewDateYMD(2023, 4, 13)},
 	}
 
 	response := SeasonsResponse{
@@ -1320,7 +1320,7 @@ func TestClient_ErrorPaths(t *testing.T) {
 	t.Run("LeagueStandingsForSeason - invalid season", func(t *testing.T) {
 		seasonsResponse := SeasonsResponse{
 			Seasons: []SeasonInfo{
-				{ID: NewSeason(2022), StandingsStart: FromYMD(2022, 10, 7), StandingsEnd: FromYMD(2023, 4, 13)},
+				{ID: NewSeason(2022), StandingsStart: NewDateYMD(2022, 10, 7), StandingsEnd: NewDateYMD(2023, 4, 13)},
 			},
 		}
 
@@ -1695,7 +1695,7 @@ func TestLeagueStandingsForSeason_ManifestError(t *testing.T) {
 func TestLeagueStandingsForSeason_StandingsFetchError(t *testing.T) {
 	seasonsResponse := SeasonsResponse{
 		Seasons: []SeasonInfo{
-			{ID: NewSeason(2023), StandingsStart: FromYMD(2023, 10, 10), StandingsEnd: FromYMD(2024, 4, 18)},
+			{ID: NewSeason(2023), StandingsStart: NewDateYMD(2023, 10, 10), StandingsEnd: NewDateYMD(2024, 4, 18)},
 		},
 	}
 

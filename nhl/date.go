@@ -10,6 +10,88 @@ import (
 	"time"
 )
 
+// Date represents a date without time components (YYYY-MM-DD).
+// Used for API responses that contain concrete date values.
+type Date struct {
+	time.Time
+}
+
+// DateLayout is the format used for parsing and formatting dates.
+const DateLayout = "2006-01-02"
+
+// NewDate creates a Date from year, month, and day components.
+func NewDate(year int, month time.Month, day int) Date {
+	return Date{time.Date(year, month, day, 0, 0, 0, 0, time.UTC)}
+}
+
+// NewDateYMD creates a Date from year, month (as int), and day components.
+func NewDateYMD(year, month, day int) Date {
+	return NewDate(year, time.Month(month), day)
+}
+
+// DateFromTime creates a Date from a time.Time, truncating time components.
+func DateFromTime(t time.Time) Date {
+	return NewDate(t.Year(), t.Month(), t.Day())
+}
+
+// ParseDate parses a date string in YYYY-MM-DD format.
+func ParseDate(s string) (Date, error) {
+	t, err := time.Parse(DateLayout, s)
+	if err != nil {
+		return Date{}, fmt.Errorf("invalid date format %q: %w", s, err)
+	}
+	return Date{t}, nil
+}
+
+// MustParseDate parses a date string in YYYY-MM-DD format, panicking on error.
+// Intended for test data setup.
+func MustParseDate(s string) Date {
+	d, err := ParseDate(s)
+	if err != nil {
+		panic(err)
+	}
+	return d
+}
+
+// String returns the date in YYYY-MM-DD format.
+func (d Date) String() string {
+	return d.Time.Format(DateLayout)
+}
+
+// Equal returns true if two dates represent the same calendar day.
+func (d Date) Equal(other Date) bool {
+	return d.Time.Equal(other.Time)
+}
+
+// MarshalJSON implements json.Marshaler.
+func (d Date) MarshalJSON() ([]byte, error) {
+	return json.Marshal(d.String())
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (d *Date) UnmarshalJSON(data []byte) error {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	}
+	parsed, err := ParseDate(s)
+	if err != nil {
+		return err
+	}
+	*d = parsed
+	return nil
+}
+
+// GobEncode implements gob.GobEncoder.
+func (d Date) GobEncode() ([]byte, error) {
+	return d.Time.GobEncode()
+}
+
+// GobDecode implements gob.GobDecoder.
+func (d *Date) GobDecode(data []byte) error {
+	return d.Time.GobDecode(data)
+}
+
 // GameDate represents either the current date/time or a specific date for NHL games.
 type GameDate struct {
 	isNow bool
