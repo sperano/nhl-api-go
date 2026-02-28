@@ -122,6 +122,28 @@ func (gd *GameDate) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// GobEncode implements gob.GobEncoder for GameDate.
+func (gd GameDate) GobEncode() ([]byte, error) {
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	if err := enc.Encode(gd.isNow); err != nil {
+		return nil, err
+	}
+	if err := enc.Encode(gd.date); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+// GobDecode implements gob.GobDecoder for GameDate.
+func (gd *GameDate) GobDecode(data []byte) error {
+	dec := gob.NewDecoder(bytes.NewReader(data))
+	if err := dec.Decode(&gd.isNow); err != nil {
+		return err
+	}
+	return dec.Decode(&gd.date)
+}
+
 // Season represents an NHL season.
 type Season struct {
 	startYear int
