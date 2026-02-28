@@ -94,6 +94,11 @@ type SeasonInfo struct {
 	StandingsEnd   GameDate `json:"standingsEnd"`
 }
 
+func (s SeasonInfo) Label() string {
+	startYear := s.ID.StartYear()
+	return fmt.Sprintf("%d-%02d", startYear, startYear+1)
+}
+
 // SeasonsResponse represents the API response for the seasons manifest.
 // Contains a list of all available seasons.
 type SeasonsResponse struct {
