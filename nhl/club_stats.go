@@ -82,7 +82,7 @@ func (g ClubGoalieStats) String() string {
 
 // ClubStats represents club statistics response containing skater and goalie stats.
 type ClubStats struct {
-	Season   string            `json:"season"`
+	Season   Season            `json:"season"`
 	GameType GameType          `json:"gameType"`
 	Skaters  []ClubSkaterStats `json:"skaters"`
 	Goalies  []ClubGoalieStats `json:"goalies"`

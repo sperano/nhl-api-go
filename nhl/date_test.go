@@ -636,12 +636,44 @@ func TestSeasonFromInt64(t *testing.T) {
 }
 
 func TestSeason_ToInt(t *testing.T) {
-	season := NewSeason(2023)
-	result := season.ToInt()
+	tests := []struct {
+		startYear int
+		expected  int
+	}{
+		{2024, 20242025},
+		{2023, 20232024},
+		{2000, 20002001},
+		{1999, 19992000}, // Y2K boundary
+		{1917, 19171918}, // First NHL season
+	}
 
-	expected := 20232024
-	if result != expected {
-		t.Errorf("ToInt() = %d, want %d", result, expected)
+	for _, tc := range tests {
+		season := NewSeason(tc.startYear)
+		result := season.ToInt()
+		if result != tc.expected {
+			t.Errorf("NewSeason(%d).ToInt() = %d, want %d", tc.startYear, result, tc.expected)
+		}
+	}
+}
+
+func TestSeason_ID(t *testing.T) {
+	tests := []struct {
+		startYear int
+		expected  int
+	}{
+		{2024, 20242025},
+		{2023, 20232024},
+		{2000, 20002001},
+		{1999, 19992000}, // Y2K boundary
+		{1917, 19171918}, // First NHL season
+	}
+
+	for _, tc := range tests {
+		season := NewSeason(tc.startYear)
+		result := season.ID()
+		if result != tc.expected {
+			t.Errorf("NewSeason(%d).ID() = %d, want %d", tc.startYear, result, tc.expected)
+		}
 	}
 }
 
@@ -864,5 +896,23 @@ func TestSeason_GobInStruct(t *testing.T) {
 	}
 	if decoded.Value != original.Value {
 		t.Errorf("Value = %d, want %d", decoded.Value, original.Value)
+	}
+}
+
+// Benchmarks comparing ToInt() (string-based) vs ID() (arithmetic-based)
+
+func BenchmarkSeason_ToInt(b *testing.B) {
+	season := NewSeason(2023)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = season.ToInt()
+	}
+}
+
+func BenchmarkSeason_ID(b *testing.B) {
+	season := NewSeason(2023)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = season.ID()
 	}
 }

@@ -189,8 +189,8 @@ func TestClubStatsDeserialization(t *testing.T) {
 		t.Fatalf("Failed to unmarshal ClubStats: %v", err)
 	}
 
-	if stats.Season != "20242025" {
-		t.Errorf("Expected Season '20242025', got '%s'", stats.Season)
+	if stats.Season != NewSeason(2024) {
+		t.Errorf("Expected Season 2024-2025, got '%s'", stats.Season)
 	}
 	if stats.GameType != GameTypeRegularSeason {
 		t.Errorf("Expected GameType RegularSeason, got %v", stats.GameType)
@@ -515,7 +515,7 @@ func TestClubGoalieStatsSerializationRoundTrip(t *testing.T) {
 
 func TestClubStatsSerializationRoundTrip(t *testing.T) {
 	original := ClubStats{
-		Season:   "20242025",
+		Season:   NewSeason(2024),
 		GameType: GameTypeRegularSeason,
 		Skaters:  []ClubSkaterStats{},
 		Goalies:  []ClubGoalieStats{},
@@ -649,7 +649,7 @@ func TestClubGoalieStatsEquality(t *testing.T) {
 
 func TestClubStatsEquality(t *testing.T) {
 	stats1 := ClubStats{
-		Season:   "20242025",
+		Season:   NewSeason(2024),
 		GameType: GameTypeRegularSeason,
 		Skaters:  []ClubSkaterStats{},
 		Goalies:  []ClubGoalieStats{},

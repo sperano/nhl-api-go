@@ -398,11 +398,15 @@ func SeasonFromInt64(i int64) (Season, error) {
 
 // ToInt converts the Season to an integer in YYYYYYYY format.
 func (s Season) ToInt() int {
-	i, _ := strconv.Atoi(s.ToAPIString())
-	return i
+	return s.ID()
+}
+
+func (s Season) ID() int {
+	season := s.startYear
+	return (s.startYear * 10000) + season + 1
 }
 
 // ToInt64 converts the Season to an int64 in YYYYYYYY format.
 func (s Season) ToInt64() int64 {
-	return int64(s.ToInt())
+	return int64(s.ID())
 }

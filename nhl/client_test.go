@@ -1270,7 +1270,7 @@ func TestRosterSeason(t *testing.T) {
 
 func TestClubStats(t *testing.T) {
 	clubStats := &ClubStats{
-		Season:   "20232024",
+		Season:   NewSeason(2023),
 		GameType: GameTypeRegularSeason,
 	}
 
@@ -1286,8 +1286,8 @@ func TestClubStats(t *testing.T) {
 		t.Fatalf("ClubStats() error = %v", err)
 	}
 
-	if result.Season != "20232024" {
-		t.Errorf("expected Season 20232024, got %s", result.Season)
+	if result.Season != NewSeason(2023) {
+		t.Errorf("expected Season 2023-2024, got %s", result.Season)
 	}
 }
 
