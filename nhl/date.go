@@ -136,9 +136,9 @@ func (gd GameDate) Date() time.Time {
 	return gd.date
 }
 
-// ToAPIString converts the GameDate to the API format (YYYY-MM-DD).
+// APIString converts the GameDate to the API format (YYYY-MM-DD).
 // If IsNow is true, uses the current date.
-func (gd GameDate) ToAPIString() string {
+func (gd GameDate) APIString() string {
 	d := gd.Date()
 	return fmt.Sprintf("%04d-%02d-%02d", d.Year(), d.Month(), d.Day())
 }
@@ -156,7 +156,7 @@ func (gd GameDate) String() string {
 	if gd.isNow {
 		return "now"
 	}
-	return gd.ToAPIString()
+	return gd.APIString()
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -164,7 +164,7 @@ func (gd GameDate) MarshalJSON() ([]byte, error) {
 	if gd.isNow {
 		return json.Marshal("now")
 	}
-	return json.Marshal(gd.ToAPIString())
+	return json.Marshal(gd.APIString())
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
@@ -257,9 +257,9 @@ func (s Season) EndYear() int {
 	return s.startYear + 1
 }
 
-// ToAPIString converts the Season to the API format (YYYYYYYY).
+// APIString converts the Season to the API format (YYYYYYYY).
 // For example, the 2023-2024 season is represented as "20232024".
-func (s Season) ToAPIString() string {
+func (s Season) APIString() string {
 	return fmt.Sprintf("%d%d", s.startYear, s.EndYear())
 }
 
@@ -343,7 +343,7 @@ func Current() Season {
 
 // MarshalJSON implements json.Marshaler.
 func (s Season) MarshalJSON() ([]byte, error) {
-	return json.Marshal(s.ToAPIString())
+	return json.Marshal(s.APIString())
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
@@ -396,17 +396,13 @@ func SeasonFromInt64(i int64) (Season, error) {
 	return SeasonFromInt(int(i))
 }
 
-// ToInt converts the Season to an integer in YYYYYYYY format.
-func (s Season) ToInt() int {
-	return s.ID()
-}
-
+// ID returns the Season as an integer in YYYYYYYY format.
 func (s Season) ID() int {
 	season := s.startYear
 	return (s.startYear * 10000) + season + 1
 }
 
-// ToInt64 converts the Season to an int64 in YYYYYYYY format.
-func (s Season) ToInt64() int64 {
+// Int64 returns the Season as an int64 in YYYYYYYY format.
+func (s Season) Int64() int64 {
 	return int64(s.ID())
 }

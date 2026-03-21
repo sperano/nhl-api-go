@@ -8,8 +8,8 @@ import (
 func TestNewGameID(t *testing.T) {
 	id := NewGameID(2023020001)
 
-	if id.AsInt64() != 2023020001 {
-		t.Errorf("AsInt64() = %d, want %d", id.AsInt64(), 2023020001)
+	if id.Int64() != 2023020001 {
+		t.Errorf("Int64() = %d, want %d", id.Int64(), 2023020001)
 	}
 }
 
@@ -67,8 +67,8 @@ func TestGameID_JSON(t *testing.T) {
 			t.Fatalf("json.Unmarshal() error = %v", err)
 		}
 
-		if id.AsInt64() != 2023020001 {
-			t.Errorf("AsInt64() = %d, want %d", id.AsInt64(), 2023020001)
+		if id.Int64() != 2023020001 {
+			t.Errorf("Int64() = %d, want %d", id.Int64(), 2023020001)
 		}
 	})
 
@@ -79,8 +79,8 @@ func TestGameID_JSON(t *testing.T) {
 			t.Fatalf("json.Unmarshal() error = %v", err)
 		}
 
-		if id.AsInt64() != 2023020001 {
-			t.Errorf("AsInt64() = %d, want %d", id.AsInt64(), 2023020001)
+		if id.Int64() != 2023020001 {
+			t.Errorf("Int64() = %d, want %d", id.Int64(), 2023020001)
 		}
 	})
 
@@ -358,8 +358,8 @@ func TestGameID_Validate(t *testing.T) {
 func TestGameIDFromInt(t *testing.T) {
 	id := GameIDFromInt(2023020001)
 
-	if id.AsInt64() != 2023020001 {
-		t.Errorf("AsInt64() = %d, want %d", id.AsInt64(), 2023020001)
+	if id.Int64() != 2023020001 {
+		t.Errorf("Int64() = %d, want %d", id.Int64(), 2023020001)
 	}
 }
 
@@ -414,8 +414,8 @@ func TestGameIDFromString(t *testing.T) {
 				t.Fatalf("GameIDFromString() error = %v", err)
 			}
 
-			if id.AsInt64() != tt.expected {
-				t.Errorf("AsInt64() = %d, want %d", id.AsInt64(), tt.expected)
+			if id.Int64() != tt.expected {
+				t.Errorf("Int64() = %d, want %d", id.Int64(), tt.expected)
 			}
 		})
 	}
@@ -425,8 +425,8 @@ func TestMustGameIDFromString(t *testing.T) {
 	t.Run("valid input", func(t *testing.T) {
 		id := MustGameIDFromString("2023020001")
 
-		if id.AsInt64() != 2023020001 {
-			t.Errorf("AsInt64() = %d, want %d", id.AsInt64(), 2023020001)
+		if id.Int64() != 2023020001 {
+			t.Errorf("Int64() = %d, want %d", id.Int64(), 2023020001)
 		}
 	})
 
@@ -518,7 +518,7 @@ func TestGameID_TypeConversions(t *testing.T) {
 	t.Run("int64 to GameID to int64", func(t *testing.T) {
 		var original int64 = 2023020001
 		id := NewGameID(original)
-		result := id.AsInt64()
+		result := id.Int64()
 
 		if result != original {
 			t.Errorf("Round trip failed: got %d, want %d", result, original)

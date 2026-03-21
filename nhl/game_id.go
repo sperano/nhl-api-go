@@ -18,8 +18,8 @@ func NewGameID(id int64) GameID {
 	return GameID(id)
 }
 
-// AsInt64 returns the GameID as an int64.
-func (g GameID) AsInt64() int64 {
+// Int64 returns the GameID as an int64.
+func (g GameID) Int64() int64 {
 	return int64(g)
 }
 

@@ -132,14 +132,14 @@ func (s SeasonGameTypes) MarshalJSON() ([]byte, error) {
 		if !gt.IsValid() {
 			return nil, fmt.Errorf("invalid game type at index %d: %d", i, gt)
 		}
-		gameTypeInts[i] = gt.ToInt()
+		gameTypeInts[i] = gt.Int()
 	}
 
 	raw := struct {
 		Season    int   `json:"season"`
 		GameTypes []int `json:"gameTypes"`
 	}{
-		Season:    s.Season.ToInt(),
+		Season:    s.Season.ID(),
 		GameTypes: gameTypeInts,
 	}
 

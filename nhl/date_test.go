@@ -140,23 +140,23 @@ func TestGameDate_ToAPIString(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := tt.gameDate.ToAPIString()
+			result := tt.gameDate.APIString()
 			if result != tt.expected {
-				t.Errorf("ToAPIString() = %q, want %q", result, tt.expected)
+				t.Errorf("APIString() = %q, want %q", result, tt.expected)
 			}
 		})
 	}
 
 	t.Run("now", func(t *testing.T) {
 		gd := Now()
-		result := gd.ToAPIString()
+		result := gd.APIString()
 
 		// Should match current date in YYYY-MM-DD format
 		now := time.Now().UTC()
 		expected := now.Format("2006-01-02")
 
 		if result != expected {
-			t.Errorf("ToAPIString() for Now() = %q, want %q", result, expected)
+			t.Errorf("APIString() for Now() = %q, want %q", result, expected)
 		}
 	})
 }
@@ -208,8 +208,8 @@ func TestGameDate_AddDays(t *testing.T) {
 				t.Error("AddDays() should return a concrete date, not Now")
 			}
 
-			if result.ToAPIString() != tt.expected {
-				t.Errorf("AddDays(%d) = %q, want %q", tt.days, result.ToAPIString(), tt.expected)
+			if result.APIString() != tt.expected {
+				t.Errorf("AddDays(%d) = %q, want %q", tt.days, result.APIString(), tt.expected)
 			}
 		})
 	}
@@ -226,8 +226,8 @@ func TestGameDate_AddDays(t *testing.T) {
 		tomorrow := time.Now().UTC().AddDate(0, 0, 1)
 		expected := tomorrow.Format("2006-01-02")
 
-		if result.ToAPIString() != expected {
-			t.Errorf("AddDays(1) on Now() = %q, want %q", result.ToAPIString(), expected)
+		if result.APIString() != expected {
+			t.Errorf("AddDays(1) on Now() = %q, want %q", result.APIString(), expected)
 		}
 	})
 }
@@ -310,8 +310,8 @@ func TestGameDate_JSON(t *testing.T) {
 			t.Error("Unmarshaled date should have IsNow() == false")
 		}
 
-		if gd.ToAPIString() != "2023-10-15" {
-			t.Errorf("Unmarshaled date = %q, want %q", gd.ToAPIString(), "2023-10-15")
+		if gd.APIString() != "2023-10-15" {
+			t.Errorf("Unmarshaled date = %q, want %q", gd.APIString(), "2023-10-15")
 		}
 	})
 
@@ -387,9 +387,9 @@ func TestSeason_ToAPIString(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := tt.season.ToAPIString()
+			result := tt.season.APIString()
 			if result != tt.expected {
-				t.Errorf("ToAPIString() = %q, want %q", result, tt.expected)
+				t.Errorf("APIString() = %q, want %q", result, tt.expected)
 			}
 		})
 	}
@@ -635,27 +635,6 @@ func TestSeasonFromInt64(t *testing.T) {
 	}
 }
 
-func TestSeason_ToInt(t *testing.T) {
-	tests := []struct {
-		startYear int
-		expected  int
-	}{
-		{2024, 20242025},
-		{2023, 20232024},
-		{2000, 20002001},
-		{1999, 19992000}, // Y2K boundary
-		{1917, 19171918}, // First NHL season
-	}
-
-	for _, tc := range tests {
-		season := NewSeason(tc.startYear)
-		result := season.ToInt()
-		if result != tc.expected {
-			t.Errorf("NewSeason(%d).ToInt() = %d, want %d", tc.startYear, result, tc.expected)
-		}
-	}
-}
-
 func TestSeason_ID(t *testing.T) {
 	tests := []struct {
 		startYear int
@@ -677,29 +656,29 @@ func TestSeason_ID(t *testing.T) {
 	}
 }
 
-func TestSeason_ToInt64(t *testing.T) {
+func TestSeason_Int64(t *testing.T) {
 	season := NewSeason(2023)
-	result := season.ToInt64()
+	result := season.Int64()
 
 	var expected int64 = 20232024
 	if result != expected {
-		t.Errorf("ToInt64() = %d, want %d", result, expected)
+		t.Errorf("Int64() = %d, want %d", result, expected)
 	}
 }
 
 func TestGameDate_EdgeCases(t *testing.T) {
 	t.Run("leap year date", func(t *testing.T) {
 		gd := FromYMD(2024, 2, 29)
-		if gd.ToAPIString() != "2024-02-29" {
-			t.Errorf("Leap year date failed: %s", gd.ToAPIString())
+		if gd.APIString() != "2024-02-29" {
+			t.Errorf("Leap year date failed: %s", gd.APIString())
 		}
 	})
 
 	t.Run("add days across leap year", func(t *testing.T) {
 		gd := FromYMD(2024, 2, 28)
 		next := gd.AddDays(1)
-		if next.ToAPIString() != "2024-02-29" {
-			t.Errorf("AddDays across leap year failed: %s", next.ToAPIString())
+		if next.APIString() != "2024-02-29" {
+			t.Errorf("AddDays across leap year failed: %s", next.APIString())
 		}
 	})
 }
@@ -896,16 +875,6 @@ func TestSeason_GobInStruct(t *testing.T) {
 	}
 	if decoded.Value != original.Value {
 		t.Errorf("Value = %d, want %d", decoded.Value, original.Value)
-	}
-}
-
-// Benchmarks comparing ToInt() (string-based) vs ID() (arithmetic-based)
-
-func BenchmarkSeason_ToInt(b *testing.B) {
-	season := NewSeason(2023)
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		_ = season.ToInt()
 	}
 }
 

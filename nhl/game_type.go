@@ -33,8 +33,8 @@ const (
 	GameType4Nations GameType = 20
 )
 
-// ToInt returns the integer representation of the GameType.
-func (g GameType) ToInt() int {
+// Int returns the integer representation of the GameType.
+func (g GameType) Int() int {
 	return int(g)
 }
 
@@ -176,5 +176,5 @@ func (g GameType) MarshalJSON() ([]byte, error) {
 	if !g.IsValid() {
 		return nil, fmt.Errorf("cannot marshal invalid game type: %d", g)
 	}
-	return json.Marshal(g.ToInt())
+	return json.Marshal(g.Int())
 }

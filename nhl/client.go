@@ -163,7 +163,7 @@ func (c *Client) CurrentLeagueStandings(ctx context.Context) ([]Standing, error)
 // LeagueStandingsForDate returns league standings for a specific date.
 func (c *Client) LeagueStandingsForDate(ctx context.Context, date GameDate) ([]Standing, error) {
 	var response StandingsResponse
-	resource := fmt.Sprintf("standings/%s", date.ToAPIString())
+	resource := fmt.Sprintf("standings/%s", date.APIString())
 	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
 		return nil, err
 	}
@@ -178,10 +178,10 @@ func (c *Client) LeagueStandingsForSeason(ctx context.Context, season Season) ([
 	}
 
 	// Find the season info for the requested season
-	seasonID := season.ToInt64()
+	seasonID := season.Int64()
 	var seasonInfo *SeasonInfo
 	for i := range seasons {
-		if seasons[i].ID.ToInt64() == seasonID {
+		if seasons[i].ID.Int64() == seasonID {
 			seasonInfo = &seasons[i]
 			break
 		}
@@ -227,7 +227,7 @@ func (c *Client) Teams(ctx context.Context, date GameDate) ([]Team, error) {
 
 // DailySchedule returns the schedule for a specific date.
 func (c *Client) DailySchedule(ctx context.Context, date GameDate) (*DailySchedule, error) {
-	dateString := date.ToAPIString()
+	dateString := date.APIString()
 	weeklySchedule, err := c.fetchWeeklySchedule(ctx, dateString)
 	if err != nil {
 		return nil, err
@@ -238,14 +238,14 @@ func (c *Client) DailySchedule(ctx context.Context, date GameDate) (*DailySchedu
 
 // WeeklySchedule returns the schedule for a week starting from the specified date.
 func (c *Client) WeeklySchedule(ctx context.Context, date GameDate) (*WeeklyScheduleResponse, error) {
-	return c.fetchWeeklySchedule(ctx, date.ToAPIString())
+	return c.fetchWeeklySchedule(ctx, date.APIString())
 }
 
 // TeamWeeklySchedule returns the weekly schedule for a specific team.
 // The teamAbbr should be a team abbreviation like "MTL", "TOR", etc.
 func (c *Client) TeamWeeklySchedule(ctx context.Context, teamAbbr string, date GameDate) (*TeamScheduleResponse, error) {
 	var response TeamScheduleResponse
-	resource := fmt.Sprintf("club-schedule/%s/week/%s", teamAbbr, date.ToAPIString())
+	resource := fmt.Sprintf("club-schedule/%s/week/%s", teamAbbr, date.APIString())
 	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
 		return nil, err
 	}
@@ -255,7 +255,7 @@ func (c *Client) TeamWeeklySchedule(ctx context.Context, teamAbbr string, date G
 // DailyScores returns game scores for a specific date.
 func (c *Client) DailyScores(ctx context.Context, date GameDate) (*DailyScores, error) {
 	var response DailyScores
-	resource := fmt.Sprintf("score/%s", date.ToAPIString())
+	resource := fmt.Sprintf("score/%s", date.APIString())
 	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
 		return nil, err
 	}
@@ -387,7 +387,7 @@ func (c *Client) PlayerLanding(ctx context.Context, playerID PlayerID) (*PlayerL
 // PlayerGameLog returns a game-by-game log for a player's season.
 func (c *Client) PlayerGameLog(ctx context.Context, playerID PlayerID, season Season, gameType GameType) (*PlayerGameLog, error) {
 	var response PlayerGameLog
-	resource := fmt.Sprintf("player/%s/game-log/%s/%d", playerID.String(), season.ToAPIString(), gameType.ToInt())
+	resource := fmt.Sprintf("player/%s/game-log/%s/%d", playerID.String(), season.APIString(), gameType.Int())
 	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
 		return nil, err
 	}
@@ -447,7 +447,7 @@ func (c *Client) RosterCurrent(ctx context.Context, teamAbbr string) (*Roster, e
 // RosterSeason returns the roster for a team in a specific season.
 func (c *Client) RosterSeason(ctx context.Context, teamAbbr string, season Season) (*Roster, error) {
 	var response Roster
-	resource := fmt.Sprintf("roster/%s/%s", teamAbbr, season.ToAPIString())
+	resource := fmt.Sprintf("roster/%s/%s", teamAbbr, season.APIString())
 	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
 		return nil, err
 	}
@@ -457,7 +457,7 @@ func (c *Client) RosterSeason(ctx context.Context, teamAbbr string, season Seaso
 // ClubStats returns player statistics for a team in a specific season.
 func (c *Client) ClubStats(ctx context.Context, teamAbbr string, season Season, gameType GameType) (*ClubStats, error) {
 	var response ClubStats
-	resource := fmt.Sprintf("club-stats/%s/%s/%d", teamAbbr, season.ToAPIString(), gameType.ToInt())
+	resource := fmt.Sprintf("club-stats/%s/%s/%d", teamAbbr, season.APIString(), gameType.Int())
 	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
 		return nil, err
 	}

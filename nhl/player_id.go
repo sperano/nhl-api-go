@@ -14,8 +14,8 @@ func NewPlayerID(id int64) PlayerID {
 	return PlayerID(id)
 }
 
-// AsInt64 returns the PlayerID as an int64.
-func (p PlayerID) AsInt64() int64 {
+// Int64 returns the PlayerID as an int64.
+func (p PlayerID) Int64() int64 {
 	return int64(p)
 }
 

@@ -14,8 +14,8 @@ func NewTeamID(id int64) TeamID {
 	return TeamID(id)
 }
 
-// AsInt64 returns the TeamID as an int64.
-func (t TeamID) AsInt64() int64 {
+// Int64 returns the TeamID as an int64.
+func (t TeamID) Int64() int64 {
 	return int64(t)
 }
 
