@@ -6,195 +6,59 @@ import (
 	"net/http"
 )
 
-// Error represents an NHL API error with an HTTP status code and message.
-type Error struct {
-	Message    string
-	StatusCode int
+// Sentinel errors for well-known HTTP status codes.
+// Use errors.Is(err, nhl.ErrNotFound) to check error types.
+var (
+	ErrBadRequest    = &APIError{StatusCode: http.StatusBadRequest}
+	ErrUnauthorized  = &APIError{StatusCode: http.StatusUnauthorized}
+	ErrNotFound      = &APIError{StatusCode: http.StatusNotFound}
+	ErrRateLimited   = &APIError{StatusCode: http.StatusTooManyRequests}
+	ErrServerError   = &APIError{StatusCode: http.StatusInternalServerError}
+)
+
+// APIError represents an NHL API error with an HTTP status code and message.
+// Use errors.Is with sentinel errors (ErrNotFound, ErrRateLimited, etc.) to
+// check for specific status codes. Matching is done by status code, so any
+// 404 APIError will match ErrNotFound regardless of message.
+type APIError struct {
+	Message    string `json:"message"`
+	StatusCode int    `json:"status_code"`
 }
 
 // Error implements the error interface.
-func (e *Error) Error() string {
+func (e *APIError) Error() string {
 	return fmt.Sprintf("NHL API error (status %d): %s", e.StatusCode, e.Message)
 }
 
-// ResourceNotFoundError indicates the requested resource was not found (404).
-type ResourceNotFoundError struct {
-	error *Error
-}
-
-// NewResourceNotFoundError creates a new ResourceNotFoundError.
-func NewResourceNotFoundError(message string) *ResourceNotFoundError {
-	return &ResourceNotFoundError{
-		error: &Error{
-			Message:    message,
-			StatusCode: http.StatusNotFound,
-		},
+// Is supports errors.Is matching by status code. For 5xx errors, any
+// APIError with a 5xx status code matches ErrServerError.
+func (e *APIError) Is(target error) bool {
+	t, ok := target.(*APIError)
+	if !ok {
+		return false
 	}
-}
-
-// Error implements the error interface.
-func (e *ResourceNotFoundError) Error() string {
-	return e.error.Error()
-}
-
-// Message returns the error message.
-func (e *ResourceNotFoundError) Message() string {
-	return e.error.Message
-}
-
-// StatusCode returns the HTTP status code.
-func (e *ResourceNotFoundError) StatusCode() int {
-	return e.error.StatusCode
-}
-
-// RateLimitExceededError indicates rate limiting is in effect (429).
-type RateLimitExceededError struct {
-	error *Error
-}
-
-// NewRateLimitExceededError creates a new RateLimitExceededError.
-func NewRateLimitExceededError(message string) *RateLimitExceededError {
-	return &RateLimitExceededError{
-		error: &Error{
-			Message:    message,
-			StatusCode: http.StatusTooManyRequests,
-		},
+	// Match any 5xx against ErrServerError
+	if t.StatusCode == http.StatusInternalServerError && e.StatusCode >= 500 {
+		return true
 	}
-}
-
-// Error implements the error interface.
-func (e *RateLimitExceededError) Error() string {
-	return e.error.Error()
-}
-
-// Message returns the error message.
-func (e *RateLimitExceededError) Message() string {
-	return e.error.Message
-}
-
-// StatusCode returns the HTTP status code.
-func (e *RateLimitExceededError) StatusCode() int {
-	return e.error.StatusCode
-}
-
-// ServerError indicates an internal server error (5xx).
-type ServerError struct {
-	error *Error
-}
-
-// NewServerError creates a new ServerError with the given status code and message.
-func NewServerError(statusCode int, message string) *ServerError {
-	return &ServerError{
-		error: &Error{
-			Message:    message,
-			StatusCode: statusCode,
-		},
-	}
-}
-
-// Error implements the error interface.
-func (e *ServerError) Error() string {
-	return e.error.Error()
-}
-
-// Message returns the error message.
-func (e *ServerError) Message() string {
-	return e.error.Message
-}
-
-// StatusCode returns the HTTP status code.
-func (e *ServerError) StatusCode() int {
-	return e.error.StatusCode
-}
-
-// BadRequestError indicates a malformed request (400).
-type BadRequestError struct {
-	error *Error
-}
-
-// NewBadRequestError creates a new BadRequestError.
-func NewBadRequestError(message string) *BadRequestError {
-	return &BadRequestError{
-		error: &Error{
-			Message:    message,
-			StatusCode: http.StatusBadRequest,
-		},
-	}
-}
-
-// Error implements the error interface.
-func (e *BadRequestError) Error() string {
-	return e.error.Error()
-}
-
-// Message returns the error message.
-func (e *BadRequestError) Message() string {
-	return e.error.Message
-}
-
-// StatusCode returns the HTTP status code.
-func (e *BadRequestError) StatusCode() int {
-	return e.error.StatusCode
-}
-
-// UnauthorizedError indicates authentication is required or failed (401).
-type UnauthorizedError struct {
-	error *Error
-}
-
-// NewUnauthorizedError creates a new UnauthorizedError.
-func NewUnauthorizedError(message string) *UnauthorizedError {
-	return &UnauthorizedError{
-		error: &Error{
-			Message:    message,
-			StatusCode: http.StatusUnauthorized,
-		},
-	}
-}
-
-// Error implements the error interface.
-func (e *UnauthorizedError) Error() string {
-	return e.error.Error()
-}
-
-// Message returns the error message.
-func (e *UnauthorizedError) Message() string {
-	return e.error.Message
-}
-
-// StatusCode returns the HTTP status code.
-func (e *UnauthorizedError) StatusCode() int {
-	return e.error.StatusCode
-}
-
-// APIError represents a general API error with a custom status code.
-type APIError struct {
-	error *Error
+	return e.StatusCode == t.StatusCode
 }
 
 // NewAPIError creates a new APIError with the given status code and message.
 func NewAPIError(statusCode int, message string) *APIError {
 	return &APIError{
-		error: &Error{
-			Message:    message,
-			StatusCode: statusCode,
-		},
+		StatusCode: statusCode,
+		Message:    message,
 	}
 }
 
-// Error implements the error interface.
-func (e *APIError) Error() string {
-	return e.error.Error()
-}
-
-// Message returns the error message.
-func (e *APIError) Message() string {
-	return e.error.Message
-}
-
-// StatusCode returns the HTTP status code.
-func (e *APIError) StatusCode() int {
-	return e.error.StatusCode
+// ErrorFromStatusCode creates an APIError from an HTTP status code.
+// If message is empty, the standard HTTP status text is used.
+func ErrorFromStatusCode(statusCode int, message string) error {
+	if message == "" {
+		message = http.StatusText(statusCode)
+	}
+	return NewAPIError(statusCode, message)
 }
 
 // RequestError wraps errors that occur during HTTP request execution.
@@ -237,31 +101,8 @@ func (e *JSONError) Unwrap() error {
 	return e.Err
 }
 
-// ErrorFromStatusCode creates an appropriate error based on HTTP status code.
-func ErrorFromStatusCode(statusCode int, message string) error {
-	if message == "" {
-		message = http.StatusText(statusCode)
-	}
-
-	switch statusCode {
-	case http.StatusBadRequest:
-		return NewBadRequestError(message)
-	case http.StatusUnauthorized:
-		return NewUnauthorizedError(message)
-	case http.StatusNotFound:
-		return NewResourceNotFoundError(message)
-	case http.StatusTooManyRequests:
-		return NewRateLimitExceededError(message)
-	default:
-		if statusCode >= 500 {
-			return NewServerError(statusCode, message)
-		}
-		return NewAPIError(statusCode, message)
-	}
-}
-
-// UnmarshalJSON implements custom JSON unmarshaling for Error.
-func (e *Error) UnmarshalJSON(data []byte) error {
+// UnmarshalJSON implements custom JSON unmarshaling for APIError.
+func (e *APIError) UnmarshalJSON(data []byte) error {
 	var raw struct {
 		Message    string `json:"message"`
 		StatusCode int    `json:"status_code"`
@@ -276,8 +117,8 @@ func (e *Error) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// MarshalJSON implements custom JSON marshaling for Error.
-func (e *Error) MarshalJSON() ([]byte, error) {
+// MarshalJSON implements custom JSON marshaling for APIError.
+func (e *APIError) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
 		Message    string `json:"message"`
 		StatusCode int    `json:"status_code"`

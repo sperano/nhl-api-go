@@ -3,6 +3,7 @@ package nhl
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -178,37 +179,37 @@ func TestGetJSON_HTTPErrors(t *testing.T) {
 			name:           "404 Not Found",
 			statusCode:     http.StatusNotFound,
 			expectedErrMsg: "Request to",
-			checkErrType:   func(err error) bool { _, ok := err.(*ResourceNotFoundError); return ok },
+			checkErrType:   func(err error) bool { return errors.Is(err, ErrNotFound) },
 		},
 		{
 			name:           "429 Rate Limit",
 			statusCode:     http.StatusTooManyRequests,
 			expectedErrMsg: "Request to",
-			checkErrType:   func(err error) bool { _, ok := err.(*RateLimitExceededError); return ok },
+			checkErrType:   func(err error) bool { return errors.Is(err, ErrRateLimited) },
 		},
 		{
 			name:           "400 Bad Request",
 			statusCode:     http.StatusBadRequest,
 			expectedErrMsg: "Request to",
-			checkErrType:   func(err error) bool { _, ok := err.(*BadRequestError); return ok },
+			checkErrType:   func(err error) bool { return errors.Is(err, ErrBadRequest) },
 		},
 		{
 			name:           "401 Unauthorized",
 			statusCode:     http.StatusUnauthorized,
 			expectedErrMsg: "Request to",
-			checkErrType:   func(err error) bool { _, ok := err.(*UnauthorizedError); return ok },
+			checkErrType:   func(err error) bool { return errors.Is(err, ErrUnauthorized) },
 		},
 		{
 			name:           "500 Server Error",
 			statusCode:     http.StatusInternalServerError,
 			expectedErrMsg: "Request to",
-			checkErrType:   func(err error) bool { _, ok := err.(*ServerError); return ok },
+			checkErrType:   func(err error) bool { return errors.Is(err, ErrServerError) },
 		},
 		{
 			name:           "503 Service Unavailable",
 			statusCode:     http.StatusServiceUnavailable,
 			expectedErrMsg: "Request to",
-			checkErrType:   func(err error) bool { _, ok := err.(*ServerError); return ok },
+			checkErrType:   func(err error) bool { return errors.Is(err, ErrServerError) },
 		},
 	}
 
