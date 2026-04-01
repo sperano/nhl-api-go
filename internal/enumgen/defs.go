@@ -39,6 +39,7 @@ var enums = []EnumDef{
 		ErrorLabel: "position",
 		HasCode:    true,
 		HasName:    true,
+		AllowEmpty: true,
 		Values: []ValueDef{
 			{Name: "PositionCenter", Value: "C", DisplayName: "Center", Aliases: []string{"C", "Center"}, Doc: "PositionCenter represents a center forward."},
 			{Name: "PositionLeftWing", Value: "LW", DisplayName: "Left Wing", Aliases: []string{"L", "LW", "Left Wing", "LeftWing"}, Doc: "PositionLeftWing represents a left wing forward."},

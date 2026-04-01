@@ -102,6 +102,10 @@ func (v *Position) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &s); err != nil {
 		return err
 	}
+	if s == "" {
+		*v = ""
+		return nil
+	}
 	parsed, err := PositionFromString(s)
 	if err != nil {
 		return err
@@ -112,6 +116,9 @@ func (v *Position) UnmarshalJSON(data []byte) error {
 
 // MarshalJSON implements custom JSON marshaling for Position.
 func (v Position) MarshalJSON() ([]byte, error) {
+	if v == "" {
+		return json.Marshal("")
+	}
 	if !v.IsValid() {
 		return nil, fmt.Errorf("cannot marshal invalid position: %q", string(v))
 	}
