@@ -143,7 +143,9 @@ func TestGameTypeFromString(t *testing.T) {
 		{"empty error", "", GameType(0), true},
 		{"unknown numeric error", "99", GameType(0), true},
 		{"unknown text error", "Unknown", GameType(0), true},
-		{"lowercase error", "preseason", GameType(0), true},
+		{"snake_case preseason", "preseason", GameTypePreseason, false},
+		{"snake_case regular_season", "regular_season", GameTypeRegularSeason, false},
+		{"snake_case playoffs", "playoffs", GameTypePlayoffs, false},
 	}
 
 	for _, tt := range tests {

@@ -38,6 +38,37 @@ func (g GameType) Int() int {
 	return int(g)
 }
 
+// Label returns the snake_case label for the GameType, suitable for use as a
+// PostgreSQL enum value or a normalized identifier.
+func (g GameType) Label() string {
+	switch g {
+	case GameTypePreseason:
+		return "preseason"
+	case GameTypeRegularSeason:
+		return "regular_season"
+	case GameTypePlayoffs:
+		return "playoffs"
+	case GameTypeAllStar:
+		return "all_star"
+	case GameTypeWorldCup:
+		return "world_cup"
+	case GameTypeWorldCup2004:
+		return "world_cup_2004"
+	case GameTypeOlympics:
+		return "olympics"
+	case GameTypeYoungStars:
+		return "young_stars"
+	case GameTypePWHLShowcase:
+		return "pwhl_showcase"
+	case GameTypeWomensAllStar:
+		return "womens_all_star"
+	case GameType4Nations:
+		return "four_nations"
+	default:
+		return fmt.Sprintf("unknown_%d", g)
+	}
+}
+
 // String returns the string representation of the GameType.
 func (g GameType) String() string {
 	switch g {
@@ -104,27 +135,27 @@ func MustGameTypeFromInt(i int) GameType {
 // Returns an error if the string is not a valid GameType.
 func GameTypeFromString(s string) (GameType, error) {
 	switch s {
-	case "1", "Preseason":
+	case "1", "Preseason", "preseason":
 		return GameTypePreseason, nil
-	case "2", "Regular Season", "RegularSeason":
+	case "2", "Regular Season", "RegularSeason", "regular_season":
 		return GameTypeRegularSeason, nil
-	case "3", "Playoffs":
+	case "3", "Playoffs", "playoffs":
 		return GameTypePlayoffs, nil
-	case "4", "All-Star", "AllStar":
+	case "4", "All-Star", "AllStar", "all_star":
 		return GameTypeAllStar, nil
-	case "6", "World Cup", "WorldCup":
+	case "6", "World Cup", "WorldCup", "world_cup":
 		return GameTypeWorldCup, nil
-	case "7", "World Cup 2004", "WorldCup2004":
+	case "7", "World Cup 2004", "WorldCup2004", "world_cup_2004":
 		return GameTypeWorldCup2004, nil
-	case "9", "Olympics":
+	case "9", "Olympics", "olympics":
 		return GameTypeOlympics, nil
-	case "10", "YoungStars", "Young Stars":
+	case "10", "YoungStars", "Young Stars", "young_stars":
 		return GameTypeYoungStars, nil
-	case "12", "PWHL Showcase", "PWHLShowcase":
+	case "12", "PWHL Showcase", "PWHLShowcase", "pwhl_showcase":
 		return GameTypePWHLShowcase, nil
-	case "19", "Women's All-Star", "WomensAllStar":
+	case "19", "Women's All-Star", "WomensAllStar", "womens_all_star":
 		return GameTypeWomensAllStar, nil
-	case "20", "4 Nations Face-Off", "4NationsFaceOff":
+	case "20", "4 Nations Face-Off", "4NationsFaceOff", "four_nations":
 		return GameType4Nations, nil
 	default:
 		return 0, fmt.Errorf("invalid game type: %q", s)
