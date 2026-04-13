@@ -374,10 +374,15 @@ func MustPeriodTypeFromString(s string) PeriodType {
 }
 
 // UnmarshalJSON implements custom JSON unmarshaling for PeriodType.
+// Empty strings are accepted because the NHL API omits periodType for unplayed games.
 func (v *PeriodType) UnmarshalJSON(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
 		return err
+	}
+	if s == "" {
+		*v = ""
+		return nil
 	}
 	parsed, err := PeriodTypeFromString(s)
 	if err != nil {
@@ -388,8 +393,10 @@ func (v *PeriodType) UnmarshalJSON(data []byte) error {
 }
 
 // MarshalJSON implements custom JSON marshaling for PeriodType.
+// Empty strings are allowed because the NHL API omits periodType for unplayed games,
+// leaving the Go zero value which must round-trip through JSON.
 func (v PeriodType) MarshalJSON() ([]byte, error) {
-	if !v.IsValid() {
+	if v != "" && !v.IsValid() {
 		return nil, fmt.Errorf("cannot marshal invalid period type: %q", string(v))
 	}
 	return json.Marshal(string(v))
