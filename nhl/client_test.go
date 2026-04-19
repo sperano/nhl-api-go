@@ -1292,6 +1292,36 @@ func TestClubStats(t *testing.T) {
 	}
 }
 
+func TestClubScheduleSeason(t *testing.T) {
+	gameDate := "2024-04-20"
+	scheduleResponse := &TeamScheduleResponse{
+		Games: []ScheduleGame{
+			{ID: GameID(2023020001), GameType: GameTypeRegularSeason, GameDate: &gameDate, GameState: "OFF"},
+			{ID: GameID(2023030111), GameType: GameTypePlayoffs, GameDate: &gameDate, GameState: "OFF"},
+		},
+	}
+
+	server := httptest.NewServer(makeJSONResponse(http.StatusOK, scheduleResponse))
+	defer server.Close()
+
+	client := NewClientWithBaseURL(server.URL)
+
+	ctx := context.Background()
+	result, err := client.ClubScheduleSeason(ctx, "FLA", NewSeason(2023))
+
+	if err != nil {
+		t.Fatalf("ClubScheduleSeason() error = %v", err)
+	}
+
+	if len(result.Games) != 2 {
+		t.Errorf("expected 2 games, got %d", len(result.Games))
+	}
+
+	if result.Games[1].GameType != GameTypePlayoffs {
+		t.Errorf("expected second game to be playoffs, got %v", result.Games[1].GameType)
+	}
+}
+
 func TestClubStatsSeason(t *testing.T) {
 	seasons := []SeasonGameTypes{
 		{Season: NewSeason(2023), GameTypes: []GameType{GameTypeRegularSeason}},

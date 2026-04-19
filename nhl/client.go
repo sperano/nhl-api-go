@@ -464,6 +464,17 @@ func (c *Client) ClubStats(ctx context.Context, teamAbbr string, season Season, 
 	return &response, nil
 }
 
+// ClubScheduleSeason returns the full schedule for a team in a given season,
+// including preseason, regular season, and playoff games.
+func (c *Client) ClubScheduleSeason(ctx context.Context, teamAbbr string, season Season) (*TeamScheduleResponse, error) {
+	var response TeamScheduleResponse
+	resource := fmt.Sprintf("club-schedule-season/%s/%s", teamAbbr, season.APIString())
+	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
 // ClubStatsSeason returns available seasons and game types for a team.
 func (c *Client) ClubStatsSeason(ctx context.Context, teamAbbr string) ([]SeasonGameTypes, error) {
 	var response []SeasonGameTypes
@@ -472,6 +483,234 @@ func (c *Client) ClubStatsSeason(ctx context.Context, teamAbbr string) ([]Season
 		return nil, err
 	}
 	return response, nil
+}
+
+// ===== Edge Skater Methods =====
+
+// EdgeSkaterDetail returns combined Edge stats for a skater.
+func (c *Client) EdgeSkaterDetail(ctx context.Context, playerID PlayerID, season Season, gameType GameType) (*EdgeSkaterDetail, error) {
+	var response EdgeSkaterDetail
+	resource := fmt.Sprintf("edge/skater-detail/%s/%s/%d", playerID.String(), season.APIString(), gameType.Int())
+	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+// EdgeSkaterSpeedDetail returns per-game top skating speeds for a skater.
+func (c *Client) EdgeSkaterSpeedDetail(ctx context.Context, playerID PlayerID, season Season, gameType GameType) (*EdgeSkaterSpeedDetail, error) {
+	var response EdgeSkaterSpeedDetail
+	resource := fmt.Sprintf("edge/skater-skating-speed-detail/%s/%s/%d", playerID.String(), season.APIString(), gameType.Int())
+	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+// EdgeSkaterDistanceDetail returns per-game distance skated for a skater.
+func (c *Client) EdgeSkaterDistanceDetail(ctx context.Context, playerID PlayerID, season Season, gameType GameType) (*EdgeSkaterDistanceDetail, error) {
+	var response EdgeSkaterDistanceDetail
+	resource := fmt.Sprintf("edge/skater-skating-distance-detail/%s/%s/%d", playerID.String(), season.APIString(), gameType.Int())
+	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+// EdgeSkaterShotSpeedDetail returns per-game hardest shots for a skater.
+func (c *Client) EdgeSkaterShotSpeedDetail(ctx context.Context, playerID PlayerID, season Season, gameType GameType) (*EdgeSkaterShotSpeedDetail, error) {
+	var response EdgeSkaterShotSpeedDetail
+	resource := fmt.Sprintf("edge/skater-shot-speed-detail/%s/%s/%d", playerID.String(), season.APIString(), gameType.Int())
+	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+// EdgeSkaterShotLocationDetail returns shot location breakdown for a skater.
+func (c *Client) EdgeSkaterShotLocationDetail(ctx context.Context, playerID PlayerID, season Season, gameType GameType) (*EdgeSkaterShotLocationDetail, error) {
+	var response EdgeSkaterShotLocationDetail
+	resource := fmt.Sprintf("edge/skater-shot-location-detail/%s/%s/%d", playerID.String(), season.APIString(), gameType.Int())
+	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+// EdgeSkaterZoneTime returns zone time breakdown for a skater.
+func (c *Client) EdgeSkaterZoneTime(ctx context.Context, playerID PlayerID, season Season, gameType GameType) (*EdgeSkaterZoneTimeDetail, error) {
+	var response EdgeSkaterZoneTimeDetail
+	resource := fmt.Sprintf("edge/skater-zone-time/%s/%s/%d", playerID.String(), season.APIString(), gameType.Int())
+	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+// EdgeSkaterComparison returns composite Edge data for skater head-to-head comparison.
+func (c *Client) EdgeSkaterComparison(ctx context.Context, playerID PlayerID, season Season, gameType GameType) (*EdgeSkaterComparison, error) {
+	var response EdgeSkaterComparison
+	resource := fmt.Sprintf("edge/skater-comparison/%s/%s/%d", playerID.String(), season.APIString(), gameType.Int())
+	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+// ===== Edge Goalie Methods =====
+
+// EdgeGoalieDetail returns combined Edge stats for a goalie.
+func (c *Client) EdgeGoalieDetail(ctx context.Context, goalieID PlayerID, season Season, gameType GameType) (*EdgeGoalieDetail, error) {
+	var response EdgeGoalieDetail
+	resource := fmt.Sprintf("edge/goalie-detail/%s/%s/%d", goalieID.String(), season.APIString(), gameType.Int())
+	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+// EdgeGoalie5v5Detail returns per-game 5v5 save percentage for a goalie.
+func (c *Client) EdgeGoalie5v5Detail(ctx context.Context, goalieID PlayerID, season Season, gameType GameType) (*EdgeGoalie5v5Detail, error) {
+	var response EdgeGoalie5v5Detail
+	resource := fmt.Sprintf("edge/goalie-5v5-detail/%s/%s/%d", goalieID.String(), season.APIString(), gameType.Int())
+	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+// EdgeGoalieShotLocationDetail returns shot location breakdown for a goalie.
+func (c *Client) EdgeGoalieShotLocationDetail(ctx context.Context, goalieID PlayerID, season Season, gameType GameType) (*EdgeGoalieShotLocationDetail, error) {
+	var response EdgeGoalieShotLocationDetail
+	resource := fmt.Sprintf("edge/goalie-shot-location-detail/%s/%s/%d", goalieID.String(), season.APIString(), gameType.Int())
+	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+// EdgeGoalieSavePctgDetail returns per-game save percentage for a goalie.
+func (c *Client) EdgeGoalieSavePctgDetail(ctx context.Context, goalieID PlayerID, season Season, gameType GameType) (*EdgeGoalieSavePctgDetail, error) {
+	var response EdgeGoalieSavePctgDetail
+	resource := fmt.Sprintf("edge/goalie-save-percentage-detail/%s/%s/%d", goalieID.String(), season.APIString(), gameType.Int())
+	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+// EdgeGoalieComparison returns composite Edge data for goalie head-to-head comparison.
+func (c *Client) EdgeGoalieComparison(ctx context.Context, goalieID PlayerID, season Season, gameType GameType) (*EdgeGoalieComparison, error) {
+	var response EdgeGoalieComparison
+	resource := fmt.Sprintf("edge/goalie-comparison/%s/%s/%d", goalieID.String(), season.APIString(), gameType.Int())
+	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+// ===== Edge Team Methods =====
+
+// EdgeTeamDetail returns combined Edge stats for a team.
+func (c *Client) EdgeTeamDetail(ctx context.Context, teamID TeamID, season Season, gameType GameType) (*EdgeTeamDetail, error) {
+	var response EdgeTeamDetail
+	resource := fmt.Sprintf("edge/team-detail/%s/%s/%d", teamID.String(), season.APIString(), gameType.Int())
+	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+// EdgeTeamSpeedDetail returns per-player top skating speeds for a team.
+func (c *Client) EdgeTeamSpeedDetail(ctx context.Context, teamID TeamID, season Season, gameType GameType) (*EdgeTeamSpeedDetail, error) {
+	var response EdgeTeamSpeedDetail
+	resource := fmt.Sprintf("edge/team-skating-speed-detail/%s/%s/%d", teamID.String(), season.APIString(), gameType.Int())
+	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+// EdgeTeamDistanceDetail returns per-game distance skated for a team.
+func (c *Client) EdgeTeamDistanceDetail(ctx context.Context, teamID TeamID, season Season, gameType GameType) (*EdgeTeamDistanceDetail, error) {
+	var response EdgeTeamDistanceDetail
+	resource := fmt.Sprintf("edge/team-skating-distance-detail/%s/%s/%d", teamID.String(), season.APIString(), gameType.Int())
+	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+// EdgeTeamShotSpeedDetail returns per-player hardest shots for a team.
+func (c *Client) EdgeTeamShotSpeedDetail(ctx context.Context, teamID TeamID, season Season, gameType GameType) (*EdgeTeamShotSpeedDetail, error) {
+	var response EdgeTeamShotSpeedDetail
+	resource := fmt.Sprintf("edge/team-shot-speed-detail/%s/%s/%d", teamID.String(), season.APIString(), gameType.Int())
+	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+// EdgeTeamShotLocationDetail returns shot location breakdown for a team.
+func (c *Client) EdgeTeamShotLocationDetail(ctx context.Context, teamID TeamID, season Season, gameType GameType) (*EdgeTeamShotLocationDetail, error) {
+	var response EdgeTeamShotLocationDetail
+	resource := fmt.Sprintf("edge/team-shot-location-detail/%s/%s/%d", teamID.String(), season.APIString(), gameType.Int())
+	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+// EdgeTeamZoneTimeDetails returns zone time by strength code with shot differential for a team.
+func (c *Client) EdgeTeamZoneTimeDetails(ctx context.Context, teamID TeamID, season Season, gameType GameType) (*EdgeTeamZoneTimeDetails, error) {
+	var response EdgeTeamZoneTimeDetails
+	resource := fmt.Sprintf("edge/team-zone-time-details/%s/%s/%d", teamID.String(), season.APIString(), gameType.Int())
+	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+// EdgeTeamComparison returns composite Edge data for team head-to-head comparison.
+func (c *Client) EdgeTeamComparison(ctx context.Context, teamID TeamID, season Season, gameType GameType) (*EdgeTeamComparison, error) {
+	var response EdgeTeamComparison
+	resource := fmt.Sprintf("edge/team-comparison/%s/%s/%d", teamID.String(), season.APIString(), gameType.Int())
+	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+// ===== Edge Landing Methods =====
+
+// EdgeSkaterLanding returns league-wide skater Edge leaders.
+func (c *Client) EdgeSkaterLanding(ctx context.Context, season Season, gameType GameType) (*EdgeSkaterLanding, error) {
+	var response EdgeSkaterLanding
+	resource := fmt.Sprintf("edge/skater-landing/%s/%d", season.APIString(), gameType.Int())
+	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+// EdgeGoalieLanding returns league-wide goalie Edge leaders.
+func (c *Client) EdgeGoalieLanding(ctx context.Context, season Season, gameType GameType) (*EdgeGoalieLanding, error) {
+	var response EdgeGoalieLanding
+	resource := fmt.Sprintf("edge/goalie-landing/%s/%d", season.APIString(), gameType.Int())
+	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+// EdgeTeamLanding returns league-wide team Edge leaders.
+func (c *Client) EdgeTeamLanding(ctx context.Context, season Season, gameType GameType) (*EdgeTeamLanding, error) {
+	var response EdgeTeamLanding
+	resource := fmt.Sprintf("edge/team-landing/%s/%d", season.APIString(), gameType.Int())
+	if err := c.getJSON(ctx, EndpointAPIWebV1, resource, nil, &response); err != nil {
+		return nil, err
+	}
+	return &response, nil
 }
 
 // ===== Helper Types and Methods =====
