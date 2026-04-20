@@ -21,12 +21,20 @@ const (
 	GameTypeWorldCup GameType = 6
 	// GameTypeWorldCup2004 represents World Cup 2004 (NHL API uses both 6 and 7 for World Cup).
 	GameTypeWorldCup2004 GameType = 7
+	// GameTypeWorldCupPreTournament represents a World Cup pre-tournament game.
+	GameTypeWorldCupPreTournament GameType = 8
 	// GameTypeOlympics represents an Olympic tournament game.
 	GameTypeOlympics GameType = 9
 	// GameTypeYoungStars represents a YoungStars game (rookies/sophomores) during All-Star Weekend.
 	GameTypeYoungStars GameType = 10
 	// GameTypePWHLShowcase represents a PWHL 3-on-3 showcase game during All-Star Weekend.
 	GameTypePWHLShowcase GameType = 12
+	// GameTypeLockoutLost represents a game lost due to a lockout.
+	GameTypeLockoutLost GameType = 13
+	// GameTypeCanadaCup represents a Canada Cup game.
+	GameTypeCanadaCup GameType = 14
+	// GameTypeExhibitionOverseas represents an exhibition game played overseas.
+	GameTypeExhibitionOverseas GameType = 18
 	// GameTypeWomensAllStar represents a Women's All-Star game.
 	GameTypeWomensAllStar GameType = 19
 	// GameType4Nations represents a 4 Nations Face-Off game.
@@ -54,12 +62,20 @@ func (g GameType) Label() string {
 		return "world_cup"
 	case GameTypeWorldCup2004:
 		return "world_cup_2004"
+	case GameTypeWorldCupPreTournament:
+		return "world_cup_pre_tournament"
 	case GameTypeOlympics:
 		return "olympics"
 	case GameTypeYoungStars:
 		return "young_stars"
 	case GameTypePWHLShowcase:
 		return "pwhl_showcase"
+	case GameTypeLockoutLost:
+		return "lockout_lost"
+	case GameTypeCanadaCup:
+		return "canada_cup"
+	case GameTypeExhibitionOverseas:
+		return "exhibition_overseas"
 	case GameTypeWomensAllStar:
 		return "womens_all_star"
 	case GameType4Nations:
@@ -84,12 +100,20 @@ func (g GameType) String() string {
 		return "World Cup"
 	case GameTypeWorldCup2004:
 		return "World Cup 2004"
+	case GameTypeWorldCupPreTournament:
+		return "World Cup Pre-Tournament"
 	case GameTypeOlympics:
 		return "Olympics"
 	case GameTypeYoungStars:
 		return "YoungStars"
 	case GameTypePWHLShowcase:
 		return "PWHL Showcase"
+	case GameTypeLockoutLost:
+		return "Lockout Lost"
+	case GameTypeCanadaCup:
+		return "Canada Cup"
+	case GameTypeExhibitionOverseas:
+		return "Exhibition Overseas"
 	case GameTypeWomensAllStar:
 		return "Women's All-Star"
 	case GameType4Nations:
@@ -102,7 +126,7 @@ func (g GameType) String() string {
 // IsValid returns true if the GameType is one of the known valid types.
 func (g GameType) IsValid() bool {
 	switch g {
-	case GameTypePreseason, GameTypeRegularSeason, GameTypePlayoffs, GameTypeAllStar, GameTypeWorldCup, GameTypeWorldCup2004, GameTypeOlympics, GameTypeYoungStars, GameTypePWHLShowcase, GameTypeWomensAllStar, GameType4Nations:
+	case GameTypePreseason, GameTypeRegularSeason, GameTypePlayoffs, GameTypeAllStar, GameTypeWorldCup, GameTypeWorldCup2004, GameTypeWorldCupPreTournament, GameTypeOlympics, GameTypeYoungStars, GameTypePWHLShowcase, GameTypeLockoutLost, GameTypeCanadaCup, GameTypeExhibitionOverseas, GameTypeWomensAllStar, GameType4Nations:
 		return true
 	default:
 		return false
@@ -147,12 +171,20 @@ func GameTypeFromString(s string) (GameType, error) {
 		return GameTypeWorldCup, nil
 	case "7", "World Cup 2004", "WorldCup2004", "world_cup_2004":
 		return GameTypeWorldCup2004, nil
+	case "8", "World Cup Pre-Tournament", "WorldCupPreTournament", "world_cup_pre_tournament":
+		return GameTypeWorldCupPreTournament, nil
 	case "9", "Olympics", "olympics":
 		return GameTypeOlympics, nil
 	case "10", "YoungStars", "Young Stars", "young_stars":
 		return GameTypeYoungStars, nil
 	case "12", "PWHL Showcase", "PWHLShowcase", "pwhl_showcase":
 		return GameTypePWHLShowcase, nil
+	case "13", "Lockout Lost", "LockoutLost", "lockout_lost":
+		return GameTypeLockoutLost, nil
+	case "14", "Canada Cup", "CanadaCup", "canada_cup":
+		return GameTypeCanadaCup, nil
+	case "18", "Exhibition Overseas", "ExhibitionOverseas", "exhibition_overseas":
+		return GameTypeExhibitionOverseas, nil
 	case "19", "Women's All-Star", "WomensAllStar", "womens_all_star":
 		return GameTypeWomensAllStar, nil
 	case "20", "4 Nations Face-Off", "4NationsFaceOff", "four_nations":
