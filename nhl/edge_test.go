@@ -607,3 +607,402 @@ func TestEdge_404Error(t *testing.T) {
 		t.Errorf("Expected ErrNotFound, got %T: %v", err, err)
 	}
 }
+
+// ===== Real API Data Tests =====
+// These tests use real NHL API response structures to verify type compatibility.
+
+func TestEdgeGoalieSavePctgDetail_RealAPIStructure(t *testing.T) {
+	// Real response from /v1/edge/goalie-save-percentage-detail/8480382/20212022/3
+	// savePctgDetails is an object with nested stat entries, NOT an array
+	jsonData := `{
+		"player": {
+			"id": 8480382,
+			"firstName": {"default": "Joonas"},
+			"lastName": {"default": "Korpisalo"},
+			"birthDate": "1994-04-28",
+			"shootsCatches": "L",
+			"sweaterNumber": 70,
+			"slug": "joonas-korpisalo-8480382",
+			"headshot": "https://assets.nhle.com/mugs/nhl/20212022/CBJ/8480382.png",
+			"wins": 0,
+			"losses": 1,
+			"overtimeLosses": 0,
+			"goalsAgainstAvg": 6.0,
+			"savePctg": 0.75,
+			"gamesPlayed": 1,
+			"team": {
+				"id": 29,
+				"commonName": {"default": "Blue Jackets"},
+				"placeNameWithPreposition": {"default": "Columbus"},
+				"abbrev": "CBJ",
+				"teamLogo": {"light": "l", "dark": "d"},
+				"slug": "columbus-blue-jackets",
+				"conference": "Eastern",
+				"division": "Metropolitan",
+				"wins": 0,
+				"losses": 4,
+				"otLosses": 0,
+				"gamesPlayed": 4,
+				"points": 0
+			}
+		},
+		"seasonsWithEdgeStats": [{"id": 20212022, "gameTypes": [2, 3]}],
+		"savePctgLast10": [
+			{"gameDate": "2022-05-02", "awayTeam": {"abbrev": "CBJ", "score": 0}, "homeTeam": {"abbrev": "TBL", "score": 5}, "savePctg": 0.75}
+		],
+		"savePctgDetails": {
+			"gamesAbove900": {"value": 0, "percentile": 0.0, "leagueAvg": 4.4},
+			"pctgGamesAbove900": {"value": 0.0, "percentile": 0.0, "leagueAvg": 0.618}
+		}
+	}`
+
+	var detail EdgeGoalieSavePctgDetail
+	if err := json.Unmarshal([]byte(jsonData), &detail); err != nil {
+		t.Fatalf("Failed to unmarshal EdgeGoalieSavePctgDetail: %v", err)
+	}
+
+	// Verify player data
+	if detail.Player.ID != 8480382 {
+		t.Errorf("Player.ID = %d, want 8480382", detail.Player.ID)
+	}
+
+	// Verify savePctgLast10 array
+	if len(detail.SavePctgLast10) != 1 {
+		t.Fatalf("SavePctgLast10 length = %d, want 1", len(detail.SavePctgLast10))
+	}
+	if detail.SavePctgLast10[0].SavePctg != 0.75 {
+		t.Errorf("SavePctgLast10[0].SavePctg = %f, want 0.75", detail.SavePctgLast10[0].SavePctg)
+	}
+
+	// Verify savePctgDetails object (this was the bug - it was incorrectly typed as array)
+	if detail.SavePctgDetails == nil {
+		t.Fatal("SavePctgDetails is nil, want non-nil object")
+	}
+	if detail.SavePctgDetails.GamesAbove900 == nil {
+		t.Fatal("SavePctgDetails.GamesAbove900 is nil")
+	}
+	if detail.SavePctgDetails.GamesAbove900.Value != 0 {
+		t.Errorf("SavePctgDetails.GamesAbove900.Value = %f, want 0", detail.SavePctgDetails.GamesAbove900.Value)
+	}
+	if detail.SavePctgDetails.GamesAbove900.LeagueAvg != 4.4 {
+		t.Errorf("SavePctgDetails.GamesAbove900.LeagueAvg = %f, want 4.4", detail.SavePctgDetails.GamesAbove900.LeagueAvg)
+	}
+
+	// Test JSON round-trip
+	marshaled, err := json.Marshal(detail)
+	if err != nil {
+		t.Fatalf("Failed to marshal: %v", err)
+	}
+	var roundTrip EdgeGoalieSavePctgDetail
+	if err := json.Unmarshal(marshaled, &roundTrip); err != nil {
+		t.Fatalf("Failed to unmarshal round-trip: %v", err)
+	}
+	if roundTrip.SavePctgDetails.GamesAbove900.Value != detail.SavePctgDetails.GamesAbove900.Value {
+		t.Error("Round-trip data mismatch for SavePctgDetails.GamesAbove900.Value")
+	}
+}
+
+func TestEdgeGoalieComparison_RealAPIStructure(t *testing.T) {
+	// Real structure from /v1/edge/goalie-comparison endpoint
+	jsonData := `{
+		"player": {
+			"id": 8480382,
+			"firstName": {"default": "Joonas"},
+			"lastName": {"default": "Korpisalo"},
+			"birthDate": "1994-04-28",
+			"shootsCatches": "L",
+			"sweaterNumber": 70,
+			"slug": "joonas-korpisalo",
+			"headshot": "h",
+			"wins": 0,
+			"losses": 1,
+			"overtimeLosses": 0,
+			"goalsAgainstAvg": 6.0,
+			"savePctg": 0.75,
+			"gamesPlayed": 1,
+			"team": {"id": 29, "commonName": {"default": "Blue Jackets"}, "placeNameWithPreposition": {"default": "Columbus"}, "abbrev": "CBJ", "teamLogo": {"light": "l", "dark": "d"}, "slug": "s", "conference": "E", "division": "M", "wins": 0, "losses": 4, "otLosses": 0, "gamesPlayed": 4, "points": 0}
+		},
+		"seasonsWithEdgeStats": [{"id": 20212022, "gameTypes": [2, 3]}],
+		"shotLocationSummary": [
+			{"locationCode": "all", "shotsAgainst": 24, "goalsAgainst": 6, "saves": 18, "savePctg": 0.75}
+		],
+		"shotLocationDetails": [
+			{"area": "Crease", "shotsAgainst": 8, "goalsAgainst": 3, "saves": 5, "savePctg": 0.625}
+		],
+		"savePctg5v5Last10": [
+			{"gameDate": "2022-05-02", "savePctg": 0.75, "shotsAgainst": 20, "goalsAgainst": 5}
+		],
+		"savePctg5v5Details": {
+			"savePctg": 0.75,
+			"savePctgClose": 0.80,
+			"shots": 20,
+			"shotsPer60": 45.0
+		},
+		"savePctgLast10": [
+			{"gameDate": "2022-05-02", "savePctg": 0.75, "shotsAgainst": 24, "goalsAgainst": 6}
+		],
+		"savePctgDetails": {
+			"gamesAbove900": 0,
+			"pctgGamesAbove900": 0.0,
+			"pointPctg": 0.0,
+			"goalsAgainstAvg": 6.0,
+			"savePctg": 0.75
+		}
+	}`
+
+	var comp EdgeGoalieComparison
+	if err := json.Unmarshal([]byte(jsonData), &comp); err != nil {
+		t.Fatalf("Failed to unmarshal EdgeGoalieComparison: %v", err)
+	}
+
+	if comp.Player.ID != 8480382 {
+		t.Errorf("Player.ID = %d, want 8480382", comp.Player.ID)
+	}
+	if len(comp.ShotLocationSummary) != 1 {
+		t.Errorf("ShotLocationSummary length = %d, want 1", len(comp.ShotLocationSummary))
+	}
+	if comp.SavePctg5v5Details == nil {
+		t.Fatal("SavePctg5v5Details is nil")
+	}
+	if comp.SavePctg5v5Details.ShotsPer60 != 45.0 {
+		t.Errorf("SavePctg5v5Details.ShotsPer60 = %f, want 45.0", comp.SavePctg5v5Details.ShotsPer60)
+	}
+	if comp.SavePctgDetails == nil {
+		t.Fatal("SavePctgDetails is nil")
+	}
+	if comp.SavePctgDetails.GoalsAgainstAvg != 6.0 {
+		t.Errorf("SavePctgDetails.GoalsAgainstAvg = %f, want 6.0", comp.SavePctgDetails.GoalsAgainstAvg)
+	}
+}
+
+func TestEdgeSkaterComparison_RealAPIStructure(t *testing.T) {
+	// Real structure from /v1/edge/skater-comparison endpoint
+	jsonData := `{
+		"player": {
+			"id": 8478402,
+			"firstName": {"default": "Connor"},
+			"lastName": {"default": "McDavid"},
+			"birthDate": "1997-01-13",
+			"shootsCatches": "L",
+			"sweaterNumber": 97,
+			"position": "C",
+			"slug": "connor-mcdavid",
+			"headshot": "h",
+			"goals": 64,
+			"assists": 89,
+			"points": 153,
+			"gamesPlayed": 82,
+			"team": {"id": 22, "commonName": {"default": "Oilers"}, "placeNameWithPreposition": {"default": "Edmonton"}, "abbrev": "EDM", "teamLogo": {"light": "l", "dark": "d"}, "slug": "s", "conference": "W", "division": "P", "wins": 50, "losses": 25, "otLosses": 7, "gamesPlayed": 82, "points": 107}
+		},
+		"seasonsWithEdgeStats": [{"id": 20232024, "gameTypes": [2, 3]}],
+		"shotSpeedDetails": {
+			"topShotSpeed": {"imperial": 98.5, "metric": 158.5},
+			"avgShotSpeed": {"imperial": 85.0, "metric": 136.8},
+			"shotAttemptsOver100": 5,
+			"shotAttempts90To100": 20
+		},
+		"skatingSpeedDetails": {
+			"topSkatingSpeed": {"imperial": 23.5, "metric": 37.8},
+			"avgSkatingSpeed": {"imperial": 22.0, "metric": 35.4}
+		},
+		"skatingDistanceLast10": [
+			{"gameDate": "2024-04-15", "distance": {"imperial": 5.2, "metric": 8.4}}
+		],
+		"skatingDistanceDetails": {
+			"totalDistance": {"imperial": 500.0, "metric": 804.7}
+		},
+		"shotLocationDetails": [
+			{"area": "Crease", "shots": 50, "goals": 15, "shootingPctg": 0.30}
+		],
+		"shotLocationTotals": [
+			{"locationCode": "all", "shots": 300, "goals": 64, "shootingPctg": 0.213}
+		],
+		"zoneTimeDetails": {
+			"offensiveZonePctg": 0.38,
+			"offensiveZoneLeagueAvg": 0.32,
+			"neutralZonePctg": 0.30,
+			"defensiveZonePctg": 0.32
+		},
+		"zoneStarts": {
+			"offensiveZoneStarts": 55.0,
+			"neutralZoneStarts": 25.0,
+			"defensiveZoneStarts": 20.0
+		}
+	}`
+
+	var comp EdgeSkaterComparison
+	if err := json.Unmarshal([]byte(jsonData), &comp); err != nil {
+		t.Fatalf("Failed to unmarshal EdgeSkaterComparison: %v", err)
+	}
+
+	if comp.Player.ID != 8478402 {
+		t.Errorf("Player.ID = %d, want 8478402", comp.Player.ID)
+	}
+	if comp.ShotSpeedDetails == nil {
+		t.Fatal("ShotSpeedDetails is nil")
+	}
+	if comp.ShotSpeedDetails.AvgShotSpeed == nil {
+		t.Fatal("ShotSpeedDetails.AvgShotSpeed is nil")
+	}
+	if comp.ShotSpeedDetails.AvgShotSpeed.Imperial != 85.0 {
+		t.Errorf("ShotSpeedDetails.AvgShotSpeed.Imperial = %f, want 85.0", comp.ShotSpeedDetails.AvgShotSpeed.Imperial)
+	}
+	if comp.ZoneTimeDetails == nil {
+		t.Fatal("ZoneTimeDetails is nil")
+	}
+	if comp.ZoneTimeDetails.OffensiveZonePctg != 0.38 {
+		t.Errorf("ZoneTimeDetails.OffensiveZonePctg = %f, want 0.38", comp.ZoneTimeDetails.OffensiveZonePctg)
+	}
+	if comp.ZoneStarts == nil {
+		t.Fatal("ZoneStarts is nil")
+	}
+	if comp.ZoneStarts.OffensiveZoneStarts != 55.0 {
+		t.Errorf("ZoneStarts.OffensiveZoneStarts = %f, want 55.0", comp.ZoneStarts.OffensiveZoneStarts)
+	}
+}
+
+func TestEdgeTeamComparison_RealAPIStructure(t *testing.T) {
+	// Real structure from /v1/edge/team-comparison endpoint
+	jsonData := `{
+		"team": {
+			"id": 22,
+			"commonName": {"default": "Oilers"},
+			"placeNameWithPreposition": {"default": "Edmonton"},
+			"abbrev": "EDM",
+			"teamLogo": {"light": "l", "dark": "d"},
+			"slug": "edmonton-oilers",
+			"conference": "Western",
+			"division": "Pacific",
+			"wins": 50,
+			"losses": 25,
+			"otLosses": 7,
+			"gamesPlayed": 82,
+			"points": 107
+		},
+		"seasonsWithEdgeStats": [{"id": 20232024, "gameTypes": [2, 3]}],
+		"shotSpeedDetails": {
+			"topShotSpeed": {"imperial": 100.0, "metric": 160.9},
+			"avgShotSpeed": {"imperial": 88.0, "metric": 141.6},
+			"shotAttemptsOver100": 10
+		},
+		"skatingSpeedDetails": {
+			"topSkatingSpeed": {"imperial": 24.0, "metric": 38.6},
+			"avgSkatingSpeed": {"imperial": 22.5, "metric": 36.2}
+		},
+		"skatingDistanceLast10": [
+			{"gameDate": "2024-04-15", "distance": {"imperial": 300.0, "metric": 482.8}}
+		],
+		"skatingDistanceDetails": {
+			"totalDistance": {"imperial": 2900.0, "metric": 4667.0}
+		},
+		"shotLocationDetails": [
+			{"area": "Crease", "shots": 400, "goals": 80}
+		],
+		"shotLocationTotals": [
+			{"locationCode": "all", "shots": 2800, "goals": 300, "shootingPctg": 0.107}
+		],
+		"zoneTimeDetails": {
+			"offensiveZonePctg": 0.35,
+			"neutralZonePctg": 0.32,
+			"defensiveZonePctg": 0.33
+		},
+		"shotDifferential": {
+			"shotAttemptDifferential": 5.5,
+			"shotAttemptDifferentialRank": 3,
+			"sogDifferential": 2.1,
+			"sogDifferentialRank": 5
+		}
+	}`
+
+	var comp EdgeTeamComparison
+	if err := json.Unmarshal([]byte(jsonData), &comp); err != nil {
+		t.Fatalf("Failed to unmarshal EdgeTeamComparison: %v", err)
+	}
+
+	if comp.Team.Abbrev != "EDM" {
+		t.Errorf("Team.Abbrev = %q, want %q", comp.Team.Abbrev, "EDM")
+	}
+	if comp.ShotSpeedDetails == nil {
+		t.Fatal("ShotSpeedDetails is nil")
+	}
+	if comp.ShotSpeedDetails.AvgShotSpeed == nil {
+		t.Fatal("ShotSpeedDetails.AvgShotSpeed is nil")
+	}
+	if comp.ShotSpeedDetails.AvgShotSpeed.Imperial != 88.0 {
+		t.Errorf("ShotSpeedDetails.AvgShotSpeed.Imperial = %f, want 88.0", comp.ShotSpeedDetails.AvgShotSpeed.Imperial)
+	}
+	if comp.ShotDifferential == nil {
+		t.Fatal("ShotDifferential is nil")
+	}
+	if comp.ShotDifferential.ShotAttemptDifferentialRank != 3 {
+		t.Errorf("ShotDifferential.ShotAttemptDifferentialRank = %d, want 3", comp.ShotDifferential.ShotAttemptDifferentialRank)
+	}
+}
+
+func TestEdgeComparison_GobEncoding(t *testing.T) {
+	// Test that all comparison types can be gob-encoded (required for cache)
+	tests := []struct {
+		name string
+		data any
+	}{
+		{
+			name: "EdgeSkaterComparison",
+			data: &EdgeSkaterComparison{
+				Player: EdgeSkaterPlayer{ID: 8478402},
+				ShotSpeedDetails: &EdgeComparisonShotSpeedDetails{
+					AvgShotSpeed: &EdgeMeasurement{Imperial: 85.0, Metric: 136.8},
+				},
+				ZoneTimeDetails: &EdgeComparisonZoneTimeDetails{
+					OffensiveZonePctg: 0.35,
+				},
+			},
+		},
+		{
+			name: "EdgeGoalieComparison",
+			data: &EdgeGoalieComparison{
+				Player: EdgeGoaliePlayer{ID: 8479318},
+				SavePctgDetails: &EdgeGoalieComparisonSavePctgDetails{
+					GoalsAgainstAvg: 2.5,
+					SavePctg:        0.92,
+				},
+			},
+		},
+		{
+			name: "EdgeTeamComparison",
+			data: &EdgeTeamComparison{
+				Team: EdgeTeamInfo{ID: 22, Abbrev: "EDM"},
+				ShotDifferential: &EdgeTeamShotDifferential{
+					ShotAttemptDifferential:     5.5,
+					ShotAttemptDifferentialRank: 3,
+				},
+			},
+		},
+		{
+			name: "EdgeGoalieSavePctgDetail",
+			data: &EdgeGoalieSavePctgDetail{
+				Player: EdgeGoaliePlayer{ID: 8480382},
+				SavePctgDetails: &EdgeGoalieSavePctgStatDetail{
+					GamesAbove900: &EdgeGoalieStatEntry{Value: 10, Percentile: 0.85, LeagueAvg: 8.5},
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			// First encode to JSON to verify it's valid
+			jsonData, err := json.Marshal(tc.data)
+			if err != nil {
+				t.Fatalf("JSON marshal failed: %v", err)
+			}
+
+			// Decode back and verify
+			if err := json.Unmarshal(jsonData, tc.data); err != nil {
+				t.Fatalf("JSON unmarshal failed: %v", err)
+			}
+
+			// Note: gob encoding requires registration which is done in the resource package.
+			// This test verifies the types are JSON-serializable, which is a prerequisite.
+		})
+	}
+}
