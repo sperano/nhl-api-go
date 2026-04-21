@@ -572,7 +572,16 @@ func TestEdgeLanding_Client(t *testing.T) {
 		if r.URL.Path != expectedPath {
 			t.Errorf("Request path = %q, want %q", r.URL.Path, expectedPath)
 		}
-		fmt.Fprint(w, `{"leaders": {"fastestSkater": [{"name": "Connor McDavid"}]}}`)
+		// Real API returns objects per category, not arrays
+		fmt.Fprint(w, `{
+			"seasonsWithEdgeStats": [{"id": 20242025, "gameTypes": [2]}],
+			"leaders": {
+				"hardestShot": {
+					"player": {"id": 8478402, "firstName": {"default": "Connor"}, "lastName": {"default": "McDavid"}},
+					"shotSpeed": {"imperial": 100.0, "metric": 160.9}
+				}
+			}
+		}`)
 	}))
 	defer server.Close()
 
@@ -584,8 +593,10 @@ func TestEdgeLanding_Client(t *testing.T) {
 	if result.Leaders == nil {
 		t.Fatal("Leaders is nil, want non-nil")
 	}
-	if _, ok := result.Leaders["fastestSkater"]; !ok {
-		t.Error("Leaders missing 'fastestSkater' key")
+	if leader, ok := result.Leaders["hardestShot"]; !ok {
+		t.Error("Leaders missing 'hardestShot' key")
+	} else if leader.ShotSpeed == nil {
+		t.Error("hardestShot.ShotSpeed is nil")
 	}
 }
 

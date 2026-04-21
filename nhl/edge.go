@@ -273,8 +273,31 @@ type EdgeSkaterComparison struct {
 	ZoneStarts             interface{}              `json:"zoneStarts"`
 }
 
+// EdgeLeaderShotLocation is shot location detail in leader responses.
+type EdgeLeaderShotLocation struct {
+	Area              string   `json:"area"`
+	SOG               *int     `json:"sog,omitempty"`               // skater: shots on goal
+	SOGPercentile     *float64 `json:"sogPercentile,omitempty"`     // skater percentile
+	SavePctg          *float64 `json:"savePctg,omitempty"`          // goalie: save percentage
+	SavePctgPercentile *float64 `json:"savePctgPercentile,omitempty"` // goalie percentile
+}
+
+// EdgeSkaterLeader is a leader entry in the skater landing response.
+type EdgeSkaterLeader struct {
+	Player  EdgeSkaterPlayer    `json:"player"`
+	Overlay *EdgeOverlay        `json:"overlay,omitempty"`
+	// Stat fields - only one set is populated per category
+	ShotSpeed           *EdgeMeasurement         `json:"shotSpeed,omitempty"`           // hardestShot
+	SkatingSpeed        *EdgeMeasurement         `json:"skatingSpeed,omitempty"`        // maxSkatingSpeed
+	DistanceSkated      *EdgeMeasurement         `json:"distanceSkated,omitempty"`      // totalDistanceSkated, distanceMaxGame
+	SOG                 *int                     `json:"sog,omitempty"`                 // highDangerSOG
+	ShotLocationDetails []EdgeLeaderShotLocation `json:"shotLocationDetails,omitempty"` // highDangerSOG
+	ZoneTime            *float64                 `json:"zoneTime,omitempty"`            // offensiveZoneTime, defensiveZoneTime
+}
+
 // EdgeSkaterLanding is the response from v1/edge/skater-landing/{s}/{gt}.
-// League-wide leaders in each Edge category. Cached on filesystem only.
+// League-wide leaders in each Edge category.
 type EdgeSkaterLanding struct {
-	Leaders map[string]interface{} `json:"leaders"`
+	SeasonsWithEdgeStats []EdgeSeasonAvailability    `json:"seasonsWithEdgeStats"`
+	Leaders              map[string]EdgeSkaterLeader `json:"leaders"`
 }

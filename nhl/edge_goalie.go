@@ -127,8 +127,20 @@ type EdgeGoalieComparison struct {
 	SavePctgDetails      interface{}              `json:"savePctgDetails"`
 }
 
+// EdgeGoalieLeader is a leader entry in the goalie landing response.
+type EdgeGoalieLeader struct {
+	Player EdgeGoaliePlayer `json:"player"`
+	// Stat fields - only relevant ones are populated per category
+	Games               *int                     `json:"games,omitempty"`               // gamesAbove900
+	GoalsAgainst        *int                     `json:"goalsAgainst,omitempty"`        // highDangerGoalsAgainst
+	SavePctg            *float64                 `json:"savePctg,omitempty"`            // highDangerSavePctg, savePctg5v5
+	Saves               *int                     `json:"saves,omitempty"`               // highDangerSaves
+	ShotLocationDetails []EdgeLeaderShotLocation `json:"shotLocationDetails,omitempty"` // highDangerSavePctg
+}
+
 // EdgeGoalieLanding is the response from v1/edge/goalie-landing/{s}/{gt}.
-// League-wide leaders in each Edge category. Cached on filesystem only.
+// League-wide leaders in each Edge category.
 type EdgeGoalieLanding struct {
-	Leaders map[string]interface{} `json:"leaders"`
+	SeasonsWithEdgeStats []EdgeSeasonAvailability   `json:"seasonsWithEdgeStats"`
+	Leaders              map[string]EdgeGoalieLeader `json:"leaders"`
 }

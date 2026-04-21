@@ -171,8 +171,21 @@ type EdgeTeamComparison struct {
 	ShotDifferential       interface{}              `json:"shotDifferential"`
 }
 
+// EdgeTeamLeader is a leader entry in the team landing response.
+type EdgeTeamLeader struct {
+	Team EdgeTeamInfo `json:"team"`
+	// Stat fields - only relevant ones are populated per category
+	Bursts              *int                     `json:"bursts,omitempty"`              // burstsOver22
+	Attempts            *int                     `json:"attempts,omitempty"`            // shotAttemptsOver90
+	DistanceSkated      *EdgeMeasurement         `json:"distanceSkated,omitempty"`      // distancePer60
+	SOG                 *int                     `json:"sog,omitempty"`                 // highDangerSOG
+	ShotLocationDetails []EdgeLeaderShotLocation `json:"shotLocationDetails,omitempty"` // highDangerSOG
+	ZoneTime            *float64                 `json:"zoneTime,omitempty"`            // offensiveZoneTime, defensiveZoneTime, neutralZoneTime
+}
+
 // EdgeTeamLanding is the response from v1/edge/team-landing/{s}/{gt}.
-// League-wide leaders in each Edge category. Cached on filesystem only.
+// League-wide leaders in each Edge category.
 type EdgeTeamLanding struct {
-	Leaders map[string]interface{} `json:"leaders"`
+	SeasonsWithEdgeStats []EdgeSeasonAvailability  `json:"seasonsWithEdgeStats"`
+	Leaders              map[string]EdgeTeamLeader `json:"leaders"`
 }
