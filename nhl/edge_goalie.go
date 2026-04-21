@@ -100,10 +100,16 @@ type EdgeGoalieShotLocationEntry struct {
 
 // EdgeGoalieSavePctgDetail is the response from v1/edge/goalie-save-percentage-detail/{g}/{s}/{gt}.
 type EdgeGoalieSavePctgDetail struct {
-	Player               EdgeGoaliePlayer          `json:"player"`
-	SeasonsWithEdgeStats []EdgeSeasonAvailability   `json:"seasonsWithEdgeStats"`
-	SavePctgLast10       []EdgeGoalieSavePctgEntry  `json:"savePctgLast10"`
-	SavePctgDetails      []EdgeGoalieSavePctgEntry  `json:"savePctgDetails"`
+	Player               EdgeGoaliePlayer              `json:"player"`
+	SeasonsWithEdgeStats []EdgeSeasonAvailability      `json:"seasonsWithEdgeStats"`
+	SavePctgLast10       []EdgeGoalieSavePctgEntry     `json:"savePctgLast10"`
+	SavePctgDetails      *EdgeGoalieSavePctgStatDetail `json:"savePctgDetails,omitempty"`
+}
+
+// EdgeGoalieSavePctgStatDetail contains aggregated save percentage statistics.
+type EdgeGoalieSavePctgStatDetail struct {
+	GamesAbove900     *EdgeGoalieStatEntry `json:"gamesAbove900,omitempty"`
+	PctgGamesAbove900 *EdgeGoalieStatEntry `json:"pctgGamesAbove900,omitempty"`
 }
 
 // EdgeGoalieSavePctgEntry is a per-game save percentage entry.
