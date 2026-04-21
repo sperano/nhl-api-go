@@ -159,16 +159,16 @@ type EdgeTeamShotDifferential struct {
 // EdgeTeamComparison is the response from v1/edge/team-comparison/{t}/{s}/{gt}.
 // Rich composite for head-to-head display. Cached on filesystem only.
 type EdgeTeamComparison struct {
-	Team                   EdgeTeamInfo            `json:"team"`
-	SeasonsWithEdgeStats   []EdgeSeasonAvailability `json:"seasonsWithEdgeStats"`
-	ShotSpeedDetails       interface{}              `json:"shotSpeedDetails"`
-	SkatingSpeedDetails    interface{}              `json:"skatingSpeedDetails"`
-	SkatingDistanceLast10  interface{}              `json:"skatingDistanceLast10"`
-	SkatingDistanceDetails interface{}              `json:"skatingDistanceDetails"`
-	ShotLocationDetails    interface{}              `json:"shotLocationDetails"`
-	ShotLocationTotals     interface{}              `json:"shotLocationTotals"`
-	ZoneTimeDetails        interface{}              `json:"zoneTimeDetails"`
-	ShotDifferential       interface{}              `json:"shotDifferential"`
+	Team                   EdgeTeamInfo                          `json:"team"`
+	SeasonsWithEdgeStats   []EdgeSeasonAvailability              `json:"seasonsWithEdgeStats"`
+	ShotSpeedDetails       *EdgeComparisonShotSpeedDetails       `json:"shotSpeedDetails,omitempty"`
+	SkatingSpeedDetails    *EdgeComparisonSkatingSpeedDetails    `json:"skatingSpeedDetails,omitempty"`
+	SkatingDistanceLast10  []EdgeComparisonDistanceLast10Entry   `json:"skatingDistanceLast10,omitempty"`
+	SkatingDistanceDetails *EdgeComparisonSkatingDistanceDetails `json:"skatingDistanceDetails,omitempty"`
+	ShotLocationDetails    []EdgeComparisonShotLocationDetail    `json:"shotLocationDetails,omitempty"`
+	ShotLocationTotals     []EdgeComparisonShotLocationTotal     `json:"shotLocationTotals,omitempty"`
+	ZoneTimeDetails        *EdgeComparisonZoneTimeDetails        `json:"zoneTimeDetails,omitempty"`
+	ShotDifferential       *EdgeTeamShotDifferential             `json:"shotDifferential,omitempty"`
 }
 
 // EdgeTeamLeader is a leader entry in the team landing response.

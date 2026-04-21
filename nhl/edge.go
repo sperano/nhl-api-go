@@ -8,6 +8,13 @@ type EdgeMeasurement struct {
 	Metric   float64 `json:"metric"`
 }
 
+// EdgeMeasurementWithOverlay is a measurement with game context overlay.
+type EdgeMeasurementWithOverlay struct {
+	Imperial float64      `json:"imperial"`
+	Metric   float64      `json:"metric"`
+	Overlay  *EdgeOverlay `json:"overlay,omitempty"`
+}
+
 // EdgePercentileStat is a measurement with league-relative percentile.
 type EdgePercentileStat struct {
 	Imperial   float64         `json:"imperial"`
@@ -258,19 +265,93 @@ type EdgeZoneTimeEntry struct {
 	DefensiveZonePctg float64 `json:"defensiveZonePctg"`
 }
 
+// ===== Comparison Types (used in skater/team/goalie comparison endpoints) =====
+
+// EdgeComparisonShotSpeedDetails contains shot speed breakdown for comparisons.
+type EdgeComparisonShotSpeedDetails struct {
+	TopShotSpeed       *EdgeMeasurementWithOverlay `json:"topShotSpeed,omitempty"`
+	AvgShotSpeed       *EdgeMeasurement            `json:"avgShotSpeed,omitempty"`
+	ShotAttemptsOver100 int                        `json:"shotAttemptsOver100,omitempty"`
+	ShotAttempts90To100 int                        `json:"shotAttempts90To100,omitempty"`
+	ShotAttempts80To90  int                        `json:"shotAttempts80To90,omitempty"`
+	ShotAttempts70To80  int                        `json:"shotAttempts70To80,omitempty"`
+}
+
+// EdgeComparisonSkatingSpeedDetails contains skating speed breakdown for comparisons.
+type EdgeComparisonSkatingSpeedDetails struct {
+	MaxSkatingSpeed *EdgeMeasurementWithOverlay `json:"maxSkatingSpeed,omitempty"`
+	BurstsOver22    int                         `json:"burstsOver22,omitempty"`
+	Bursts20To22    int                         `json:"bursts20To22,omitempty"`
+	Bursts18To20    int                         `json:"bursts18To20,omitempty"`
+}
+
+// EdgeComparisonSkatingDistanceDetails contains distance breakdown for comparisons.
+type EdgeComparisonSkatingDistanceDetails struct {
+	DistanceTotal     *EdgeMeasurement            `json:"distanceTotal,omitempty"`
+	DistancePer60     *EdgeMeasurement            `json:"distancePer60,omitempty"`
+	DistanceMaxGame   *EdgeMeasurementWithOverlay `json:"distanceMaxGame,omitempty"`
+	DistanceMaxPeriod *EdgeMeasurementWithOverlay `json:"distanceMaxPeriod,omitempty"`
+}
+
+// EdgeComparisonZoneTimeDetails contains zone time percentages for comparisons.
+type EdgeComparisonZoneTimeDetails struct {
+	OffensiveZonePctg      float64 `json:"offensiveZonePctg"`
+	OffensiveZoneLeagueAvg float64 `json:"offensiveZoneLeagueAvg,omitempty"`
+	NeutralZonePctg        float64 `json:"neutralZonePctg"`
+	NeutralZoneLeagueAvg   float64 `json:"neutralZoneLeagueAvg,omitempty"`
+	DefensiveZonePctg      float64 `json:"defensiveZonePctg"`
+	DefensiveZoneLeagueAvg float64 `json:"defensiveZoneLeagueAvg,omitempty"`
+}
+
+// EdgeComparisonShotLocationDetail is a shot location breakdown by area.
+type EdgeComparisonShotLocationDetail struct {
+	Area         string  `json:"area"`
+	SOG          int     `json:"sog"`
+	Goals        int     `json:"goals"`
+	ShootingPctg float64 `json:"shootingPctg"`
+}
+
+// EdgeComparisonShotLocationTotal is shot totals by location code.
+type EdgeComparisonShotLocationTotal struct {
+	LocationCode string  `json:"locationCode"`
+	SOG          int     `json:"sog"`
+	Goals        int     `json:"goals"`
+	ShootingPctg float64 `json:"shootingPctg"`
+}
+
+// EdgeComparisonDistanceLast10Entry is a per-game distance entry in last 10 games.
+type EdgeComparisonDistanceLast10Entry struct {
+	GameCenterLink   string           `json:"gameCenterLink,omitempty"`
+	GameDate         string           `json:"gameDate"`
+	PlayerOnHomeTeam bool             `json:"playerOnHomeTeam,omitempty"`
+	DistanceSkated   *EdgeMeasurement `json:"distanceSkated,omitempty"`
+	TOI              float64          `json:"toi,omitempty"`
+	HomeTeam         *EdgeOverlayTeam `json:"homeTeam,omitempty"`
+	AwayTeam         *EdgeOverlayTeam `json:"awayTeam,omitempty"`
+	// Team comparison uses different field names
+	Distance *EdgeMeasurement `json:"distance,omitempty"`
+}
+
+// EdgeComparisonZoneStarts contains zone start percentages.
+type EdgeComparisonZoneStarts struct {
+	OffensiveZoneStarts float64 `json:"offensiveZoneStarts"`
+	NeutralZoneStarts   float64 `json:"neutralZoneStarts"`
+	DefensiveZoneStarts float64 `json:"defensiveZoneStarts"`
+}
+
 // EdgeSkaterComparison is the response from v1/edge/skater-comparison/{p}/{s}/{gt}.
 // Rich composite for head-to-head display. Cached on filesystem only.
 type EdgeSkaterComparison struct {
-	Player                 EdgeSkaterPlayer        `json:"player"`
-	SeasonsWithEdgeStats   []EdgeSeasonAvailability `json:"seasonsWithEdgeStats"`
-	ShotSpeedDetails       interface{}              `json:"shotSpeedDetails"`
-	SkatingSpeedDetails    interface{}              `json:"skatingSpeedDetails"`
-	SkatingDistanceLast10  interface{}              `json:"skatingDistanceLast10"`
-	SkatingDistanceDetails interface{}              `json:"skatingDistanceDetails"`
-	ShotLocationDetails    interface{}              `json:"shotLocationDetails"`
-	ShotLocationTotals     interface{}              `json:"shotLocationTotals"`
-	ZoneTimeDetails        interface{}              `json:"zoneTimeDetails"`
-	ZoneStarts             interface{}              `json:"zoneStarts"`
+	Player                 EdgeSkaterPlayer                     `json:"player"`
+	SeasonsWithEdgeStats   []EdgeSeasonAvailability             `json:"seasonsWithEdgeStats"`
+	ShotSpeedDetails       *EdgeComparisonShotSpeedDetails      `json:"shotSpeedDetails,omitempty"`
+	SkatingSpeedDetails    *EdgeComparisonSkatingSpeedDetails   `json:"skatingSpeedDetails,omitempty"`
+	SkatingDistanceLast10  []EdgeComparisonDistanceLast10Entry  `json:"skatingDistanceLast10,omitempty"`
+	SkatingDistanceDetails *EdgeComparisonSkatingDistanceDetails `json:"skatingDistanceDetails,omitempty"`
+	ShotLocationDetails    []EdgeComparisonShotLocationDetail   `json:"shotLocationDetails,omitempty"`
+	ShotLocationTotals     []EdgeComparisonShotLocationTotal    `json:"shotLocationTotals,omitempty"`
+	ZoneTimeDetails        *EdgeComparisonZoneTimeDetails       `json:"zoneTimeDetails,omitempty"`
+	ZoneStarts             *EdgeComparisonZoneStarts            `json:"zoneStarts,omitempty"`
 }
 
 // EdgeLeaderShotLocation is shot location detail in leader responses.

@@ -114,17 +114,60 @@ type EdgeGoalieSavePctgEntry struct {
 	SavePctg float64         `json:"savePctg"`
 }
 
+// EdgeGoalieComparisonShotSummary is shot totals by location code in comparison.
+type EdgeGoalieComparisonShotSummary struct {
+	LocationCode string  `json:"locationCode"`
+	ShotsAgainst int     `json:"shotsAgainst"`
+	GoalsAgainst int     `json:"goalsAgainst"`
+	Saves        int     `json:"saves"`
+	SavePctg     float64 `json:"savePctg"`
+}
+
+// EdgeGoalieComparisonShotDetail is shot breakdown by rink area in comparison.
+type EdgeGoalieComparisonShotDetail struct {
+	Area         string  `json:"area"`
+	ShotsAgainst int     `json:"shotsAgainst"`
+	GoalsAgainst int     `json:"goalsAgainst"`
+	Saves        int     `json:"saves"`
+	SavePctg     float64 `json:"savePctg"`
+}
+
+// EdgeGoalieComparisonSavePctgDetails contains overall save percentage details.
+type EdgeGoalieComparisonSavePctgDetails struct {
+	GamesAbove900     int     `json:"gamesAbove900,omitempty"`
+	PctgGamesAbove900 float64 `json:"pctgGamesAbove900,omitempty"`
+	PointPctg         float64 `json:"pointPctg,omitempty"`
+	GoalsAgainstAvg   float64 `json:"goalsAgainstAvg,omitempty"`
+	SavePctg          float64 `json:"savePctg,omitempty"`
+}
+
+// EdgeGoalieComparisonSavePctg5v5Details contains 5v5 save percentage details.
+type EdgeGoalieComparisonSavePctg5v5Details struct {
+	SavePctg      float64 `json:"savePctg,omitempty"`
+	SavePctgClose float64 `json:"savePctgClose,omitempty"`
+	Shots         int     `json:"shots,omitempty"`
+	ShotsPer60    float64 `json:"shotsPer60,omitempty"`
+}
+
+// EdgeGoalieComparisonLast10Entry is a game entry in goalie last10 arrays.
+type EdgeGoalieComparisonLast10Entry struct {
+	GameDate     string  `json:"gameDate,omitempty"`
+	SavePctg     float64 `json:"savePctg,omitempty"`
+	ShotsAgainst int     `json:"shotsAgainst,omitempty"`
+	GoalsAgainst int     `json:"goalsAgainst,omitempty"`
+}
+
 // EdgeGoalieComparison is the response from v1/edge/goalie-comparison/{g}/{s}/{gt}.
 // Rich composite for head-to-head display. Cached on filesystem only.
 type EdgeGoalieComparison struct {
-	Player               EdgeGoaliePlayer        `json:"player"`
-	SeasonsWithEdgeStats []EdgeSeasonAvailability `json:"seasonsWithEdgeStats"`
-	ShotLocationSummary  interface{}              `json:"shotLocationSummary"`
-	ShotLocationDetails  interface{}              `json:"shotLocationDetails"`
-	SavePctg5v5Last10    interface{}              `json:"savePctg5v5Last10"`
-	SavePctg5v5Details   interface{}              `json:"savePctg5v5Details"`
-	SavePctgLast10       interface{}              `json:"savePctgLast10"`
-	SavePctgDetails      interface{}              `json:"savePctgDetails"`
+	Player               EdgeGoaliePlayer                        `json:"player"`
+	SeasonsWithEdgeStats []EdgeSeasonAvailability                `json:"seasonsWithEdgeStats"`
+	ShotLocationSummary  []EdgeGoalieComparisonShotSummary       `json:"shotLocationSummary,omitempty"`
+	ShotLocationDetails  []EdgeGoalieComparisonShotDetail        `json:"shotLocationDetails,omitempty"`
+	SavePctg5v5Last10    []EdgeGoalieComparisonLast10Entry       `json:"savePctg5v5Last10,omitempty"`
+	SavePctg5v5Details   *EdgeGoalieComparisonSavePctg5v5Details `json:"savePctg5v5Details,omitempty"`
+	SavePctgLast10       []EdgeGoalieComparisonLast10Entry       `json:"savePctgLast10,omitempty"`
+	SavePctgDetails      *EdgeGoalieComparisonSavePctgDetails    `json:"savePctgDetails,omitempty"`
 }
 
 // EdgeGoalieLeader is a leader entry in the goalie landing response.
