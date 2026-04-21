@@ -344,29 +344,20 @@ func TestEdgeTeamDetail_Deserialization(t *testing.T) {
 }
 
 func TestEdgeTeamZoneTimeDetails_Deserialization(t *testing.T) {
+	// Structure matches real API response from /v1/edge/team-zone-time-details/{t}/{s}/{gt}
 	jsonData := `{
-		"team": {
-			"id": 22,
-			"commonName": {"default": "Oilers"},
-			"placeNameWithPreposition": {"default": "Edmonton"},
-			"abbrev": "EDM",
-			"teamLogo": {"light": "l", "dark": "d"},
-			"slug": "edmonton-oilers",
-			"conference": "Western",
-			"division": "Pacific",
-			"wins": 35, "losses": 15, "otLosses": 5, "gamesPlayed": 55, "points": 75
-		},
-		"seasonsWithEdgeStats": [{"id": 20242025, "gameTypes": [2]}],
 		"zoneTimeDetails": [
-			{"strengthCode": "all", "offensiveZonePctg": 0.34, "offensiveZoneRank": 5, "neutralZonePctg": 0.34, "neutralZoneRank": 15, "defensiveZonePctg": 0.32, "defensiveZoneRank": 20},
-			{"strengthCode": "es", "offensiveZonePctg": 0.32, "offensiveZoneRank": 7, "neutralZonePctg": 0.35, "neutralZoneRank": 12, "defensiveZonePctg": 0.33, "defensiveZoneRank": 18},
-			{"strengthCode": "pp", "offensiveZonePctg": 0.60, "offensiveZoneRank": 3, "neutralZonePctg": 0.25, "neutralZoneRank": 10, "defensiveZonePctg": 0.15, "defensiveZoneRank": 25},
-			{"strengthCode": "pk", "offensiveZonePctg": 0.15, "offensiveZoneRank": 20, "neutralZonePctg": 0.30, "neutralZoneRank": 16, "defensiveZonePctg": 0.55, "defensiveZoneRank": 8}
+			{"strengthCode": "all", "offensiveZonePctg": 0.43, "offensiveZoneRank": 3, "offensiveZoneLeagueAvg": 0.41, "neutralZonePctg": 0.17, "neutralZoneRank": 30, "neutralZoneLeagueAvg": 0.18, "defensiveZonePctg": 0.40, "defensiveZoneRank": 5, "defensiveZoneLeagueAvg": 0.41},
+			{"strengthCode": "es", "offensiveZonePctg": 0.42, "offensiveZoneRank": 4, "offensiveZoneLeagueAvg": 0.41, "neutralZonePctg": 0.18, "neutralZoneRank": 30, "neutralZoneLeagueAvg": 0.19, "defensiveZonePctg": 0.40, "defensiveZoneRank": 6, "defensiveZoneLeagueAvg": 0.41},
+			{"strengthCode": "pp", "offensiveZonePctg": 0.62, "offensiveZoneRank": 4, "offensiveZoneLeagueAvg": 0.59, "neutralZonePctg": 0.14, "neutralZoneRank": 24, "neutralZoneLeagueAvg": 0.14, "defensiveZonePctg": 0.25, "defensiveZoneRank": 4, "defensiveZoneLeagueAvg": 0.27},
+			{"strengthCode": "pk", "offensiveZonePctg": 0.29, "offensiveZoneRank": 3, "offensiveZoneLeagueAvg": 0.27, "neutralZonePctg": 0.14, "neutralZoneRank": 13, "neutralZoneLeagueAvg": 0.14, "defensiveZonePctg": 0.57, "defensiveZoneRank": 6, "defensiveZoneLeagueAvg": 0.59}
 		],
-		"shotDifferential": [
-			{"strengthCode": "all", "forPerGame": 32.5, "forPerGameRank": 4, "againstPerGame": 28.1, "againstPerGameRank": 10, "differentialPerGame": 4.4, "differentialPerGameRank": 5},
-			{"strengthCode": "es", "forPerGame": 25.0, "forPerGameRank": 6, "againstPerGame": 24.0, "againstPerGameRank": 12, "differentialPerGame": 1.0, "differentialPerGameRank": 8}
-		]
+		"shotDifferential": {
+			"shotAttemptDifferential": 5.01,
+			"shotAttemptDifferentialRank": 3,
+			"sogDifferential": 0.12,
+			"sogDifferentialRank": 2
+		}
 	}`
 
 	var detail EdgeTeamZoneTimeDetails
@@ -380,14 +371,14 @@ func TestEdgeTeamZoneTimeDetails_Deserialization(t *testing.T) {
 	if detail.ZoneTimeDetails[0].StrengthCode != "all" {
 		t.Errorf("ZoneTimeDetails[0].StrengthCode = %q, want %q", detail.ZoneTimeDetails[0].StrengthCode, "all")
 	}
-	if detail.ZoneTimeDetails[2].OffensiveZonePctg != 0.60 {
-		t.Errorf("ZoneTimeDetails[2].OffensiveZonePctg = %f, want 0.60", detail.ZoneTimeDetails[2].OffensiveZonePctg)
+	if detail.ZoneTimeDetails[2].OffensiveZonePctg != 0.62 {
+		t.Errorf("ZoneTimeDetails[2].OffensiveZonePctg = %f, want 0.62", detail.ZoneTimeDetails[2].OffensiveZonePctg)
 	}
-	if len(detail.ShotDifferential) != 2 {
-		t.Fatalf("ShotDifferential length = %d, want 2", len(detail.ShotDifferential))
+	if detail.ShotDifferential == nil {
+		t.Fatal("ShotDifferential is nil, want non-nil")
 	}
-	if detail.ShotDifferential[0].DifferentialPerGameRank != 5 {
-		t.Errorf("ShotDifferential[0].DifferentialPerGameRank = %d, want 5", detail.ShotDifferential[0].DifferentialPerGameRank)
+	if detail.ShotDifferential.ShotAttemptDifferentialRank != 3 {
+		t.Errorf("ShotDifferential.ShotAttemptDifferentialRank = %d, want 3", detail.ShotDifferential.ShotAttemptDifferentialRank)
 	}
 }
 

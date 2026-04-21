@@ -128,32 +128,32 @@ type EdgeTeamShotLocationEntry struct {
 // zone time by strength code (all/es/pp/pk) and includes shot differential.
 // Imported to DB in edge_team_zone_time_by_strength table.
 type EdgeTeamZoneTimeDetails struct {
-	Team                 EdgeTeamInfo                    `json:"team"`
-	SeasonsWithEdgeStats []EdgeSeasonAvailability         `json:"seasonsWithEdgeStats"`
-	ZoneTimeDetails      []EdgeTeamZoneTimeByStrength     `json:"zoneTimeDetails"`
-	ShotDifferential     []EdgeTeamShotDifferentialEntry  `json:"shotDifferential"`
+	Team                 *EdgeTeamInfo                   `json:"team,omitempty"`
+	SeasonsWithEdgeStats []EdgeSeasonAvailability        `json:"seasonsWithEdgeStats,omitempty"`
+	ZoneTimeDetails      []EdgeTeamZoneTimeByStrength    `json:"zoneTimeDetails"`
+	ShotDifferential     *EdgeTeamShotDifferential       `json:"shotDifferential,omitempty"`
 }
 
 // EdgeTeamZoneTimeByStrength is zone time broken down by strength code.
 type EdgeTeamZoneTimeByStrength struct {
-	StrengthCode      string  `json:"strengthCode"`
-	OffensiveZonePctg float64 `json:"offensiveZonePctg"`
-	OffensiveZoneRank int     `json:"offensiveZoneRank"`
-	NeutralZonePctg   float64 `json:"neutralZonePctg"`
-	NeutralZoneRank   int     `json:"neutralZoneRank"`
-	DefensiveZonePctg float64 `json:"defensiveZonePctg"`
-	DefensiveZoneRank int     `json:"defensiveZoneRank"`
+	StrengthCode           string  `json:"strengthCode"`
+	OffensiveZonePctg      float64 `json:"offensiveZonePctg"`
+	OffensiveZoneRank      int     `json:"offensiveZoneRank"`
+	OffensiveZoneLeagueAvg float64 `json:"offensiveZoneLeagueAvg,omitempty"`
+	NeutralZonePctg        float64 `json:"neutralZonePctg"`
+	NeutralZoneRank        int     `json:"neutralZoneRank"`
+	NeutralZoneLeagueAvg   float64 `json:"neutralZoneLeagueAvg,omitempty"`
+	DefensiveZonePctg      float64 `json:"defensiveZonePctg"`
+	DefensiveZoneRank      int     `json:"defensiveZoneRank"`
+	DefensiveZoneLeagueAvg float64 `json:"defensiveZoneLeagueAvg,omitempty"`
 }
 
-// EdgeTeamShotDifferentialEntry is shot differential by strength code.
-type EdgeTeamShotDifferentialEntry struct {
-	StrengthCode            string  `json:"strengthCode"`
-	ForPerGame              float64 `json:"forPerGame"`
-	ForPerGameRank          int     `json:"forPerGameRank"`
-	AgainstPerGame          float64 `json:"againstPerGame"`
-	AgainstPerGameRank      int     `json:"againstPerGameRank"`
-	DifferentialPerGame     float64 `json:"differentialPerGame"`
-	DifferentialPerGameRank int     `json:"differentialPerGameRank"`
+// EdgeTeamShotDifferential is aggregated shot differential stats.
+type EdgeTeamShotDifferential struct {
+	ShotAttemptDifferential     float64 `json:"shotAttemptDifferential"`
+	ShotAttemptDifferentialRank int     `json:"shotAttemptDifferentialRank"`
+	SOGDifferential             float64 `json:"sogDifferential"`
+	SOGDifferentialRank         int     `json:"sogDifferentialRank"`
 }
 
 // EdgeTeamComparison is the response from v1/edge/team-comparison/{t}/{s}/{gt}.
