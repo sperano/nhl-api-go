@@ -3,6 +3,7 @@ package nhl
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -172,13 +173,5 @@ func (p *RosterPlayer) BirthPlace() string {
 		parts = append(parts, p.BirthCountry)
 	}
 
-	result := ""
-	for i, part := range parts {
-		if i > 0 {
-			result += ", "
-		}
-		result += part
-	}
-
-	return result
+	return strings.Join(parts, ", ")
 }
