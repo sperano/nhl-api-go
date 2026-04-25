@@ -30,8 +30,18 @@ func (e *APIError) Error() string {
 	return fmt.Sprintf("NHL API error (status %d): %s", e.StatusCode, e.Message)
 }
 
-// Is supports errors.Is matching by status code. For 5xx errors, any
-// APIError with a 5xx status code matches ErrServerError.
+// Is supports errors.Is matching by status code, with one asymmetry:
+//
+//   - errors.Is(actualErr, ErrServerError) returns true for ANY 5xx APIError
+//     (ErrServerError has StatusCode 500; the comparison treats it as
+//     "any 5xx"). This lets callers write a single check for server-side
+//     failures regardless of the specific 5xx returned.
+//   - For all other targets, the match requires an exact status code,
+//     regardless of message. errors.Is(actualErr, ErrNotFound) requires
+//     actualErr.StatusCode == 404; a 403 doesn't match ErrNotFound.
+//
+// The asymmetry is one-way: only ErrServerError (500) acts as a 5xx
+// wildcard. ErrNotFound (404) does not match other 4xx codes.
 func (e *APIError) Is(target error) bool {
 	t, ok := target.(*APIError)
 	if !ok {
