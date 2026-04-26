@@ -518,6 +518,28 @@ func TestSeasonInfoSerialization(t *testing.T) {
 	}
 }
 
+func TestSeasonInfo_Label(t *testing.T) {
+	tests := []struct {
+		name      string
+		startYear int
+		want      string
+	}{
+		// "%d-%02d" → display end year as last two digits, zero-padded.
+		{"typical season", 2023, "2023-24"},
+		{"century crossover", 1999, "1999-00"},
+		{"first decade", 2009, "2009-10"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			info := SeasonInfo{ID: NewSeason(tt.startYear)}
+			if got := info.Label(); got != tt.want {
+				t.Errorf("Label() = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestStandingsResponseSerialization(t *testing.T) {
 	response := StandingsResponse{
 		Standings: []Standing{
