@@ -36,10 +36,17 @@ func TestGameType_String(t *testing.T) {
 		{"regular season", GameTypeRegularSeason, "Regular Season"},
 		{"playoffs", GameTypePlayoffs, "Playoffs"},
 		{"all-star", GameTypeAllStar, "All-Star"},
+		{"world cup", GameTypeWorldCup, "World Cup"},
+		{"world cup 2004", GameTypeWorldCup2004, "World Cup 2004"},
 		{"world cup pre-tournament", GameTypeWorldCupPreTournament, "World Cup Pre-Tournament"},
+		{"olympics", GameTypeOlympics, "Olympics"},
+		{"young stars", GameTypeYoungStars, "YoungStars"},
+		{"pwhl showcase", GameTypePWHLShowcase, "PWHL Showcase"},
 		{"lockout lost", GameTypeLockoutLost, "Lockout Lost"},
 		{"canada cup", GameTypeCanadaCup, "Canada Cup"},
 		{"exhibition overseas", GameTypeExhibitionOverseas, "Exhibition Overseas"},
+		{"womens all-star", GameTypeWomensAllStar, "Women's All-Star"},
+		{"4 nations", GameType4Nations, "4 Nations Face-Off"},
 		{"unknown", GameType(99), "Unknown(99)"},
 		{"zero", GameType(0), "Unknown(0)"},
 	}
@@ -48,6 +55,42 @@ func TestGameType_String(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.gameType.String(); got != tt.want {
 				t.Errorf("GameType.String() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGameType_Label(t *testing.T) {
+	tests := []struct {
+		name     string
+		gameType GameType
+		want     string
+	}{
+		{"preseason", GameTypePreseason, "preseason"},
+		{"regular season", GameTypeRegularSeason, "regular_season"},
+		{"playoffs", GameTypePlayoffs, "playoffs"},
+		{"all-star", GameTypeAllStar, "all_star"},
+		{"world cup", GameTypeWorldCup, "world_cup"},
+		{"world cup 2004", GameTypeWorldCup2004, "world_cup_2004"},
+		{"world cup pre-tournament", GameTypeWorldCupPreTournament, "world_cup_pre_tournament"},
+		{"olympics", GameTypeOlympics, "olympics"},
+		{"young stars", GameTypeYoungStars, "young_stars"},
+		{"pwhl showcase", GameTypePWHLShowcase, "pwhl_showcase"},
+		{"lockout lost", GameTypeLockoutLost, "lockout_lost"},
+		{"canada cup", GameTypeCanadaCup, "canada_cup"},
+		{"exhibition overseas", GameTypeExhibitionOverseas, "exhibition_overseas"},
+		{"womens all-star", GameTypeWomensAllStar, "womens_all_star"},
+		// 4Nations's snake form is "four_nations" (digit spelled out), not
+		// "4_nations" — pin this to catch any future template change.
+		{"4 nations", GameType4Nations, "four_nations"},
+		{"unknown", GameType(99), "unknown_99"},
+		{"zero", GameType(0), "unknown_0"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.gameType.Label(); got != tt.want {
+				t.Errorf("GameType.Label() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -63,14 +106,26 @@ func TestGameType_IsValid(t *testing.T) {
 		{"regular season valid", GameTypeRegularSeason, true},
 		{"playoffs valid", GameTypePlayoffs, true},
 		{"all-star valid", GameTypeAllStar, true},
+		{"world cup valid", GameTypeWorldCup, true},
+		{"world cup 2004 valid", GameTypeWorldCup2004, true},
 		{"world cup pre-tournament valid", GameTypeWorldCupPreTournament, true},
+		{"olympics valid", GameTypeOlympics, true},
+		{"young stars valid", GameTypeYoungStars, true},
+		{"pwhl showcase valid", GameTypePWHLShowcase, true},
 		{"lockout lost valid", GameTypeLockoutLost, true},
 		{"canada cup valid", GameTypeCanadaCup, true},
 		{"exhibition overseas valid", GameTypeExhibitionOverseas, true},
+		{"womens all-star valid", GameTypeWomensAllStar, true},
+		{"4 nations valid", GameType4Nations, true},
 		{"zero invalid", GameType(0), false},
 		{"negative invalid", GameType(-1), false},
 		{"too high invalid", GameType(5), false},
 		{"unknown invalid", GameType(99), false},
+		// Pin the iota gaps: these integer values fall between defined
+		// constants and must be rejected.
+		{"between 4 and 6 invalid", GameType(11), false},
+		{"between 14 and 18 invalid", GameType(15), false},
+		{"above 20 invalid", GameType(21), false},
 	}
 
 	for _, tt := range tests {
@@ -93,13 +148,22 @@ func TestGameTypeFromInt(t *testing.T) {
 		{"regular season", 2, GameTypeRegularSeason, false},
 		{"playoffs", 3, GameTypePlayoffs, false},
 		{"all-star", 4, GameTypeAllStar, false},
+		{"world cup", 6, GameTypeWorldCup, false},
+		{"world cup 2004", 7, GameTypeWorldCup2004, false},
 		{"world cup pre-tournament", 8, GameTypeWorldCupPreTournament, false},
+		{"olympics", 9, GameTypeOlympics, false},
+		{"young stars", 10, GameTypeYoungStars, false},
+		{"pwhl showcase", 12, GameTypePWHLShowcase, false},
 		{"lockout lost", 13, GameTypeLockoutLost, false},
 		{"canada cup", 14, GameTypeCanadaCup, false},
 		{"exhibition overseas", 18, GameTypeExhibitionOverseas, false},
+		{"womens all-star", 19, GameTypeWomensAllStar, false},
+		{"4 nations", 20, GameType4Nations, false},
 		{"zero error", 0, GameType(0), true},
 		{"negative error", -1, GameType(0), true},
 		{"too high error", 5, GameType(0), true},
+		{"iota gap 11 error", 11, GameType(0), true},
+		{"iota gap 15 error", 15, GameType(0), true},
 		{"unknown error", 99, GameType(0), true},
 	}
 
@@ -168,6 +232,33 @@ func TestGameTypeFromString(t *testing.T) {
 		{"display exhibition overseas", "Exhibition Overseas", GameTypeExhibitionOverseas, false},
 		{"camel exhibition overseas", "ExhibitionOverseas", GameTypeExhibitionOverseas, false},
 		{"snake exhibition overseas", "exhibition_overseas", GameTypeExhibitionOverseas, false},
+		{"numeric world cup", "6", GameTypeWorldCup, false},
+		{"display world cup", "World Cup", GameTypeWorldCup, false},
+		{"camel world cup", "WorldCup", GameTypeWorldCup, false},
+		{"snake world cup", "world_cup", GameTypeWorldCup, false},
+		{"numeric world cup 2004", "7", GameTypeWorldCup2004, false},
+		{"display world cup 2004", "World Cup 2004", GameTypeWorldCup2004, false},
+		{"camel world cup 2004", "WorldCup2004", GameTypeWorldCup2004, false},
+		{"snake world cup 2004", "world_cup_2004", GameTypeWorldCup2004, false},
+		{"numeric olympics", "9", GameTypeOlympics, false},
+		{"display olympics", "Olympics", GameTypeOlympics, false},
+		{"snake olympics", "olympics", GameTypeOlympics, false},
+		{"numeric young stars", "10", GameTypeYoungStars, false},
+		{"display young stars no space", "YoungStars", GameTypeYoungStars, false},
+		{"display young stars spaced", "Young Stars", GameTypeYoungStars, false},
+		{"snake young stars", "young_stars", GameTypeYoungStars, false},
+		{"numeric pwhl showcase", "12", GameTypePWHLShowcase, false},
+		{"display pwhl showcase", "PWHL Showcase", GameTypePWHLShowcase, false},
+		{"camel pwhl showcase", "PWHLShowcase", GameTypePWHLShowcase, false},
+		{"snake pwhl showcase", "pwhl_showcase", GameTypePWHLShowcase, false},
+		{"numeric womens all-star", "19", GameTypeWomensAllStar, false},
+		{"display womens all-star", "Women's All-Star", GameTypeWomensAllStar, false},
+		{"camel womens all-star", "WomensAllStar", GameTypeWomensAllStar, false},
+		{"snake womens all-star", "womens_all_star", GameTypeWomensAllStar, false},
+		{"numeric 4 nations", "20", GameType4Nations, false},
+		{"display 4 nations", "4 Nations Face-Off", GameType4Nations, false},
+		{"camel 4 nations", "4NationsFaceOff", GameType4Nations, false},
+		{"snake 4 nations", "four_nations", GameType4Nations, false},
 		{"empty error", "", GameType(0), true},
 		{"unknown numeric error", "99", GameType(0), true},
 		{"unknown text error", "Unknown", GameType(0), true},
