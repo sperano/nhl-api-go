@@ -878,6 +878,158 @@ func TestSeason_GobInStruct(t *testing.T) {
 	}
 }
 
+// Tests for the bare Date type (lines 13-93 of date.go). Date is a thin
+// wrapper around time.Time used for API responses with concrete dates;
+// GameDate (above) is the broader "now or specific" type. The two share
+// no methods, so they need separate coverage.
+
+func TestDateFromTime(t *testing.T) {
+	// time-of-day components must be discarded by DateFromTime.
+	src := time.Date(2024, time.March, 15, 23, 59, 59, 999999999, time.UTC)
+	d := DateFromTime(src)
+
+	if d.Year() != 2024 || d.Month() != time.March || d.Day() != 15 {
+		t.Errorf("DateFromTime() = %v, want 2024-03-15", d)
+	}
+	if d.Hour() != 0 || d.Minute() != 0 || d.Second() != 0 || d.Nanosecond() != 0 {
+		t.Errorf("DateFromTime() did not zero time-of-day: %v", d)
+	}
+}
+
+func TestParseDate(t *testing.T) {
+	t.Run("valid", func(t *testing.T) {
+		d, err := ParseDate("2024-03-15")
+		if err != nil {
+			t.Fatalf("ParseDate() error = %v", err)
+		}
+		if d.String() != "2024-03-15" {
+			t.Errorf("ParseDate().String() = %s, want 2024-03-15", d.String())
+		}
+	})
+
+	t.Run("invalid format errors", func(t *testing.T) {
+		if _, err := ParseDate("not-a-date"); err == nil {
+			t.Error("ParseDate() should reject non-date string")
+		}
+	})
+
+	t.Run("wrong layout errors", func(t *testing.T) {
+		if _, err := ParseDate("03/15/2024"); err == nil {
+			t.Error("ParseDate() should reject MM/DD/YYYY layout")
+		}
+	})
+}
+
+func TestMustParseDate(t *testing.T) {
+	t.Run("valid does not panic", func(t *testing.T) {
+		d := MustParseDate("2024-03-15")
+		if d.String() != "2024-03-15" {
+			t.Errorf("MustParseDate().String() = %s, want 2024-03-15", d.String())
+		}
+	})
+
+	t.Run("invalid panics", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("MustParseDate() did not panic on invalid input")
+			}
+		}()
+		MustParseDate("nope")
+	})
+}
+
+func TestDate_UnmarshalJSON(t *testing.T) {
+	t.Run("valid round trip", func(t *testing.T) {
+		var d Date
+		if err := json.Unmarshal([]byte(`"2024-03-15"`), &d); err != nil {
+			t.Fatalf("UnmarshalJSON() error = %v", err)
+		}
+		if d.String() != "2024-03-15" {
+			t.Errorf("UnmarshalJSON() = %s, want 2024-03-15", d.String())
+		}
+	})
+
+	t.Run("non-string JSON value", func(t *testing.T) {
+		// Numbers and bools are syntactically valid JSON, so the outer
+		// parser hands them to our method; the inner json.Unmarshal then
+		// fails when trying to put them into a string. This is the only
+		// way to exercise the first error branch — malformed JSON like
+		// "{not json}" short-circuits at the outer parser and never
+		// reaches our UnmarshalJSON.
+		var d Date
+		if err := json.Unmarshal([]byte("123"), &d); err == nil {
+			t.Error("UnmarshalJSON() should reject non-string JSON value")
+		}
+	})
+
+	t.Run("invalid date string", func(t *testing.T) {
+		var d Date
+		if err := json.Unmarshal([]byte(`"not-a-date"`), &d); err == nil {
+			t.Error("UnmarshalJSON() should reject non-date string payload")
+		}
+	})
+}
+
+func TestDate_Gob(t *testing.T) {
+	original := NewDate(2024, time.March, 15)
+
+	var buf bytes.Buffer
+	if err := gob.NewEncoder(&buf).Encode(original); err != nil {
+		t.Fatalf("GobEncode() error = %v", err)
+	}
+
+	var decoded Date
+	if err := gob.NewDecoder(&buf).Decode(&decoded); err != nil {
+		t.Fatalf("GobDecode() error = %v", err)
+	}
+
+	if !decoded.Equal(original) {
+		t.Errorf("Gob round trip: got %v, want %v", decoded, original)
+	}
+}
+
+func TestGameDate_Gob(t *testing.T) {
+	t.Run("specific date round trip", func(t *testing.T) {
+		original := FromYMD(2024, 3, 15)
+
+		var buf bytes.Buffer
+		if err := gob.NewEncoder(&buf).Encode(original); err != nil {
+			t.Fatalf("GobEncode() error = %v", err)
+		}
+
+		var decoded GameDate
+		if err := gob.NewDecoder(&buf).Decode(&decoded); err != nil {
+			t.Fatalf("GobDecode() error = %v", err)
+		}
+
+		if decoded.IsNow() {
+			t.Error("GobDecode() flipped isNow to true")
+		}
+		if decoded.APIString() != original.APIString() {
+			t.Errorf("APIString = %s, want %s", decoded.APIString(), original.APIString())
+		}
+	})
+
+	t.Run("isNow round trip", func(t *testing.T) {
+		// Now() preserves isNow=true and zero date — confirm both survive.
+		original := Now()
+
+		var buf bytes.Buffer
+		if err := gob.NewEncoder(&buf).Encode(original); err != nil {
+			t.Fatalf("GobEncode() error = %v", err)
+		}
+
+		var decoded GameDate
+		if err := gob.NewDecoder(&buf).Decode(&decoded); err != nil {
+			t.Fatalf("GobDecode() error = %v", err)
+		}
+
+		if !decoded.IsNow() {
+			t.Error("GobDecode() lost isNow flag")
+		}
+	})
+}
+
 func BenchmarkSeason_ID(b *testing.B) {
 	season := NewSeason(2023)
 	b.ResetTimer()
