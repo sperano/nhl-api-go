@@ -60,6 +60,42 @@ func TestGameType_String(t *testing.T) {
 	}
 }
 
+func TestGameType_Label(t *testing.T) {
+	tests := []struct {
+		name     string
+		gameType GameType
+		want     string
+	}{
+		{"preseason", GameTypePreseason, "preseason"},
+		{"regular season", GameTypeRegularSeason, "regular_season"},
+		{"playoffs", GameTypePlayoffs, "playoffs"},
+		{"all-star", GameTypeAllStar, "all_star"},
+		{"world cup", GameTypeWorldCup, "world_cup"},
+		{"world cup 2004", GameTypeWorldCup2004, "world_cup_2004"},
+		{"world cup pre-tournament", GameTypeWorldCupPreTournament, "world_cup_pre_tournament"},
+		{"olympics", GameTypeOlympics, "olympics"},
+		{"young stars", GameTypeYoungStars, "young_stars"},
+		{"pwhl showcase", GameTypePWHLShowcase, "pwhl_showcase"},
+		{"lockout lost", GameTypeLockoutLost, "lockout_lost"},
+		{"canada cup", GameTypeCanadaCup, "canada_cup"},
+		{"exhibition overseas", GameTypeExhibitionOverseas, "exhibition_overseas"},
+		{"womens all-star", GameTypeWomensAllStar, "womens_all_star"},
+		// 4Nations's snake form is "four_nations" (digit spelled out), not
+		// "4_nations" — pin this to catch any future template change.
+		{"4 nations", GameType4Nations, "four_nations"},
+		{"unknown", GameType(99), "unknown_99"},
+		{"zero", GameType(0), "unknown_0"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.gameType.Label(); got != tt.want {
+				t.Errorf("GameType.Label() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestGameType_IsValid(t *testing.T) {
 	tests := []struct {
 		name     string
