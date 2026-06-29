@@ -37,10 +37,10 @@ func TestAPIError_Error(t *testing.T) {
 
 func TestAPIError_Is(t *testing.T) {
 	tests := []struct {
-		name     string
-		err      error
-		target   error
-		wantIs   bool
+		name   string
+		err    error
+		target error
+		wantIs bool
 	}{
 		{
 			name:   "404 matches ErrNotFound",

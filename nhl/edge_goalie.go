@@ -5,10 +5,10 @@ package nhl
 // EdgeGoalieDetail is the response from v1/edge/goalie-detail/{g}/{s}/{gt}.
 type EdgeGoalieDetail struct {
 	Player               EdgeGoaliePlayer                `json:"player"`
-	SeasonsWithEdgeStats []EdgeSeasonAvailability         `json:"seasonsWithEdgeStats"`
-	Stats                EdgeGoalieStatsSummary           `json:"stats"`
-	ShotLocationSummary  []EdgeGoalieShotLocationSummary  `json:"shotLocationSummary"`
-	ShotLocationDetails  []EdgeGoalieShotLocationArea     `json:"shotLocationDetails"`
+	SeasonsWithEdgeStats []EdgeSeasonAvailability        `json:"seasonsWithEdgeStats"`
+	Stats                EdgeGoalieStatsSummary          `json:"stats"`
+	ShotLocationSummary  []EdgeGoalieShotLocationSummary `json:"shotLocationSummary"`
+	ShotLocationDetails  []EdgeGoalieShotLocationArea    `json:"shotLocationDetails"`
 }
 
 // EdgeGoaliePlayer is the player metadata embedded in goalie Edge responses.
@@ -71,7 +71,7 @@ type EdgeGoalieShotLocationArea struct {
 
 // EdgeGoalie5v5Detail is the response from v1/edge/goalie-5v5-detail/{g}/{s}/{gt}.
 type EdgeGoalie5v5Detail struct {
-	Player               EdgeGoaliePlayer        `json:"player"`
+	Player               EdgeGoaliePlayer         `json:"player"`
 	SeasonsWithEdgeStats []EdgeSeasonAvailability `json:"seasonsWithEdgeStats"`
 	SavePctg5v5Last10    []EdgeGoalie5v5Entry     `json:"savePctg5v5Last10"`
 }
@@ -86,7 +86,7 @@ type EdgeGoalie5v5Entry struct {
 
 // EdgeGoalieShotLocationDetail is the response from v1/edge/goalie-shot-location-detail/{g}/{s}/{gt}.
 type EdgeGoalieShotLocationDetail struct {
-	Player               EdgeGoaliePlayer             `json:"player"`
+	Player               EdgeGoaliePlayer              `json:"player"`
 	SeasonsWithEdgeStats []EdgeSeasonAvailability      `json:"seasonsWithEdgeStats"`
 	ShotLocationDetails  []EdgeGoalieShotLocationEntry `json:"shotLocationDetails"`
 }
@@ -190,6 +190,6 @@ type EdgeGoalieLeader struct {
 // EdgeGoalieLanding is the response from v1/edge/goalie-landing/{s}/{gt}.
 // League-wide leaders in each Edge category.
 type EdgeGoalieLanding struct {
-	SeasonsWithEdgeStats []EdgeSeasonAvailability   `json:"seasonsWithEdgeStats"`
+	SeasonsWithEdgeStats []EdgeSeasonAvailability    `json:"seasonsWithEdgeStats"`
 	Leaders              map[string]EdgeGoalieLeader `json:"leaders"`
 }

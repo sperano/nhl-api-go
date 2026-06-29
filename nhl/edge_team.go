@@ -4,11 +4,11 @@ package nhl
 
 // EdgeTeamDetail is the response from v1/edge/team-detail/{t}/{s}/{gt}.
 type EdgeTeamDetail struct {
-	Team                 EdgeTeamInfo            `json:"team"`
+	Team                 EdgeTeamInfo             `json:"team"`
 	SeasonsWithEdgeStats []EdgeSeasonAvailability `json:"seasonsWithEdgeStats"`
 	ShotSpeed            EdgeTeamShotSpeed        `json:"shotSpeed"`
 	SkatingSpeed         EdgeTeamSkatingSpeed     `json:"skatingSpeed"`
-	DistanceSkated       EdgeTeamDistance          `json:"distanceSkated"`
+	DistanceSkated       EdgeTeamDistance         `json:"distanceSkated"`
 	SogSummary           []EdgeTeamSogSummary     `json:"sogSummary"`
 	SogDetails           []EdgeTeamSogAreaDetail  `json:"sogDetails"`
 	ZoneTimeDetails      EdgeTeamZoneTime         `json:"zoneTimeDetails"`
@@ -70,7 +70,7 @@ type EdgeTeamZoneTime struct {
 
 // EdgeTeamSpeedDetail is the response from v1/edge/team-skating-speed-detail/{t}/{s}/{gt}.
 type EdgeTeamSpeedDetail struct {
-	Team                 EdgeTeamInfo            `json:"team"`
+	Team                 EdgeTeamInfo             `json:"team"`
 	SeasonsWithEdgeStats []EdgeSeasonAvailability `json:"seasonsWithEdgeStats"`
 	TopSkatingSpeeds     []EdgeTeamSpeedEntry     `json:"topSkatingSpeeds"`
 }
@@ -83,7 +83,7 @@ type EdgeTeamSpeedEntry struct {
 
 // EdgeTeamDistanceDetail is the response from v1/edge/team-skating-distance-detail/{t}/{s}/{gt}.
 type EdgeTeamDistanceDetail struct {
-	Team                  EdgeTeamInfo            `json:"team"`
+	Team                  EdgeTeamInfo             `json:"team"`
 	SeasonsWithEdgeStats  []EdgeSeasonAvailability `json:"seasonsWithEdgeStats"`
 	SkatingDistanceLast10 []EdgeTeamDistanceEntry  `json:"skatingDistanceLast10"`
 }
@@ -98,7 +98,7 @@ type EdgeTeamDistanceEntry struct {
 
 // EdgeTeamShotSpeedDetail is the response from v1/edge/team-shot-speed-detail/{t}/{s}/{gt}.
 type EdgeTeamShotSpeedDetail struct {
-	Team                 EdgeTeamInfo            `json:"team"`
+	Team                 EdgeTeamInfo             `json:"team"`
 	SeasonsWithEdgeStats []EdgeSeasonAvailability `json:"seasonsWithEdgeStats"`
 	HardestShots         []EdgeTeamShotSpeedEntry `json:"hardestShots"`
 }
@@ -112,8 +112,8 @@ type EdgeTeamShotSpeedEntry struct {
 // EdgeTeamShotLocationDetail is the response from v1/edge/team-shot-location-detail/{t}/{s}/{gt}.
 type EdgeTeamShotLocationDetail struct {
 	Team                 EdgeTeamInfo                `json:"team"`
-	SeasonsWithEdgeStats []EdgeSeasonAvailability     `json:"seasonsWithEdgeStats"`
-	ShotLocationDetails  []EdgeTeamShotLocationEntry  `json:"shotLocationDetails"`
+	SeasonsWithEdgeStats []EdgeSeasonAvailability    `json:"seasonsWithEdgeStats"`
+	ShotLocationDetails  []EdgeTeamShotLocationEntry `json:"shotLocationDetails"`
 }
 
 // EdgeTeamShotLocationEntry is a shot location breakdown for a specific area.
@@ -128,10 +128,10 @@ type EdgeTeamShotLocationEntry struct {
 // zone time by strength code (all/es/pp/pk) and includes shot differential.
 // Imported to DB in edge_team_zone_time_by_strength table.
 type EdgeTeamZoneTimeDetails struct {
-	Team                 *EdgeTeamInfo                   `json:"team,omitempty"`
-	SeasonsWithEdgeStats []EdgeSeasonAvailability        `json:"seasonsWithEdgeStats,omitempty"`
-	ZoneTimeDetails      []EdgeTeamZoneTimeByStrength    `json:"zoneTimeDetails"`
-	ShotDifferential     *EdgeTeamShotDifferential       `json:"shotDifferential,omitempty"`
+	Team                 *EdgeTeamInfo                `json:"team,omitempty"`
+	SeasonsWithEdgeStats []EdgeSeasonAvailability     `json:"seasonsWithEdgeStats,omitempty"`
+	ZoneTimeDetails      []EdgeTeamZoneTimeByStrength `json:"zoneTimeDetails"`
+	ShotDifferential     *EdgeTeamShotDifferential    `json:"shotDifferential,omitempty"`
 }
 
 // EdgeTeamZoneTimeByStrength is zone time broken down by strength code.
