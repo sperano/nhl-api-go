@@ -153,6 +153,10 @@ func writeEnum(w *bytes.Buffer, e EnumDef) {
 
 	// UnmarshalJSON()
 	fmt.Fprintf(w, "// UnmarshalJSON implements custom JSON unmarshaling for %s.\n", e.TypeName)
+	if e.AllowEmpty {
+		fmt.Fprintf(w, "// An empty string is accepted and stored as the zero value, because the NHL API\n")
+		fmt.Fprintf(w, "// omits the %s in some responses.\n", e.ErrorLabel)
+	}
 	fmt.Fprintf(w, "func (v *%s) UnmarshalJSON(data []byte) error {\n", e.TypeName)
 	fmt.Fprintf(w, "\tvar s string\n")
 	fmt.Fprintf(w, "\tif err := json.Unmarshal(data, &s); err != nil {\n\t\treturn err\n\t}\n")
@@ -167,6 +171,10 @@ func writeEnum(w *bytes.Buffer, e EnumDef) {
 
 	// MarshalJSON()
 	fmt.Fprintf(w, "// MarshalJSON implements custom JSON marshaling for %s.\n", e.TypeName)
+	if e.AllowEmpty && !e.SkipMarshalValidation {
+		fmt.Fprintf(w, "// The empty (zero-value) string is allowed so it round-trips through JSON;\n")
+		fmt.Fprintf(w, "// other invalid values are rejected.\n")
+	}
 	fmt.Fprintf(w, "func (v %s) MarshalJSON() ([]byte, error) {\n", e.TypeName)
 	if e.SkipMarshalValidation {
 		fmt.Fprintf(w, "\treturn json.Marshal(string(v))\n")

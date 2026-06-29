@@ -15,7 +15,7 @@ import (
 // ===== Test Helper Functions =====
 
 // makeJSONResponse creates an HTTP handler that returns a JSON response.
-func makeJSONResponse(statusCode int, body interface{}) http.HandlerFunc {
+func makeJSONResponse(statusCode int, body any) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(statusCode)
@@ -659,7 +659,7 @@ func TestCurrentLeagueStandings(t *testing.T) {
 		{TeamAbbrev: LocalizedString{Default: "MTL"}, Points: 45},
 	}
 
-	server := httptest.NewServer(makeJSONResponse(http.StatusOK, map[string]interface{}{
+	server := httptest.NewServer(makeJSONResponse(http.StatusOK, map[string]any{
 		"standings": standings,
 	}))
 	defer server.Close()
@@ -697,7 +697,7 @@ func TestLeagueStandingsForDate(t *testing.T) {
 		{TeamAbbrev: LocalizedString{Default: "TOR"}, Points: 50},
 	}
 
-	server := httptest.NewServer(makeJSONResponse(http.StatusOK, map[string]interface{}{
+	server := httptest.NewServer(makeJSONResponse(http.StatusOK, map[string]any{
 		"standings": standings,
 	}))
 	defer server.Close()

@@ -97,6 +97,8 @@ func MustPositionFromString(s string) Position {
 }
 
 // UnmarshalJSON implements custom JSON unmarshaling for Position.
+// An empty string is accepted and stored as the zero value, because the NHL API
+// omits the position in some responses.
 func (v *Position) UnmarshalJSON(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
@@ -115,6 +117,8 @@ func (v *Position) UnmarshalJSON(data []byte) error {
 }
 
 // MarshalJSON implements custom JSON marshaling for Position.
+// The empty (zero-value) string is allowed so it round-trips through JSON;
+// other invalid values are rejected.
 func (v Position) MarshalJSON() ([]byte, error) {
 	if v == "" {
 		return json.Marshal("")
@@ -191,6 +195,8 @@ func MustHandednessFromString(s string) Handedness {
 }
 
 // UnmarshalJSON implements custom JSON unmarshaling for Handedness.
+// An empty string is accepted and stored as the zero value, because the NHL API
+// omits the handedness in some responses.
 func (v *Handedness) UnmarshalJSON(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
@@ -374,7 +380,8 @@ func MustPeriodTypeFromString(s string) PeriodType {
 }
 
 // UnmarshalJSON implements custom JSON unmarshaling for PeriodType.
-// Empty strings are accepted because the NHL API omits periodType for unplayed games.
+// An empty string is accepted and stored as the zero value, because the NHL API
+// omits the period type in some responses.
 func (v *PeriodType) UnmarshalJSON(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
@@ -393,10 +400,13 @@ func (v *PeriodType) UnmarshalJSON(data []byte) error {
 }
 
 // MarshalJSON implements custom JSON marshaling for PeriodType.
-// Empty strings are allowed because the NHL API omits periodType for unplayed games,
-// leaving the Go zero value which must round-trip through JSON.
+// The empty (zero-value) string is allowed so it round-trips through JSON;
+// other invalid values are rejected.
 func (v PeriodType) MarshalJSON() ([]byte, error) {
-	if v != "" && !v.IsValid() {
+	if v == "" {
+		return json.Marshal("")
+	}
+	if !v.IsValid() {
 		return nil, fmt.Errorf("cannot marshal invalid period type: %q", string(v))
 	}
 	return json.Marshal(string(v))
@@ -626,6 +636,8 @@ func MustDefendingSideFromString(s string) DefendingSide {
 }
 
 // UnmarshalJSON implements custom JSON unmarshaling for DefendingSide.
+// An empty string is accepted and stored as the zero value, because the NHL API
+// omits the defending side in some responses.
 func (v *DefendingSide) UnmarshalJSON(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
@@ -644,6 +656,8 @@ func (v *DefendingSide) UnmarshalJSON(data []byte) error {
 }
 
 // MarshalJSON implements custom JSON marshaling for DefendingSide.
+// The empty (zero-value) string is allowed so it round-trips through JSON;
+// other invalid values are rejected.
 func (v DefendingSide) MarshalJSON() ([]byte, error) {
 	if v == "" {
 		return json.Marshal("")

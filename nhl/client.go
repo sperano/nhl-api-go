@@ -97,7 +97,7 @@ func buildURL(base, resource string) string {
 
 // getJSON performs an HTTP GET request and unmarshals the JSON response.
 // Returns an appropriate error type based on HTTP status code.
-func (c *Client) getJSON(ctx context.Context, endpoint Endpoint, resource string, queryParams map[string]string, result interface{}) error {
+func (c *Client) getJSON(ctx context.Context, endpoint Endpoint, resource string, queryParams map[string]string, result any) error {
 	var fullURL string
 	if c.baseURLOverride != "" {
 		fullURL = buildURL(c.baseURLOverride, resource)
@@ -366,7 +366,7 @@ func (c *Client) ShiftChart(ctx context.Context, gameID GameID) (*ShiftChart, er
 }
 
 // fetchGamecenter is a helper to fetch data from gamecenter endpoints.
-func (c *Client) fetchGamecenter(ctx context.Context, gameID GameID, resource string, result interface{}) error {
+func (c *Client) fetchGamecenter(ctx context.Context, gameID GameID, resource string, result any) error {
 	fullResource := fmt.Sprintf("gamecenter/%s/%s", gameID.String(), resource)
 	return c.getJSON(ctx, EndpointAPIWebV1, fullResource, nil, result)
 }

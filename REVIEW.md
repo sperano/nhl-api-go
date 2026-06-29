@@ -1,0 +1,66 @@
+### Code Review: nhl-api-go
+
+*Reviewed 2026-06-12. Build, `go vet`, and tests all pass at time of review.*
+
+The library is in good shape overall — clean generated/hand-written split, strong typed IDs, an unusually good path-contract test table covering all 22 Edge methods. But there are two real logic bugs, one ticking-time-bomb generator issue, and stale docs.
+
+*Update 2026-06-28: bug #1 (generator drift) and bug #3 (`ToTeam` place-name) resolved. See those items.*
+
+## Confirmed bugs
+
+1. **Generator drift will break `PeriodType` parsing on the next `go generate`** — `internal/enumgen/defs.go:78-88` defines `PeriodType` without `AllowEmpty: true`, but the committed `nhl/enums_generated.go` contains hand-edited empty-string handling (the NHL API omits `periodType` for unplayed games). Verified the flag is absent. Regenerating reverts the fix and ships a parse-breaking regression. Fix: set `AllowEmpty: true` in defs, regenerate, and add a CI guard (`go generate ./... && git diff --exit-code`).
+
+   **✅ RESOLVED (2026-06-28).** Root cause was a hand-edited generated file: the "allow empty PeriodType" fix had been applied directly to `enums_generated.go` (with bespoke doc comments and a hand-structured `MarshalJSON`) instead of through the generator, so any `go generate` would revert it. Durable fix: `defs.go` sets `AllowEmpty: true` for `PeriodType` (the source-of-truth flag — was already pending in the working tree), **and** `internal/enumgen/main.go` now emits an explanatory doc comment for every `AllowEmpty` type on `UnmarshalJSON` (keyed off `ErrorLabel`) and on `MarshalJSON` (when validation isn't skipped). `enums_generated.go` was regenerated so the committed file is byte-identical to generator output — verified idempotent (a second `go generate` is a no-op). The same change also added the missing empty-string comments to `Position`, `Handedness`, and `DefendingSide`. _No CI drift-guard was added (per preference); run `go generate ./... && git diff --exit-code` manually or via a pre-commit hook to catch future drift._
+
+2. **`aggregateGoalieStats` invents power-play opportunities from goals against** — `nhl/boxscore.go:147` does `PowerPlayOpportunities += goalie.PowerPlayGoalsAgainst`, which counts PP goals the goalie *allowed* as the team's *own* PP opportunities. `PowerPlayPercentage()` is therefore meaningless, and `boxscore_test.go:853` asserts the wrong behavior, locking it in. Boxscore player stats don't contain team PP opportunities at all — the derivation should be removed.
+
+3. ~~**`Standing.ToTeam()` puts the full team name in the place-name field** — `nhl/standings.go:51` assigns "Vegas Golden Knights"-style full names to `TeamPlaceName`. The standings payload has no place name; leave it empty rather than wrong.~~ **✅ RESOLVED (2026-06-28).** Added a `placeName(fullName, commonName)` helper that reconstructs the place name by removing the common name (handles it appearing at either the start or end of the full name) and normalizing whitespace; falls back to the full name when the common name is empty or not found. `ToTeam()` now uses it. Unit-tested via `TestPlaceName` (8 cases incl. start/end placement) plus `TeamPlaceName` assertions added to both existing conversion tests.
+
+4. **`gofmt -l` fails on five files** — `nhl/edge.go`, `edge_goalie.go`, `edge_team.go`, `errors.go`, `errors_test.go` (verified). Mechanical fix: `gofmt -w .`.
+
+5. **Timezone inconsistency in season rollover** — `nhl/date.go:331`: `Current()` uses `time.Now()` (local) while `Today()`/`Date()` pin to UTC. The June→July season boundary flips at different moments depending on machine timezone. Ideally anchor "today"/"current season" to `America/New_York`, since that's what the NHL calendar actually keys on.
+
+6. **`Season.FromYears(2024, 2024)` silently becomes 2024–2025** — `nhl/date.go:242-264` accepts `end == start` but only stores the start year; `EndYear()` always returns `start+1`. Either reject single-year seasons or store the end year.
+
+## Robustness concerns
+
+- **Unknown enum values fail the whole unmarshal.** Every generated string enum plus the hand-rolled `GameType` returns an error from `UnmarshalJSON` on unrecognized values, which aborts the entire response parse. This is the single biggest design risk: a new NHL `gameState` or play event type breaks `PlayByPlay` wholesale. Recommend an `AllowUnknown` generator mode (store the raw string, gate on `IsValid()`) for high-churn enums: `GameType`, `GameState`, `PlayEventType`, `GameScheduleState`. Relatedly, `GameType` duplicates ~200 lines by hand because the generator only supports string-backed enums — extending it to int-backed enums would unify the two.
+- **`ToHTTPClient` builds a bare `&http.Transport{}`** (`nhl/config.go:73`) — this discards `ProxyFromEnvironment`, HTTP/2, and sane idle/dial defaults that `http.DefaultTransport` provides. Clone `http.DefaultTransport` and override `TLSClientConfig` instead. Also `NewClientWithConfig(nil)` panics.
+- **No escape hatch for the HTTP layer.** There's no `WithHTTPClient`/`RoundTripper` option, no configurable User-Agent, and no retry/backoff even though `ErrRateLimited` exists as a sentinel — callers can detect a 429 but the library gives them no hook to handle it gracefully.
+- **Error responses are discarded** — `nhl/client.go:137-140` drops the response body on non-2xx; the NHL API sometimes includes error details worth surfacing (and draining the body helps connection reuse).
+- **`GameSituationFromCode`** (`nhl/game_center.go:32`) only validates the two skater digits; `"a55b"` parses "successfully" with both goalies treated as pulled, and skater counts aren't range-checked.
+- **`omitempty` on non-pointer scalars in cached Edge structs** (`nhl/edge.go:274-285`, `edge_goalie.go:143-155`) — these are gob/JSON-cached per their doc comments, and a legitimate `0` is silently dropped on re-marshal.
+
+## Missing / stale
+
+- **Both README.md and the repo's CLAUDE.md are stale.** CLAUDE.md describes `ResourceNotFoundError`/`RateLimitExceededError` and files `player_id.go`/`team_id.go`/`season.go` — none exist anymore (errors became `APIError` + sentinels; IDs became `id.go`/`ids_generated.go`). README's method list omits the entire Edge family, `ClubScheduleSeason`, `GameStory`, and more.
+- **Endpoint coverage gaps, none currently blocking:** draft (`draft/rankings`, `draft/picks`), prospects, `playoff-bracket`, playoff-series schedule, `skater-stats-leaders`/`goalie-stats-leaders`, `tv-schedule`/`where-to-watch`, `meta`, `schedule-calendar`, `season`. Cross-referenced against puckdb: it uses 24 client methods and has **zero hand-rolled NHL API calls or workarounds**, so nothing is missing for the actual consumer — these are only gaps for future features like draft or playoff-bracket data.
+- **No CI drift guard** for generated code and apparently no gofmt gate (see bugs #1 and #4 — both would have been caught).
+
+## Test suite
+
+Above average: real assertions, all `httptest` servers closed, zero network calls, and the shared path-contract + 404-propagation tables across all Edge methods are a genuinely good pattern. Weak spots:
+
+- The `_RealAPIStructure` comparison tests (`edge_test.go:778-940`) feed in `shotLocationDetails` but **never assert on those fields** — and the fixture uses `"shots"` where the live API actually returns `"sog"`. Confirmed against the live endpoint (`edge/skater-comparison/8478402/20242025/2`): **the struct tags are right and the test fixture is wrong**. Adding one assertion there would have surfaced the discrepancy either way.
+- `TestEdgeComparison_GobEncoding` (`edge_test.go:942`) never gob-encodes anything — it JSON round-trips into the same pointer and asserts nothing. Effectively can't fail.
+- `EdgeGoalieLanding`/`EdgeTeamLanding` leader types are only exercised against `{}` bodies — their field tags are entirely unverified.
+- `date_test.go:104-112, 226-233` can flake if the test crosses UTC midnight between two `time.Now()` calls.
+- `TestFixturesMarshalRoundTrip` only checks `len(data) != 0` — it's a marshal test, not a round-trip.
+
+## Smaller idiom items
+
+- `interface{}` instead of `any` in `client.go` (the module is Go 1.26).
+- `SearchPlayer(ctx, query, *int)` — a variadic or option would be more idiomatic than a pointer-for-optional.
+- `Date.Equal` compares instants but documents calendar-day semantics.
+- `Season.ID()` has a confusing throwaway variable (`date.go:402`).
+- `GameDate.UnmarshalJSON` hand-rolls parsing that `ParseDate` already does (and skips range validation, so month 13 is accepted).
+- Pointer-to-slice fields `*[]ShootoutAttempt`/`*[]ThreeStar` (`game_center.go:357`).
+- `RegPeriods` is `*int` in `PlayByPlay` but `int` in `GameMatchup`/`GameStory`.
+
+## Suggested priority
+
+1. ✅ Done — generator drift resolved (`enumgen` emits the `AllowEmpty` comments; tree regenerable). Optional: add a `go generate` + `git diff --exit-code` guard (pre-commit or CI) to prevent recurrence.
+2. Fix the remaining logic bug (`aggregateGoalieStats`). _(`ToTeam` ✅ done.)_
+3. `gofmt -w .`
+4. Decide the unknown-enum policy — the most valuable structural improvement for a third-party API client.
+5. Refresh README.md and CLAUDE.md.
