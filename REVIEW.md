@@ -4,7 +4,7 @@
 
 The library is in good shape overall — clean generated/hand-written split, strong typed IDs, an unusually good path-contract test table covering all 22 Edge methods. But there are two real logic bugs, one ticking-time-bomb generator issue, and stale docs.
 
-*Update 2026-06-28: bug #1 (generator drift) and bug #3 (`ToTeam` place-name) resolved. See those items.*
+*Update 2026-06-28: bugs #1 (generator drift), #3 (`ToTeam` place-name), and #4 (gofmt) resolved. See those items.*
 
 ## Confirmed bugs
 
@@ -16,7 +16,7 @@ The library is in good shape overall — clean generated/hand-written split, str
 
 3. ~~**`Standing.ToTeam()` puts the full team name in the place-name field** — `nhl/standings.go:51` assigns "Vegas Golden Knights"-style full names to `TeamPlaceName`. The standings payload has no place name; leave it empty rather than wrong.~~ **✅ RESOLVED (2026-06-28).** Added a `placeName(fullName, commonName)` helper that reconstructs the place name by removing the common name (handles it appearing at either the start or end of the full name) and normalizing whitespace; falls back to the full name when the common name is empty or not found. `ToTeam()` now uses it. Unit-tested via `TestPlaceName` (8 cases incl. start/end placement) plus `TeamPlaceName` assertions added to both existing conversion tests.
 
-4. **`gofmt -l` fails on five files** — `nhl/edge.go`, `edge_goalie.go`, `edge_team.go`, `errors.go`, `errors_test.go` (verified). Mechanical fix: `gofmt -w .`.
+4. ~~**`gofmt -l` fails on five files** — `nhl/edge.go`, `edge_goalie.go`, `edge_team.go`, `errors.go`, `errors_test.go` (verified). Mechanical fix: `gofmt -w .`.~~ **✅ RESOLVED (2026-06-28).** Ran `gofmt -w` on the five files (struct-tag column realignment, formatting only — `git diff -w` empty). Whole repo is now `gofmt -l`-clean.
 
 5. **Timezone inconsistency in season rollover** — `nhl/date.go:331`: `Current()` uses `time.Now()` (local) while `Today()`/`Date()` pin to UTC. The June→July season boundary flips at different moments depending on machine timezone. Ideally anchor "today"/"current season" to `America/New_York`, since that's what the NHL calendar actually keys on.
 
@@ -61,6 +61,6 @@ Above average: real assertions, all `httptest` servers closed, zero network call
 
 1. ✅ Done — generator drift resolved (`enumgen` emits the `AllowEmpty` comments; tree regenerable). Optional: add a `go generate` + `git diff --exit-code` guard (pre-commit or CI) to prevent recurrence.
 2. Fix the remaining logic bug (`aggregateGoalieStats`). _(`ToTeam` ✅ done.)_
-3. `gofmt -w .`
+3. ✅ Done — `gofmt -w .` (whole repo gofmt-clean).
 4. Decide the unknown-enum policy — the most valuable structural improvement for a third-party API client.
 5. Refresh README.md and CLAUDE.md.
