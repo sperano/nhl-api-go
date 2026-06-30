@@ -4,7 +4,7 @@
 
 The library is in good shape overall — clean generated/hand-written split, strong typed IDs, an unusually good path-contract test table covering all 22 Edge methods. But there are two real logic bugs, one ticking-time-bomb generator issue, and stale docs.
 
-*Update 2026-06-28: bugs #1 (generator drift), #2 (PP-opportunities derivation), #3 (`ToTeam` place-name), and #4 (gofmt) resolved. See those items.*
+*Update 2026-06-28: all six confirmed bugs resolved — #1 (generator drift), #2 (PP-opportunities derivation), #3 (`ToTeam` place-name), #4 (gofmt), #5 (timezone), #6 (single-year season). Robustness items and stale docs remain open. See individual items.*
 
 ## Confirmed bugs
 
@@ -18,9 +18,9 @@ The library is in good shape overall — clean generated/hand-written split, str
 
 4. ~~**`gofmt -l` fails on five files** — `nhl/edge.go`, `edge_goalie.go`, `edge_team.go`, `errors.go`, `errors_test.go` (verified). Mechanical fix: `gofmt -w .`.~~ **✅ RESOLVED (2026-06-28).** Ran `gofmt -w` on the five files (struct-tag column realignment, formatting only — `git diff -w` empty). Whole repo is now `gofmt -l`-clean.
 
-5. **Timezone inconsistency in season rollover** — `nhl/date.go:331`: `Current()` uses `time.Now()` (local) while `Today()`/`Date()` pin to UTC. The June→July season boundary flips at different moments depending on machine timezone. Ideally anchor "today"/"current season" to `America/New_York`, since that's what the NHL calendar actually keys on.
+5. ~~**Timezone inconsistency in season rollover** — `nhl/date.go:331`: `Current()` uses `time.Now()` (local) while `Today()`/`Date()` pin to UTC. The June→July season boundary flips at different moments depending on machine timezone. Ideally anchor "today"/"current season" to `America/New_York`, since that's what the NHL calendar actually keys on.~~ **✅ RESOLVED (2026-06-28).** `Current()` now uses `time.Now().UTC()`, consistent with `Today()`/`Date()`, removing the machine-timezone dependence. Chose UTC over `America/New_York` deliberately: `time.LoadLocation` needs tzdata that puckdb's scratch-based images don't ship (would fail at runtime), and the June/July rollover is in the offseason where the zone is immaterial. Rationale documented in the code comment. `TestCurrent` aligned to UTC.
 
-6. **`Season.FromYears(2024, 2024)` silently becomes 2024–2025** — `nhl/date.go:242-264` accepts `end == start` but only stores the start year; `EndYear()` always returns `start+1`. Either reject single-year seasons or store the end year.
+6. ~~**`Season.FromYears(2024, 2024)` silently becomes 2024–2025** — `nhl/date.go:242-264` accepts `end == start` but only stores the start year; `EndYear()` always returns `start+1`. Either reject single-year seasons or store the end year.~~ **✅ RESOLVED (2026-06-28).** Chose to **store the end year** (the more robust option): `Season` now holds both `startYear` and `endYear`, and `EndYear()`/`APIString()`/`String()`/`ID()` derive from the stored value instead of assuming `+1`. `FromYears` accepts `endYear == startYear` or `startYear+1` and records it as given; `NewSeason` keeps the conventional `startYear+1`. Rationale: although all 109 NHL season IDs in our data are cross-year (the COVID 2020-21 season, played entirely in calendar 2021, is still `20202021`), recording the parsed end year rather than hard-coding the convention is defensive and removes the silent-shift path. `GobDecode` stays backward-compatible with legacy single-field data (defaults `endYear` to `startYear+1` on `io.EOF`), covered by `TestSeasonGobLegacyDecode`. For real cross-year data, every derived value is byte-identical to before. Also folds in nit #7 (the confusing `ID()` throwaway variable). _(Supersedes the earlier reject-based attempt.)_
 
 ## Robustness concerns
 

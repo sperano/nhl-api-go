@@ -365,6 +365,51 @@ func TestFromYears(t *testing.T) {
 			t.Error("FromYears() should return error for reversed years")
 		}
 	})
+
+	t.Run("single calendar year stored as given", func(t *testing.T) {
+		// A season played within one calendar year (e.g. COVID 2020-21, run
+		// Jan-May 2021) must keep its actual end year, not be coerced to +1.
+		season, err := FromYears(2024, 2024)
+		if err != nil {
+			t.Fatalf("FromYears(2024, 2024) error = %v", err)
+		}
+		if season.EndYear() != 2024 {
+			t.Errorf("EndYear() = %d, want 2024", season.EndYear())
+		}
+		if season.APIString() != "20242024" {
+			t.Errorf("APIString() = %q, want %q", season.APIString(), "20242024")
+		}
+		if season.ID() != 20242024 {
+			t.Errorf("ID() = %d, want 20242024", season.ID())
+		}
+	})
+
+	t.Run("gap years rejected", func(t *testing.T) {
+		if _, err := FromYears(2024, 2026); err == nil {
+			t.Error("FromYears(2024, 2026) should return error for a two-year gap")
+		}
+	})
+}
+
+// TestSeasonGobLegacyDecode verifies that gob data written before Season
+// stored an end year (only the start year encoded) still decodes, defaulting
+// the end year to the conventional startYear + 1.
+func TestSeasonGobLegacyDecode(t *testing.T) {
+	var buf bytes.Buffer
+	if err := gob.NewEncoder(&buf).Encode(2023); err != nil {
+		t.Fatalf("encoding legacy start year: %v", err)
+	}
+
+	var s Season
+	if err := s.GobDecode(buf.Bytes()); err != nil {
+		t.Fatalf("GobDecode legacy data: %v", err)
+	}
+	if s.StartYear() != 2023 {
+		t.Errorf("StartYear() = %d, want 2023", s.StartYear())
+	}
+	if s.EndYear() != 2024 {
+		t.Errorf("EndYear() = %d, want 2024 (default for legacy data)", s.EndYear())
+	}
 }
 
 func TestSeason_ToAPIString(t *testing.T) {
@@ -495,7 +540,7 @@ func TestParse(t *testing.T) {
 
 func TestCurrent(t *testing.T) {
 	season := Current()
-	now := time.Now()
+	now := time.Now().UTC()
 	year := now.Year()
 	month := now.Month()
 
