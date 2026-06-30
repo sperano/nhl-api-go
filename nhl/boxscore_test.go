@@ -850,23 +850,19 @@ func TestTeamGameStats_WithGoalies(t *testing.T) {
 	if gameStats.PenaltyMinutes != 2 {
 		t.Errorf("PenaltyMinutes = %d, want 2", gameStats.PenaltyMinutes)
 	}
-	if gameStats.PowerPlayOpportunities != 2 {
-		t.Errorf("PowerPlayOpportunities = %d, want 2", gameStats.PowerPlayOpportunities)
-	}
 }
 
 func TestTeamGameStats_FaceoffPercentage_ZeroFaceoffs(t *testing.T) {
 	gameStats := TeamGameStats{
-		ShotsOnGoal:            30,
-		FaceoffWins:            0,
-		FaceoffTotal:           0,
-		PowerPlayGoals:         1,
-		PowerPlayOpportunities: 4,
-		PenaltyMinutes:         8,
-		Hits:                   25,
-		BlockedShots:           15,
-		Giveaways:              5,
-		Takeaways:              7,
+		ShotsOnGoal:    30,
+		FaceoffWins:    0,
+		FaceoffTotal:   0,
+		PowerPlayGoals: 1,
+		PenaltyMinutes: 8,
+		Hits:           25,
+		BlockedShots:   15,
+		Giveaways:      5,
+		Takeaways:      7,
 	}
 
 	got := gameStats.FaceoffPercentage()
@@ -877,63 +873,21 @@ func TestTeamGameStats_FaceoffPercentage_ZeroFaceoffs(t *testing.T) {
 
 func TestTeamGameStats_FaceoffPercentage(t *testing.T) {
 	gameStats := TeamGameStats{
-		ShotsOnGoal:            30,
-		FaceoffWins:            30,
-		FaceoffTotal:           60,
-		PowerPlayGoals:         1,
-		PowerPlayOpportunities: 4,
-		PenaltyMinutes:         8,
-		Hits:                   25,
-		BlockedShots:           15,
-		Giveaways:              5,
-		Takeaways:              7,
+		ShotsOnGoal:    30,
+		FaceoffWins:    30,
+		FaceoffTotal:   60,
+		PowerPlayGoals: 1,
+		PenaltyMinutes: 8,
+		Hits:           25,
+		BlockedShots:   15,
+		Giveaways:      5,
+		Takeaways:      7,
 	}
 
 	got := gameStats.FaceoffPercentage()
 	want := 50.0
 	if got != want {
 		t.Errorf("FaceoffPercentage() = %f, want %f", got, want)
-	}
-}
-
-func TestTeamGameStats_PowerPlayPercentage_ZeroOpportunities(t *testing.T) {
-	gameStats := TeamGameStats{
-		ShotsOnGoal:            30,
-		FaceoffWins:            30,
-		FaceoffTotal:           60,
-		PowerPlayGoals:         0,
-		PowerPlayOpportunities: 0,
-		PenaltyMinutes:         8,
-		Hits:                   25,
-		BlockedShots:           15,
-		Giveaways:              5,
-		Takeaways:              7,
-	}
-
-	got := gameStats.PowerPlayPercentage()
-	if got != 0.0 {
-		t.Errorf("PowerPlayPercentage() = %f, want 0.0", got)
-	}
-}
-
-func TestTeamGameStats_PowerPlayPercentage(t *testing.T) {
-	gameStats := TeamGameStats{
-		ShotsOnGoal:            30,
-		FaceoffWins:            30,
-		FaceoffTotal:           60,
-		PowerPlayGoals:         2,
-		PowerPlayOpportunities: 5,
-		PenaltyMinutes:         8,
-		Hits:                   25,
-		BlockedShots:           15,
-		Giveaways:              5,
-		Takeaways:              7,
-	}
-
-	got := gameStats.PowerPlayPercentage()
-	want := 40.0
-	if got != want {
-		t.Errorf("PowerPlayPercentage() = %f, want %f", got, want)
 	}
 }
 

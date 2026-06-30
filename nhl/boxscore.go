@@ -82,16 +82,15 @@ type TeamPlayerStats struct {
 
 // TeamGameStats represents aggregated team statistics for game comparison.
 type TeamGameStats struct {
-	ShotsOnGoal            int
-	FaceoffWins            int
-	FaceoffTotal           int
-	PowerPlayGoals         int
-	PowerPlayOpportunities int
-	PenaltyMinutes         int
-	Hits                   int
-	BlockedShots           int
-	Giveaways              int
-	Takeaways              int
+	ShotsOnGoal    int
+	FaceoffWins    int
+	FaceoffTotal   int
+	PowerPlayGoals int
+	PenaltyMinutes int
+	Hits           int
+	BlockedShots   int
+	Giveaways      int
+	Takeaways      int
 }
 
 // FromTeamPlayerStats calculates aggregated team statistics from individual player stats.
@@ -143,8 +142,6 @@ func aggregateGoalieStats(teamStats *TeamGameStats, stats *TeamPlayerStats) {
 		if goalie.PIM != nil {
 			teamStats.PenaltyMinutes += *goalie.PIM
 		}
-		// Count power play opportunities from goals against
-		teamStats.PowerPlayOpportunities += goalie.PowerPlayGoalsAgainst
 	}
 }
 
@@ -153,15 +150,6 @@ func aggregateGoalieStats(teamStats *TeamGameStats, stats *TeamPlayerStats) {
 func (t *TeamGameStats) FaceoffPercentage() float64 {
 	if t.FaceoffTotal > 0 {
 		return (float64(t.FaceoffWins) / float64(t.FaceoffTotal)) * 100.0
-	}
-	return 0.0
-}
-
-// PowerPlayPercentage calculates the power play percentage for the team.
-// Returns 0.0 if the team has not had any power play opportunities.
-func (t *TeamGameStats) PowerPlayPercentage() float64 {
-	if t.PowerPlayOpportunities > 0 {
-		return (float64(t.PowerPlayGoals) / float64(t.PowerPlayOpportunities)) * 100.0
 	}
 	return 0.0
 }

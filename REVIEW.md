@@ -4,7 +4,7 @@
 
 The library is in good shape overall — clean generated/hand-written split, strong typed IDs, an unusually good path-contract test table covering all 22 Edge methods. But there are two real logic bugs, one ticking-time-bomb generator issue, and stale docs.
 
-*Update 2026-06-28: bugs #1 (generator drift), #3 (`ToTeam` place-name), and #4 (gofmt) resolved. See those items.*
+*Update 2026-06-28: bugs #1 (generator drift), #2 (PP-opportunities derivation), #3 (`ToTeam` place-name), and #4 (gofmt) resolved. See those items.*
 
 ## Confirmed bugs
 
@@ -12,7 +12,7 @@ The library is in good shape overall — clean generated/hand-written split, str
 
    **✅ RESOLVED (2026-06-28).** Root cause was a hand-edited generated file: the "allow empty PeriodType" fix had been applied directly to `enums_generated.go` (with bespoke doc comments and a hand-structured `MarshalJSON`) instead of through the generator, so any `go generate` would revert it. Durable fix: `defs.go` sets `AllowEmpty: true` for `PeriodType` (the source-of-truth flag — was already pending in the working tree), **and** `internal/enumgen/main.go` now emits an explanatory doc comment for every `AllowEmpty` type on `UnmarshalJSON` (keyed off `ErrorLabel`) and on `MarshalJSON` (when validation isn't skipped). `enums_generated.go` was regenerated so the committed file is byte-identical to generator output — verified idempotent (a second `go generate` is a no-op). The same change also added the missing empty-string comments to `Position`, `Handedness`, and `DefendingSide`. _No CI drift-guard was added (per preference); run `go generate ./... && git diff --exit-code` manually or via a pre-commit hook to catch future drift._
 
-2. **`aggregateGoalieStats` invents power-play opportunities from goals against** — `nhl/boxscore.go:147` does `PowerPlayOpportunities += goalie.PowerPlayGoalsAgainst`, which counts PP goals the goalie *allowed* as the team's *own* PP opportunities. `PowerPlayPercentage()` is therefore meaningless, and `boxscore_test.go:853` asserts the wrong behavior, locking it in. Boxscore player stats don't contain team PP opportunities at all — the derivation should be removed.
+2. ~~**`aggregateGoalieStats` invents power-play opportunities from goals against** — `nhl/boxscore.go:147` does `PowerPlayOpportunities += goalie.PowerPlayGoalsAgainst`, which counts PP goals the goalie *allowed* as the team's *own* PP opportunities. `PowerPlayPercentage()` is therefore meaningless, and `boxscore_test.go:853` asserts the wrong behavior, locking it in. Boxscore player stats don't contain team PP opportunities at all — the derivation should be removed.~~ **✅ RESOLVED (2026-06-28).** Boxscore player stats expose no team PP-opportunity field, so the value can't be sourced correctly — removed rather than patched. Dropped the `PowerPlayOpportunities` field from `TeamGameStats`, the bogus derivation line in `aggregateGoalieStats` (kept the legitimate goalie-PIM aggregation), and the `PowerPlayPercentage()` method. Removed the two `PowerPlayPercentage` tests and the wrong `== 2` assertion. `PowerPlayGoals` (really scored, aggregated from skaters) and the rest of `TeamGameStats` are unchanged. Verified zero external consumers across the `ws/` workspace (puckdb, maurice) before removing exported symbols.
 
 3. ~~**`Standing.ToTeam()` puts the full team name in the place-name field** — `nhl/standings.go:51` assigns "Vegas Golden Knights"-style full names to `TeamPlaceName`. The standings payload has no place name; leave it empty rather than wrong.~~ **✅ RESOLVED (2026-06-28).** Added a `placeName(fullName, commonName)` helper that reconstructs the place name by removing the common name (handles it appearing at either the start or end of the full name) and normalizing whitespace; falls back to the full name when the common name is empty or not found. `ToTeam()` now uses it. Unit-tested via `TestPlaceName` (8 cases incl. start/end placement) plus `TeamPlaceName` assertions added to both existing conversion tests.
 
@@ -60,7 +60,7 @@ Above average: real assertions, all `httptest` servers closed, zero network call
 ## Suggested priority
 
 1. ✅ Done — generator drift resolved (`enumgen` emits the `AllowEmpty` comments; tree regenerable). Optional: add a `go generate` + `git diff --exit-code` guard (pre-commit or CI) to prevent recurrence.
-2. Fix the remaining logic bug (`aggregateGoalieStats`). _(`ToTeam` ✅ done.)_
+2. ✅ Done — both logic bugs fixed (`aggregateGoalieStats` PP-opportunities removed; `ToTeam` place-name).
 3. ✅ Done — `gofmt -w .` (whole repo gofmt-clean).
 4. Decide the unknown-enum policy — the most valuable structural improvement for a third-party API client.
 5. Refresh README.md and CLAUDE.md.
