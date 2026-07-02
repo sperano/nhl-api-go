@@ -180,28 +180,15 @@ func (gd *GameDate) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	// Parse YYYY-MM-DD format
-	parts := strings.Split(s, "-")
-	if len(parts) != 3 {
-		return fmt.Errorf("invalid date format: %s", s)
-	}
-
-	year, err := strconv.Atoi(parts[0])
+	// Delegate to ParseDate (time.Parse with DateLayout), which enforces the
+	// exact YYYY-MM-DD shape and validates ranges. The previous hand-rolled
+	// split+Atoi accepted overflow values like "2024-13-40" because FromYMD
+	// relies on time.Date, which silently normalizes them.
+	d, err := ParseDate(s)
 	if err != nil {
-		return fmt.Errorf("invalid year: %s", parts[0])
+		return err
 	}
-
-	month, err := strconv.Atoi(parts[1])
-	if err != nil {
-		return fmt.Errorf("invalid month: %s", parts[1])
-	}
-
-	day, err := strconv.Atoi(parts[2])
-	if err != nil {
-		return fmt.Errorf("invalid day: %s", parts[2])
-	}
-
-	*gd = FromYMD(year, month, day)
+	*gd = FromDate(d.Time)
 	return nil
 }
 

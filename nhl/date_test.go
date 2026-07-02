@@ -830,6 +830,9 @@ func TestGameDate_UnmarshalJSON_InvalidDateFormat(t *testing.T) {
 		{"invalid year", `"ABCD-01-15"`},
 		{"invalid month", `"2024-AB-15"`},
 		{"invalid day", `"2024-01-AB"`},
+		{"month out of range", `"2024-13-01"`},
+		{"day out of range", `"2024-01-40"`},
+		{"zero month and day", `"2024-00-00"`},
 	}
 
 	for _, tt := range tests {

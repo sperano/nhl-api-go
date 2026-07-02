@@ -55,7 +55,7 @@ Above average: real assertions, all `httptest` servers closed, zero network call
 - `SearchPlayer(ctx, query, *int)` — a variadic or option would be more idiomatic than a pointer-for-optional.
 - `Date.Equal` compares instants but documents calendar-day semantics.
 - `Season.ID()` has a confusing throwaway variable (`date.go:402`).
-- `GameDate.UnmarshalJSON` hand-rolls parsing that `ParseDate` already does (and skips range validation, so month 13 is accepted).
+- ~~`GameDate.UnmarshalJSON` hand-rolls parsing that `ParseDate` already does (and skips range validation, so month 13 is accepted).~~ **✅ RESOLVED (2026-06-28).** `GameDate.UnmarshalJSON` now delegates to `ParseDate` (`time.Parse` with `DateLayout`), removing the duplicated split/Atoi and gaining strict range validation — `2024-13-40`/`2024-00-00` are now rejected instead of silently normalized. Regression cases added to `TestGameDate_UnmarshalJSON_InvalidDateFormat`.
 - Pointer-to-slice fields `*[]ShootoutAttempt`/`*[]ThreeStar` (`game_center.go:357`).
 - `RegPeriods` is `*int` in `PlayByPlay` but `int` in `GameMatchup`/`GameStory`.
 
