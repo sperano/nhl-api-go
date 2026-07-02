@@ -1745,3 +1745,24 @@ func TestLeagueStandingsForSeason_StandingsFetchError(t *testing.T) {
 		t.Error("LeagueStandingsForSeason() should error when standings fetch fails")
 	}
 }
+
+func TestGetJSON_ErrorBodyIncludedInMessage(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		_, _ = w.Write([]byte(`{"message":"season not found"}`))
+	}))
+	defer server.Close()
+
+	client := NewClientWithBaseURL(server.URL)
+	_, err := client.SeasonStandingManifest(context.Background())
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+	if !strings.Contains(err.Error(), "season not found") {
+		t.Errorf("error should surface the response body detail; got: %v", err)
+	}
+	var apiErr *APIError
+	if !errors.As(err, &apiErr) || apiErr.StatusCode != http.StatusNotFound {
+		t.Errorf("expected APIError with status 404; got %T: %v", err, err)
+	}
+}

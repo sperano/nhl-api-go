@@ -32,6 +32,10 @@ const (
 	baseURLAPIStats  = "https://api.nhle.com/stats/rest/"
 	baseURLSearchV1  = "https://search.d3.nhle.com/api/v1/"
 	defaultUserAgent = "nhl-api-go/1.0"
+
+	// maxErrorBodyBytes bounds how much of a non-2xx response body is read
+	// into the error message, so a large/hostile body can't be slurped whole.
+	maxErrorBodyBytes = 4 * 1024
 )
 
 // baseURL returns the base URL for the given endpoint.
@@ -140,6 +144,14 @@ func (c *Client) getJSON(ctx context.Context, endpoint Endpoint, resource string
 	// Check for HTTP errors
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		message := fmt.Sprintf("Request to %s failed", resource)
+		// Read a bounded portion of the error body: it often carries useful
+		// detail from the NHL API, and consuming it lets the connection be
+		// reused. LimitReader guards against an unexpectedly large body.
+		if errBody, _ := io.ReadAll(io.LimitReader(resp.Body, maxErrorBodyBytes)); len(errBody) > 0 {
+			if trimmed := strings.TrimSpace(string(errBody)); trimmed != "" {
+				message = fmt.Sprintf("%s: %s", message, trimmed)
+			}
+		}
 		return ErrorFromStatusCode(resp.StatusCode, message)
 	}
 
