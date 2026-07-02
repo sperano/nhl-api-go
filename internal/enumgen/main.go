@@ -131,12 +131,12 @@ func writeEnum(w *bytes.Buffer, e EnumDef) {
 			}
 			fmt.Fprintf(w, ":\n\t\treturn %s, nil\n", v.Name)
 		}
-		fmt.Fprintf(w, "\tdefault:\n\t\treturn \"\", fmt.Errorf(\"invalid %s: %%q\", s)\n", e.ErrorLabel)
+		fmt.Fprintf(w, "\tdefault:\n\t\treturn \"\", &UnknownEnumValueError{EnumType: %q, Value: s}\n", e.ErrorLabel)
 		fmt.Fprintf(w, "\t}\n")
 	} else {
 		fmt.Fprintf(w, "\tv := %s(s)\n", e.TypeName)
 		fmt.Fprintf(w, "\tif !v.IsValid() {\n")
-		fmt.Fprintf(w, "\t\treturn \"\", fmt.Errorf(\"invalid %s: %%q\", s)\n", e.ErrorLabel)
+		fmt.Fprintf(w, "\t\treturn \"\", &UnknownEnumValueError{EnumType: %q, Value: s}\n", e.ErrorLabel)
 		fmt.Fprintf(w, "\t}\n")
 		fmt.Fprintf(w, "\treturn v, nil\n")
 	}

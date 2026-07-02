@@ -82,7 +82,7 @@ func PositionFromString(s string) (Position, error) {
 	case "G", "Goalie", "Goaltender":
 		return PositionGoalie, nil
 	default:
-		return "", fmt.Errorf("invalid position: %q", s)
+		return "", &UnknownEnumValueError{EnumType: "position", Value: s}
 	}
 }
 
@@ -180,7 +180,7 @@ func HandednessFromString(s string) (Handedness, error) {
 	case "R", "Right":
 		return HandednessRight, nil
 	default:
-		return "", fmt.Errorf("invalid handedness: %q", s)
+		return "", &UnknownEnumValueError{EnumType: "handedness", Value: s}
 	}
 }
 
@@ -272,7 +272,7 @@ func GoalieDecisionFromString(s string) (GoalieDecision, error) {
 	case "O", "OTL", "Overtime Loss", "OvertimeLoss":
 		return GoalieDecisionOvertimeLoss, nil
 	default:
-		return "", fmt.Errorf("invalid goalie decision: %q", s)
+		return "", &UnknownEnumValueError{EnumType: "goalie decision", Value: s}
 	}
 }
 
@@ -365,7 +365,7 @@ func PeriodTypeFromString(s string) (PeriodType, error) {
 	case "SO", "Shootout":
 		return PeriodTypeShootout, nil
 	default:
-		return "", fmt.Errorf("invalid period type: %q", s)
+		return "", &UnknownEnumValueError{EnumType: "period type", Value: s}
 	}
 }
 
@@ -463,7 +463,7 @@ func HomeRoadFromString(s string) (HomeRoad, error) {
 	case "R", "Road", "Away":
 		return HomeRoadRoad, nil
 	default:
-		return "", fmt.Errorf("invalid home/road: %q", s)
+		return "", &UnknownEnumValueError{EnumType: "home/road", Value: s}
 	}
 }
 
@@ -551,7 +551,7 @@ func ZoneCodeFromString(s string) (ZoneCode, error) {
 	case "N", "Neutral":
 		return ZoneCodeNeutral, nil
 	default:
-		return "", fmt.Errorf("invalid zone code: %q", s)
+		return "", &UnknownEnumValueError{EnumType: "zone code", Value: s}
 	}
 }
 
@@ -621,7 +621,7 @@ func DefendingSideFromString(s string) (DefendingSide, error) {
 	case "right":
 		return DefendingSideRight, nil
 	default:
-		return "", fmt.Errorf("invalid defending side: %q", s)
+		return "", &UnknownEnumValueError{EnumType: "defending side", Value: s}
 	}
 }
 
@@ -708,7 +708,7 @@ func (v GameScheduleState) IsValid() bool {
 func GameScheduleStateFromString(s string) (GameScheduleState, error) {
 	v := GameScheduleState(s)
 	if !v.IsValid() {
-		return "", fmt.Errorf("invalid game schedule state: %q", s)
+		return "", &UnknownEnumValueError{EnumType: "game schedule state", Value: s}
 	}
 	return v, nil
 }
@@ -807,7 +807,7 @@ func (v PlayEventType) IsValid() bool {
 func PlayEventTypeFromString(s string) (PlayEventType, error) {
 	v := PlayEventType(s)
 	if !v.IsValid() {
-		return "", fmt.Errorf("invalid play event type: %q", s)
+		return "", &UnknownEnumValueError{EnumType: "play event type", Value: s}
 	}
 	return v, nil
 }
@@ -886,7 +886,7 @@ func (v GameState) IsValid() bool {
 func GameStateFromString(s string) (GameState, error) {
 	v := GameState(s)
 	if !v.IsValid() {
-		return "", fmt.Errorf("invalid game state: %q", s)
+		return "", &UnknownEnumValueError{EnumType: "game state", Value: s}
 	}
 	return v, nil
 }

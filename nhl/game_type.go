@@ -3,6 +3,7 @@ package nhl
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 // GameType represents the type of NHL game.
@@ -138,7 +139,7 @@ func (g GameType) IsValid() bool {
 func GameTypeFromInt(i int) (GameType, error) {
 	g := GameType(i)
 	if !g.IsValid() {
-		return 0, fmt.Errorf("invalid game type: %d", i)
+		return 0, &UnknownEnumValueError{EnumType: "game type", Value: strconv.Itoa(i)}
 	}
 	return g, nil
 }
@@ -190,7 +191,7 @@ func GameTypeFromString(s string) (GameType, error) {
 	case "20", "4 Nations Face-Off", "4NationsFaceOff", "four_nations":
 		return GameType4Nations, nil
 	default:
-		return 0, fmt.Errorf("invalid game type: %q", s)
+		return 0, &UnknownEnumValueError{EnumType: "game type", Value: s}
 	}
 }
 
