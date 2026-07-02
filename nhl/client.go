@@ -62,8 +62,12 @@ func NewClient() *Client {
 	return NewClientWithConfig(config)
 }
 
-// NewClientWithConfig creates a new NHL API client with the provided configuration.
+// NewClientWithConfig creates a new NHL API client with the provided
+// configuration. If config is nil, the default configuration is used.
 func NewClientWithConfig(config *ClientConfig) *Client {
+	if config == nil {
+		config = DefaultClientConfig()
+	}
 	return &Client{
 		httpClient: config.ToHTTPClient(),
 	}

@@ -70,11 +70,14 @@ func WithFollowRedirects(follow bool) ConfigOption {
 
 // ToHTTPClient converts the ClientConfig to a configured http.Client.
 func (c *ClientConfig) ToHTTPClient() *http.Client {
-	transport := &http.Transport{
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: !c.SSLVerify,
-		},
+	// Clone the standard default transport so we keep its proxy support,
+	// HTTP/2, and connection-pool/timeout defaults, then override only TLS
+	// verification. A bare &http.Transport{} would drop all of those.
+	transport := http.DefaultTransport.(*http.Transport).Clone()
+	if transport.TLSClientConfig == nil {
+		transport.TLSClientConfig = &tls.Config{}
 	}
+	transport.TLSClientConfig.InsecureSkipVerify = !c.SSLVerify
 
 	client := &http.Client{
 		Timeout:   c.Timeout,
