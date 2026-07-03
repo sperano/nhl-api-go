@@ -139,13 +139,13 @@ type EdgeTeamZoneTimeByStrength struct {
 	StrengthCode           string  `json:"strengthCode"`
 	OffensiveZonePctg      float64 `json:"offensiveZonePctg"`
 	OffensiveZoneRank      int     `json:"offensiveZoneRank"`
-	OffensiveZoneLeagueAvg float64 `json:"offensiveZoneLeagueAvg,omitempty"`
+	OffensiveZoneLeagueAvg float64 `json:"offensiveZoneLeagueAvg"`
 	NeutralZonePctg        float64 `json:"neutralZonePctg"`
 	NeutralZoneRank        int     `json:"neutralZoneRank"`
-	NeutralZoneLeagueAvg   float64 `json:"neutralZoneLeagueAvg,omitempty"`
+	NeutralZoneLeagueAvg   float64 `json:"neutralZoneLeagueAvg"`
 	DefensiveZonePctg      float64 `json:"defensiveZonePctg"`
 	DefensiveZoneRank      int     `json:"defensiveZoneRank"`
-	DefensiveZoneLeagueAvg float64 `json:"defensiveZoneLeagueAvg,omitempty"`
+	DefensiveZoneLeagueAvg float64 `json:"defensiveZoneLeagueAvg"`
 }
 
 // EdgeTeamShotDifferential is aggregated shot differential stats.

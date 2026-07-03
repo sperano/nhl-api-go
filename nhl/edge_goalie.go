@@ -140,27 +140,27 @@ type EdgeGoalieComparisonShotDetail struct {
 
 // EdgeGoalieComparisonSavePctgDetails contains overall save percentage details.
 type EdgeGoalieComparisonSavePctgDetails struct {
-	GamesAbove900     int     `json:"gamesAbove900,omitempty"`
-	PctgGamesAbove900 float64 `json:"pctgGamesAbove900,omitempty"`
-	PointPctg         float64 `json:"pointPctg,omitempty"`
-	GoalsAgainstAvg   float64 `json:"goalsAgainstAvg,omitempty"`
-	SavePctg          float64 `json:"savePctg,omitempty"`
+	GamesAbove900     int     `json:"gamesAbove900"`
+	PctgGamesAbove900 float64 `json:"pctgGamesAbove900"`
+	PointPctg         float64 `json:"pointPctg"`
+	GoalsAgainstAvg   float64 `json:"goalsAgainstAvg"`
+	SavePctg          float64 `json:"savePctg"`
 }
 
 // EdgeGoalieComparisonSavePctg5v5Details contains 5v5 save percentage details.
 type EdgeGoalieComparisonSavePctg5v5Details struct {
-	SavePctg      float64 `json:"savePctg,omitempty"`
-	SavePctgClose float64 `json:"savePctgClose,omitempty"`
-	Shots         int     `json:"shots,omitempty"`
-	ShotsPer60    float64 `json:"shotsPer60,omitempty"`
+	SavePctg      float64 `json:"savePctg"`
+	SavePctgClose float64 `json:"savePctgClose"`
+	Shots         int     `json:"shots"`
+	ShotsPer60    float64 `json:"shotsPer60"`
 }
 
 // EdgeGoalieComparisonLast10Entry is a game entry in goalie last10 arrays.
 type EdgeGoalieComparisonLast10Entry struct {
 	GameDate     string  `json:"gameDate,omitempty"`
-	SavePctg     float64 `json:"savePctg,omitempty"`
-	ShotsAgainst int     `json:"shotsAgainst,omitempty"`
-	GoalsAgainst int     `json:"goalsAgainst,omitempty"`
+	SavePctg     float64 `json:"savePctg"`
+	ShotsAgainst int     `json:"shotsAgainst"`
+	GoalsAgainst int     `json:"goalsAgainst"`
 }
 
 // EdgeGoalieComparison is the response from v1/edge/goalie-comparison/{g}/{s}/{gt}.
