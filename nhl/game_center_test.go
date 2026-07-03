@@ -76,6 +76,26 @@ func TestGameSituationFromCode(t *testing.T) {
 			code:    "",
 			wantNil: true,
 		},
+		{
+			name:    "invalid code - non-digit goalie positions",
+			code:    "a55b",
+			wantNil: true,
+		},
+		{
+			name:    "invalid code - goalie flag out of range",
+			code:    "2551",
+			wantNil: true,
+		},
+		{
+			name:    "invalid code - skater count out of range",
+			code:    "1991",
+			wantNil: true,
+		},
+		{
+			name:    "invalid code - zero skaters",
+			code:    "1051",
+			wantNil: true,
+		},
 	}
 
 	for _, tt := range tests {

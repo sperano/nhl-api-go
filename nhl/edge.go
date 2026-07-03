@@ -118,14 +118,14 @@ type EdgeTeamInfo struct {
 // EdgeSkaterDetail is the response from v1/edge/skater-detail/{p}/{s}/{gt}.
 type EdgeSkaterDetail struct {
 	Player               EdgeSkaterPlayer              `json:"player"`
-	SeasonsWithEdgeStats []EdgeSeasonAvailability       `json:"seasonsWithEdgeStats"`
-	TopShotSpeed         EdgePercentileStatWithOverlay  `json:"topShotSpeed"`
-	SkatingSpeed         EdgeSkaterSpeed                `json:"skatingSpeed"`
-	TotalDistanceSkated  EdgePercentileStat             `json:"totalDistanceSkated"`
-	DistanceMaxGame      EdgePercentileStatWithOverlay  `json:"distanceMaxGame"`
-	SogSummary           []EdgeSkaterSogSummary         `json:"sogSummary"`
-	SogDetails           []EdgeSogAreaDetail            `json:"sogDetails"`
-	ZoneTimeDetails      EdgeSkaterZoneTimeSummary      `json:"zoneTimeDetails"`
+	SeasonsWithEdgeStats []EdgeSeasonAvailability      `json:"seasonsWithEdgeStats"`
+	TopShotSpeed         EdgePercentileStatWithOverlay `json:"topShotSpeed"`
+	SkatingSpeed         EdgeSkaterSpeed               `json:"skatingSpeed"`
+	TotalDistanceSkated  EdgePercentileStat            `json:"totalDistanceSkated"`
+	DistanceMaxGame      EdgePercentileStatWithOverlay `json:"distanceMaxGame"`
+	SogSummary           []EdgeSkaterSogSummary        `json:"sogSummary"`
+	SogDetails           []EdgeSogAreaDetail           `json:"sogDetails"`
+	ZoneTimeDetails      EdgeSkaterZoneTimeSummary     `json:"zoneTimeDetails"`
 }
 
 // EdgeSkaterPlayer is the player metadata embedded in skater Edge responses.
@@ -169,9 +169,9 @@ type EdgeSkaterSogSummary struct {
 // EdgeSogAreaDetail is a shot-on-goal detail for a specific rink area.
 type EdgeSogAreaDetail struct {
 	Area            string  `json:"area"`
-	Shots           int     `json:"shots,omitempty"`
-	ShootingPctg    float64 `json:"shootingPctg,omitempty"`
-	ShotsPercentile float64 `json:"shotsPercentile,omitempty"`
+	Shots           int     `json:"shots"`
+	ShootingPctg    float64 `json:"shootingPctg"`
+	ShotsPercentile float64 `json:"shotsPercentile"`
 }
 
 // EdgeSkaterZoneTimeSummary contains zone time percentages and percentiles for a skater.
@@ -192,7 +192,7 @@ type EdgeSkaterZoneTimeSummary struct {
 
 // EdgeSkaterSpeedDetail is the response from v1/edge/skater-skating-speed-detail/{p}/{s}/{gt}.
 type EdgeSkaterSpeedDetail struct {
-	Player               EdgeSkaterPlayer        `json:"player"`
+	Player               EdgeSkaterPlayer         `json:"player"`
 	SeasonsWithEdgeStats []EdgeSeasonAvailability `json:"seasonsWithEdgeStats"`
 	TopSkatingSpeeds     []EdgeSpeedEntry         `json:"topSkatingSpeeds"`
 }
@@ -207,7 +207,7 @@ type EdgeSpeedEntry struct {
 
 // EdgeSkaterDistanceDetail is the response from v1/edge/skater-skating-distance-detail/{p}/{s}/{gt}.
 type EdgeSkaterDistanceDetail struct {
-	Player                EdgeSkaterPlayer        `json:"player"`
+	Player                EdgeSkaterPlayer         `json:"player"`
 	SeasonsWithEdgeStats  []EdgeSeasonAvailability `json:"seasonsWithEdgeStats"`
 	SkatingDistanceLast10 []EdgeDistanceEntry      `json:"skatingDistanceLast10"`
 }
@@ -222,7 +222,7 @@ type EdgeDistanceEntry struct {
 
 // EdgeSkaterShotSpeedDetail is the response from v1/edge/skater-shot-speed-detail/{p}/{s}/{gt}.
 type EdgeSkaterShotSpeedDetail struct {
-	Player               EdgeSkaterPlayer        `json:"player"`
+	Player               EdgeSkaterPlayer         `json:"player"`
 	SeasonsWithEdgeStats []EdgeSeasonAvailability `json:"seasonsWithEdgeStats"`
 	HardestShots         []EdgeShotSpeedEntry     `json:"hardestShots"`
 }
@@ -237,7 +237,7 @@ type EdgeShotSpeedEntry struct {
 
 // EdgeSkaterShotLocationDetail is the response from v1/edge/skater-shot-location-detail/{p}/{s}/{gt}.
 type EdgeSkaterShotLocationDetail struct {
-	Player               EdgeSkaterPlayer        `json:"player"`
+	Player               EdgeSkaterPlayer         `json:"player"`
 	SeasonsWithEdgeStats []EdgeSeasonAvailability `json:"seasonsWithEdgeStats"`
 	ShotLocationDetails  []EdgeShotLocationEntry  `json:"shotLocationDetails"`
 }
@@ -252,7 +252,7 @@ type EdgeShotLocationEntry struct {
 
 // EdgeSkaterZoneTimeDetail is the response from v1/edge/skater-zone-time/{p}/{s}/{gt}.
 type EdgeSkaterZoneTimeDetail struct {
-	Player               EdgeSkaterPlayer        `json:"player"`
+	Player               EdgeSkaterPlayer         `json:"player"`
 	SeasonsWithEdgeStats []EdgeSeasonAvailability `json:"seasonsWithEdgeStats"`
 	ZoneTimeDetails      []EdgeZoneTimeEntry      `json:"zoneTimeDetails"`
 }
@@ -269,20 +269,20 @@ type EdgeZoneTimeEntry struct {
 
 // EdgeComparisonShotSpeedDetails contains shot speed breakdown for comparisons.
 type EdgeComparisonShotSpeedDetails struct {
-	TopShotSpeed       *EdgeMeasurementWithOverlay `json:"topShotSpeed,omitempty"`
-	AvgShotSpeed       *EdgeMeasurement            `json:"avgShotSpeed,omitempty"`
-	ShotAttemptsOver100 int                        `json:"shotAttemptsOver100,omitempty"`
-	ShotAttempts90To100 int                        `json:"shotAttempts90To100,omitempty"`
-	ShotAttempts80To90  int                        `json:"shotAttempts80To90,omitempty"`
-	ShotAttempts70To80  int                        `json:"shotAttempts70To80,omitempty"`
+	TopShotSpeed        *EdgeMeasurementWithOverlay `json:"topShotSpeed,omitempty"`
+	AvgShotSpeed        *EdgeMeasurement            `json:"avgShotSpeed,omitempty"`
+	ShotAttemptsOver100 int                         `json:"shotAttemptsOver100"`
+	ShotAttempts90To100 int                         `json:"shotAttempts90To100"`
+	ShotAttempts80To90  int                         `json:"shotAttempts80To90"`
+	ShotAttempts70To80  int                         `json:"shotAttempts70To80"`
 }
 
 // EdgeComparisonSkatingSpeedDetails contains skating speed breakdown for comparisons.
 type EdgeComparisonSkatingSpeedDetails struct {
 	MaxSkatingSpeed *EdgeMeasurementWithOverlay `json:"maxSkatingSpeed,omitempty"`
-	BurstsOver22    int                         `json:"burstsOver22,omitempty"`
-	Bursts20To22    int                         `json:"bursts20To22,omitempty"`
-	Bursts18To20    int                         `json:"bursts18To20,omitempty"`
+	BurstsOver22    int                         `json:"burstsOver22"`
+	Bursts20To22    int                         `json:"bursts20To22"`
+	Bursts18To20    int                         `json:"bursts18To20"`
 }
 
 // EdgeComparisonSkatingDistanceDetails contains distance breakdown for comparisons.
@@ -296,11 +296,11 @@ type EdgeComparisonSkatingDistanceDetails struct {
 // EdgeComparisonZoneTimeDetails contains zone time percentages for comparisons.
 type EdgeComparisonZoneTimeDetails struct {
 	OffensiveZonePctg      float64 `json:"offensiveZonePctg"`
-	OffensiveZoneLeagueAvg float64 `json:"offensiveZoneLeagueAvg,omitempty"`
+	OffensiveZoneLeagueAvg float64 `json:"offensiveZoneLeagueAvg"`
 	NeutralZonePctg        float64 `json:"neutralZonePctg"`
-	NeutralZoneLeagueAvg   float64 `json:"neutralZoneLeagueAvg,omitempty"`
+	NeutralZoneLeagueAvg   float64 `json:"neutralZoneLeagueAvg"`
 	DefensiveZonePctg      float64 `json:"defensiveZonePctg"`
-	DefensiveZoneLeagueAvg float64 `json:"defensiveZoneLeagueAvg,omitempty"`
+	DefensiveZoneLeagueAvg float64 `json:"defensiveZoneLeagueAvg"`
 }
 
 // EdgeComparisonShotLocationDetail is a shot location breakdown by area.
@@ -325,7 +325,7 @@ type EdgeComparisonDistanceLast10Entry struct {
 	GameDate         string           `json:"gameDate"`
 	PlayerOnHomeTeam bool             `json:"playerOnHomeTeam,omitempty"`
 	DistanceSkated   *EdgeMeasurement `json:"distanceSkated,omitempty"`
-	TOI              float64          `json:"toi,omitempty"`
+	TOI              float64          `json:"toi"`
 	HomeTeam         *EdgeOverlayTeam `json:"homeTeam,omitempty"`
 	AwayTeam         *EdgeOverlayTeam `json:"awayTeam,omitempty"`
 	// Team comparison uses different field names
@@ -342,31 +342,31 @@ type EdgeComparisonZoneStarts struct {
 // EdgeSkaterComparison is the response from v1/edge/skater-comparison/{p}/{s}/{gt}.
 // Rich composite for head-to-head display. Cached on filesystem only.
 type EdgeSkaterComparison struct {
-	Player                 EdgeSkaterPlayer                     `json:"player"`
-	SeasonsWithEdgeStats   []EdgeSeasonAvailability             `json:"seasonsWithEdgeStats"`
-	ShotSpeedDetails       *EdgeComparisonShotSpeedDetails      `json:"shotSpeedDetails,omitempty"`
-	SkatingSpeedDetails    *EdgeComparisonSkatingSpeedDetails   `json:"skatingSpeedDetails,omitempty"`
-	SkatingDistanceLast10  []EdgeComparisonDistanceLast10Entry  `json:"skatingDistanceLast10,omitempty"`
+	Player                 EdgeSkaterPlayer                      `json:"player"`
+	SeasonsWithEdgeStats   []EdgeSeasonAvailability              `json:"seasonsWithEdgeStats"`
+	ShotSpeedDetails       *EdgeComparisonShotSpeedDetails       `json:"shotSpeedDetails,omitempty"`
+	SkatingSpeedDetails    *EdgeComparisonSkatingSpeedDetails    `json:"skatingSpeedDetails,omitempty"`
+	SkatingDistanceLast10  []EdgeComparisonDistanceLast10Entry   `json:"skatingDistanceLast10,omitempty"`
 	SkatingDistanceDetails *EdgeComparisonSkatingDistanceDetails `json:"skatingDistanceDetails,omitempty"`
-	ShotLocationDetails    []EdgeComparisonShotLocationDetail   `json:"shotLocationDetails,omitempty"`
-	ShotLocationTotals     []EdgeComparisonShotLocationTotal    `json:"shotLocationTotals,omitempty"`
-	ZoneTimeDetails        *EdgeComparisonZoneTimeDetails       `json:"zoneTimeDetails,omitempty"`
-	ZoneStarts             *EdgeComparisonZoneStarts            `json:"zoneStarts,omitempty"`
+	ShotLocationDetails    []EdgeComparisonShotLocationDetail    `json:"shotLocationDetails,omitempty"`
+	ShotLocationTotals     []EdgeComparisonShotLocationTotal     `json:"shotLocationTotals,omitempty"`
+	ZoneTimeDetails        *EdgeComparisonZoneTimeDetails        `json:"zoneTimeDetails,omitempty"`
+	ZoneStarts             *EdgeComparisonZoneStarts             `json:"zoneStarts,omitempty"`
 }
 
 // EdgeLeaderShotLocation is shot location detail in leader responses.
 type EdgeLeaderShotLocation struct {
-	Area              string   `json:"area"`
-	SOG               *int     `json:"sog,omitempty"`               // skater: shots on goal
-	SOGPercentile     *float64 `json:"sogPercentile,omitempty"`     // skater percentile
-	SavePctg          *float64 `json:"savePctg,omitempty"`          // goalie: save percentage
+	Area               string   `json:"area"`
+	SOG                *int     `json:"sog,omitempty"`                // skater: shots on goal
+	SOGPercentile      *float64 `json:"sogPercentile,omitempty"`      // skater percentile
+	SavePctg           *float64 `json:"savePctg,omitempty"`           // goalie: save percentage
 	SavePctgPercentile *float64 `json:"savePctgPercentile,omitempty"` // goalie percentile
 }
 
 // EdgeSkaterLeader is a leader entry in the skater landing response.
 type EdgeSkaterLeader struct {
-	Player  EdgeSkaterPlayer    `json:"player"`
-	Overlay *EdgeOverlay        `json:"overlay,omitempty"`
+	Player  EdgeSkaterPlayer `json:"player"`
+	Overlay *EdgeOverlay     `json:"overlay,omitempty"`
 	// Stat fields - only one set is populated per category
 	ShotSpeed           *EdgeMeasurement         `json:"shotSpeed,omitempty"`           // hardestShot
 	SkatingSpeed        *EdgeMeasurement         `json:"skatingSpeed,omitempty"`        // maxSkatingSpeed

@@ -82,7 +82,7 @@ func PositionFromString(s string) (Position, error) {
 	case "G", "Goalie", "Goaltender":
 		return PositionGoalie, nil
 	default:
-		return "", fmt.Errorf("invalid position: %q", s)
+		return "", &UnknownEnumValueError{EnumType: "position", Value: s}
 	}
 }
 
@@ -97,6 +97,8 @@ func MustPositionFromString(s string) Position {
 }
 
 // UnmarshalJSON implements custom JSON unmarshaling for Position.
+// An empty string is accepted and stored as the zero value, because the NHL API
+// omits the position in some responses.
 func (v *Position) UnmarshalJSON(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
@@ -115,6 +117,8 @@ func (v *Position) UnmarshalJSON(data []byte) error {
 }
 
 // MarshalJSON implements custom JSON marshaling for Position.
+// The empty (zero-value) string is allowed so it round-trips through JSON;
+// other invalid values are rejected.
 func (v Position) MarshalJSON() ([]byte, error) {
 	if v == "" {
 		return json.Marshal("")
@@ -176,7 +180,7 @@ func HandednessFromString(s string) (Handedness, error) {
 	case "R", "Right":
 		return HandednessRight, nil
 	default:
-		return "", fmt.Errorf("invalid handedness: %q", s)
+		return "", &UnknownEnumValueError{EnumType: "handedness", Value: s}
 	}
 }
 
@@ -191,6 +195,8 @@ func MustHandednessFromString(s string) Handedness {
 }
 
 // UnmarshalJSON implements custom JSON unmarshaling for Handedness.
+// An empty string is accepted and stored as the zero value, because the NHL API
+// omits the handedness in some responses.
 func (v *Handedness) UnmarshalJSON(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
@@ -266,7 +272,7 @@ func GoalieDecisionFromString(s string) (GoalieDecision, error) {
 	case "O", "OTL", "Overtime Loss", "OvertimeLoss":
 		return GoalieDecisionOvertimeLoss, nil
 	default:
-		return "", fmt.Errorf("invalid goalie decision: %q", s)
+		return "", &UnknownEnumValueError{EnumType: "goalie decision", Value: s}
 	}
 }
 
@@ -359,7 +365,7 @@ func PeriodTypeFromString(s string) (PeriodType, error) {
 	case "SO", "Shootout":
 		return PeriodTypeShootout, nil
 	default:
-		return "", fmt.Errorf("invalid period type: %q", s)
+		return "", &UnknownEnumValueError{EnumType: "period type", Value: s}
 	}
 }
 
@@ -374,7 +380,8 @@ func MustPeriodTypeFromString(s string) PeriodType {
 }
 
 // UnmarshalJSON implements custom JSON unmarshaling for PeriodType.
-// Empty strings are accepted because the NHL API omits periodType for unplayed games.
+// An empty string is accepted and stored as the zero value, because the NHL API
+// omits the period type in some responses.
 func (v *PeriodType) UnmarshalJSON(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
@@ -393,10 +400,13 @@ func (v *PeriodType) UnmarshalJSON(data []byte) error {
 }
 
 // MarshalJSON implements custom JSON marshaling for PeriodType.
-// Empty strings are allowed because the NHL API omits periodType for unplayed games,
-// leaving the Go zero value which must round-trip through JSON.
+// The empty (zero-value) string is allowed so it round-trips through JSON;
+// other invalid values are rejected.
 func (v PeriodType) MarshalJSON() ([]byte, error) {
-	if v != "" && !v.IsValid() {
+	if v == "" {
+		return json.Marshal("")
+	}
+	if !v.IsValid() {
 		return nil, fmt.Errorf("cannot marshal invalid period type: %q", string(v))
 	}
 	return json.Marshal(string(v))
@@ -453,7 +463,7 @@ func HomeRoadFromString(s string) (HomeRoad, error) {
 	case "R", "Road", "Away":
 		return HomeRoadRoad, nil
 	default:
-		return "", fmt.Errorf("invalid home/road: %q", s)
+		return "", &UnknownEnumValueError{EnumType: "home/road", Value: s}
 	}
 }
 
@@ -541,7 +551,7 @@ func ZoneCodeFromString(s string) (ZoneCode, error) {
 	case "N", "Neutral":
 		return ZoneCodeNeutral, nil
 	default:
-		return "", fmt.Errorf("invalid zone code: %q", s)
+		return "", &UnknownEnumValueError{EnumType: "zone code", Value: s}
 	}
 }
 
@@ -611,7 +621,7 @@ func DefendingSideFromString(s string) (DefendingSide, error) {
 	case "right":
 		return DefendingSideRight, nil
 	default:
-		return "", fmt.Errorf("invalid defending side: %q", s)
+		return "", &UnknownEnumValueError{EnumType: "defending side", Value: s}
 	}
 }
 
@@ -626,6 +636,8 @@ func MustDefendingSideFromString(s string) DefendingSide {
 }
 
 // UnmarshalJSON implements custom JSON unmarshaling for DefendingSide.
+// An empty string is accepted and stored as the zero value, because the NHL API
+// omits the defending side in some responses.
 func (v *DefendingSide) UnmarshalJSON(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
@@ -644,6 +656,8 @@ func (v *DefendingSide) UnmarshalJSON(data []byte) error {
 }
 
 // MarshalJSON implements custom JSON marshaling for DefendingSide.
+// The empty (zero-value) string is allowed so it round-trips through JSON;
+// other invalid values are rejected.
 func (v DefendingSide) MarshalJSON() ([]byte, error) {
 	if v == "" {
 		return json.Marshal("")
@@ -694,7 +708,7 @@ func (v GameScheduleState) IsValid() bool {
 func GameScheduleStateFromString(s string) (GameScheduleState, error) {
 	v := GameScheduleState(s)
 	if !v.IsValid() {
-		return "", fmt.Errorf("invalid game schedule state: %q", s)
+		return "", &UnknownEnumValueError{EnumType: "game schedule state", Value: s}
 	}
 	return v, nil
 }
@@ -793,7 +807,7 @@ func (v PlayEventType) IsValid() bool {
 func PlayEventTypeFromString(s string) (PlayEventType, error) {
 	v := PlayEventType(s)
 	if !v.IsValid() {
-		return "", fmt.Errorf("invalid play event type: %q", s)
+		return "", &UnknownEnumValueError{EnumType: "play event type", Value: s}
 	}
 	return v, nil
 }
@@ -872,7 +886,7 @@ func (v GameState) IsValid() bool {
 func GameStateFromString(s string) (GameState, error) {
 	v := GameState(s)
 	if !v.IsValid() {
-		return "", fmt.Errorf("invalid game state: %q", s)
+		return "", &UnknownEnumValueError{EnumType: "game state", Value: s}
 	}
 	return v, nil
 }

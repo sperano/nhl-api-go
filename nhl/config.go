@@ -21,6 +21,17 @@ type ClientConfig struct {
 
 	// FollowRedirects controls whether HTTP redirects are followed.
 	FollowRedirects bool
+
+	// HTTPClient, when non-nil, is used as-is and takes precedence over the
+	// transport-shaping options above (Timeout, SSLVerify, FollowRedirects),
+	// which the caller is then responsible for configuring on their client.
+	// This is the escape hatch for custom transports, retry round-trippers,
+	// instrumentation, etc.
+	HTTPClient *http.Client
+
+	// UserAgent is sent as the User-Agent header. Empty means the library
+	// default is used.
+	UserAgent string
 }
 
 // DefaultClientConfig returns a ClientConfig with sensible defaults.
@@ -29,6 +40,7 @@ func DefaultClientConfig() *ClientConfig {
 		Timeout:         DefaultConfigTimeout,
 		SSLVerify:       true,
 		FollowRedirects: true,
+		UserAgent:       defaultUserAgent,
 	}
 }
 
@@ -68,13 +80,36 @@ func WithFollowRedirects(follow bool) ConfigOption {
 	}
 }
 
-// ToHTTPClient converts the ClientConfig to a configured http.Client.
-func (c *ClientConfig) ToHTTPClient() *http.Client {
-	transport := &http.Transport{
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: !c.SSLVerify,
-		},
+// WithHTTPClient supplies a custom *http.Client to use as-is. When set, it
+// takes precedence over WithConfigTimeout/WithSSLVerify/WithFollowRedirects.
+func WithHTTPClient(client *http.Client) ConfigOption {
+	return func(c *ClientConfig) {
+		c.HTTPClient = client
 	}
+}
+
+// WithUserAgent sets the User-Agent header sent with requests.
+func WithUserAgent(userAgent string) ConfigOption {
+	return func(c *ClientConfig) {
+		c.UserAgent = userAgent
+	}
+}
+
+// ToHTTPClient converts the ClientConfig to a configured http.Client.
+// If a custom HTTPClient was supplied, it is returned unchanged.
+func (c *ClientConfig) ToHTTPClient() *http.Client {
+	if c.HTTPClient != nil {
+		return c.HTTPClient
+	}
+
+	// Clone the standard default transport so we keep its proxy support,
+	// HTTP/2, and connection-pool/timeout defaults, then override only TLS
+	// verification. A bare &http.Transport{} would drop all of those.
+	transport := http.DefaultTransport.(*http.Transport).Clone()
+	if transport.TLSClientConfig == nil {
+		transport.TLSClientConfig = &tls.Config{}
+	}
+	transport.TLSClientConfig.InsecureSkipVerify = !c.SSLVerify
 
 	client := &http.Client{
 		Timeout:   c.Timeout,
@@ -90,11 +125,14 @@ func (c *ClientConfig) ToHTTPClient() *http.Client {
 	return client
 }
 
-// Clone creates a deep copy of the ClientConfig.
+// Clone creates a copy of the ClientConfig. The HTTPClient pointer is shared,
+// not deep-copied, since an *http.Client is intended to be reused.
 func (c *ClientConfig) Clone() *ClientConfig {
 	return &ClientConfig{
 		Timeout:         c.Timeout,
 		SSLVerify:       c.SSLVerify,
 		FollowRedirects: c.FollowRedirects,
+		HTTPClient:      c.HTTPClient,
+		UserAgent:       c.UserAgent,
 	}
 }

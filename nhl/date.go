@@ -5,6 +5,7 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
+	"io"
 	"strconv"
 	"strings"
 	"time"
@@ -58,9 +59,15 @@ func (d Date) String() string {
 	return d.Time.Format(DateLayout)
 }
 
-// Equal returns true if two dates represent the same calendar day.
+// Equal returns true if two dates represent the same calendar day. It compares
+// the year/month/day components rather than the underlying instants, so two
+// Date values for the same day compare equal even if their time-of-day or
+// location differ (the package constructors normalize to midnight UTC, but a
+// Date populated directly need not).
 func (d Date) Equal(other Date) bool {
-	return d.Time.Equal(other.Time)
+	y1, m1, d1 := d.Time.Date()
+	y2, m2, d2 := other.Time.Date()
+	return y1 == y2 && m1 == m2 && d1 == d2
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -179,28 +186,15 @@ func (gd *GameDate) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	// Parse YYYY-MM-DD format
-	parts := strings.Split(s, "-")
-	if len(parts) != 3 {
-		return fmt.Errorf("invalid date format: %s", s)
-	}
-
-	year, err := strconv.Atoi(parts[0])
+	// Delegate to ParseDate (time.Parse with DateLayout), which enforces the
+	// exact YYYY-MM-DD shape and validates ranges. The previous hand-rolled
+	// split+Atoi accepted overflow values like "2024-13-40" because FromYMD
+	// relies on time.Date, which silently normalizes them.
+	d, err := ParseDate(s)
 	if err != nil {
-		return fmt.Errorf("invalid year: %s", parts[0])
+		return err
 	}
-
-	month, err := strconv.Atoi(parts[1])
-	if err != nil {
-		return fmt.Errorf("invalid month: %s", parts[1])
-	}
-
-	day, err := strconv.Atoi(parts[2])
-	if err != nil {
-		return fmt.Errorf("invalid day: %s", parts[2])
-	}
-
-	*gd = FromYMD(year, month, day)
+	*gd = FromDate(d.Time)
 	return nil
 }
 
@@ -226,22 +220,29 @@ func (gd *GameDate) GobDecode(data []byte) error {
 	return dec.Decode(&gd.date)
 }
 
-// Season represents an NHL season.
+// Season represents an NHL season. It stores both the start and end years
+// explicitly rather than assuming end == start+1: while NHL season IDs are
+// conventionally cross-year (e.g. 20232024), seasons played within a single
+// calendar year exist (the COVID-shortened 2020-21 season ran Jan–May 2021),
+// so the end year is recorded as parsed rather than derived.
 type Season struct {
 	startYear int
+	endYear   int
 }
 
-// NewSeason creates a new Season from a start year.
+// NewSeason creates a new Season from a start year, using the conventional
+// cross-year end (startYear + 1).
 func NewSeason(startYear int) Season {
-	return Season{startYear: startYear}
+	return Season{startYear: startYear, endYear: startYear + 1}
 }
 
 // FromYears creates a Season from start and end years.
-// Validates that endYear is either startYear (single calendar year season)
-// or startYear + 1 (typical cross-year season like 2023-2024).
+// The end year must equal startYear (a single-calendar-year season) or
+// startYear + 1 (the typical cross-year season like 2023-2024); both are
+// stored as given. Returns an error for any other range.
 func FromYears(startYear, endYear int) (Season, error) {
 	if endYear == startYear || endYear == startYear+1 {
-		return NewSeason(startYear), nil
+		return Season{startYear: startYear, endYear: endYear}, nil
 	}
 	return Season{}, fmt.Errorf("invalid season years: %d-%d (expected %d-%d or %d-%d)",
 		startYear, endYear, startYear, startYear, startYear, startYear+1)
@@ -254,19 +255,19 @@ func (s Season) StartYear() int {
 
 // EndYear returns the end year of the season.
 func (s Season) EndYear() int {
-	return s.startYear + 1
+	return s.endYear
 }
 
 // APIString converts the Season to the API format (YYYYYYYY).
 // For example, the 2023-2024 season is represented as "20232024".
 func (s Season) APIString() string {
-	return fmt.Sprintf("%d%d", s.startYear, s.EndYear())
+	return fmt.Sprintf("%04d%04d", s.startYear, s.endYear)
 }
 
 // String implements the fmt.Stringer interface.
 // Returns the season in "YYYY-YYYY" format.
 func (s Season) String() string {
-	return fmt.Sprintf("%d-%d", s.startYear, s.EndYear())
+	return fmt.Sprintf("%d-%d", s.startYear, s.endYear)
 }
 
 // GobEncode implements gob.GobEncoder for Season.
@@ -276,13 +277,29 @@ func (s Season) GobEncode() ([]byte, error) {
 	if err := enc.Encode(s.startYear); err != nil {
 		return nil, err
 	}
+	if err := enc.Encode(s.endYear); err != nil {
+		return nil, err
+	}
 	return buf.Bytes(), nil
 }
 
 // GobDecode implements gob.GobDecoder for Season.
+// It tolerates legacy data that encoded only the start year (before the end
+// year was stored): in that case the end year defaults to startYear + 1, the
+// conventional cross-year value, preserving backward compatibility.
 func (s *Season) GobDecode(data []byte) error {
 	dec := gob.NewDecoder(bytes.NewReader(data))
-	return dec.Decode(&s.startYear)
+	if err := dec.Decode(&s.startYear); err != nil {
+		return err
+	}
+	if err := dec.Decode(&s.endYear); err != nil {
+		if err == io.EOF {
+			s.endYear = s.startYear + 1
+			return nil
+		}
+		return err
+	}
+	return nil
 }
 
 // Parse parses a season string in either "YYYY-YYYY" or "YYYYYYYY" format.
@@ -325,10 +342,12 @@ func Parse(s string) (Season, error) {
 	return Season{}, fmt.Errorf("invalid season format: %s", s)
 }
 
-// Current returns the current NHL season based on the current date.
-// The NHL season typically starts in October and ends in June.
+// Current returns the current NHL season based on the current date (UTC).
+// The NHL season typically starts in October and ends in June. UTC is used
+// for consistency with Today() and GameDate.Date(); the season-rollover months
+// (June/July) fall in the offseason, so the exact time zone is not significant.
 func Current() Season {
-	now := time.Now()
+	now := time.Now().UTC()
 	year := now.Year()
 	month := now.Month()
 
@@ -398,8 +417,7 @@ func SeasonFromInt64(i int64) (Season, error) {
 
 // ID returns the Season as an integer in YYYYYYYY format.
 func (s Season) ID() int {
-	season := s.startYear
-	return (s.startYear * 10000) + season + 1
+	return s.startYear*10000 + s.endYear
 }
 
 // Int64 returns the Season as an int64 in YYYYYYYY format.

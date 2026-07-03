@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -1004,5 +1005,28 @@ func TestEdgeComparison_GobEncoding(t *testing.T) {
 			// Note: gob encoding requires registration which is done in the resource package.
 			// This test verifies the types are JSON-serializable, which is a prerequisite.
 		})
+	}
+}
+
+// TestEdgeScalarZeroValueRoundTrips guards the removal of omitempty from
+// non-pointer scalar Edge fields: a legitimate zero must survive re-marshal
+// (previously omitempty dropped it, making 0 indistinguishable from absent).
+func TestEdgeScalarZeroValueRoundTrips(t *testing.T) {
+	in := EdgeComparisonSkatingSpeedDetails{BurstsOver22: 0, Bursts20To22: 3, Bursts18To20: 0}
+	data, err := json.Marshal(in)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	for _, key := range []string{"burstsOver22", "bursts20To22", "bursts18To20"} {
+		if !strings.Contains(string(data), key) {
+			t.Errorf("marshaled JSON is missing %q (zero value dropped?): %s", key, data)
+		}
+	}
+	var out EdgeComparisonSkatingSpeedDetails
+	if err := json.Unmarshal(data, &out); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if out != in {
+		t.Errorf("round-trip mismatch: got %+v, want %+v", out, in)
 	}
 }

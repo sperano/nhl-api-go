@@ -15,7 +15,7 @@ import (
 // ===== Test Helper Functions =====
 
 // makeJSONResponse creates an HTTP handler that returns a JSON response.
-func makeJSONResponse(statusCode int, body interface{}) http.HandlerFunc {
+func makeJSONResponse(statusCode int, body any) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(statusCode)
@@ -502,7 +502,7 @@ func TestClientMethodSignatures(t *testing.T) {
 	// Player methods
 	var _ func(context.Context, PlayerID) (*PlayerLanding, error) = client.PlayerLanding
 	var _ func(context.Context, PlayerID, Season, GameType) (*PlayerGameLog, error) = client.PlayerGameLog
-	var _ func(context.Context, string, *int) ([]PlayerSearchResult, error) = client.SearchPlayer
+	var _ func(context.Context, string, ...int) ([]PlayerSearchResult, error) = client.SearchPlayer
 
 	// Team/Franchise methods
 	var _ func(context.Context) ([]Franchise, error) = client.Franchises
@@ -659,7 +659,7 @@ func TestCurrentLeagueStandings(t *testing.T) {
 		{TeamAbbrev: LocalizedString{Default: "MTL"}, Points: 45},
 	}
 
-	server := httptest.NewServer(makeJSONResponse(http.StatusOK, map[string]interface{}{
+	server := httptest.NewServer(makeJSONResponse(http.StatusOK, map[string]any{
 		"standings": standings,
 	}))
 	defer server.Close()
@@ -697,7 +697,7 @@ func TestLeagueStandingsForDate(t *testing.T) {
 		{TeamAbbrev: LocalizedString{Default: "TOR"}, Points: 50},
 	}
 
-	server := httptest.NewServer(makeJSONResponse(http.StatusOK, map[string]interface{}{
+	server := httptest.NewServer(makeJSONResponse(http.StatusOK, map[string]any{
 		"standings": standings,
 	}))
 	defer server.Close()
@@ -1160,8 +1160,7 @@ func TestSearchPlayer(t *testing.T) {
 	client := NewClientWithBaseURL(server.URL)
 
 	ctx := context.Background()
-	limit := 10
-	result, err := client.SearchPlayer(ctx, "McDavid", &limit)
+	result, err := client.SearchPlayer(ctx, "McDavid", 10)
 
 	if err != nil {
 		t.Fatalf("SearchPlayer() error = %v", err)
@@ -1183,7 +1182,7 @@ func TestSearchPlayer_NoLimit(t *testing.T) {
 	client := NewClientWithBaseURL(server.URL)
 
 	ctx := context.Background()
-	result, err := client.SearchPlayer(ctx, "McDavid", nil)
+	result, err := client.SearchPlayer(ctx, "McDavid")
 
 	if err != nil {
 		t.Fatalf("SearchPlayer() error = %v", err)
@@ -1589,7 +1588,7 @@ func TestClient_ErrorPaths(t *testing.T) {
 		client := NewClientWithBaseURL(server.URL)
 		ctx := context.Background()
 
-		_, err := client.SearchPlayer(ctx, "McDavid", nil)
+		_, err := client.SearchPlayer(ctx, "McDavid")
 		if err == nil {
 			t.Error("SearchPlayer() should error on HTTP error")
 		}
@@ -1743,5 +1742,78 @@ func TestLeagueStandingsForSeason_StandingsFetchError(t *testing.T) {
 	_, err := client.LeagueStandingsForSeason(ctx, NewSeason(2023))
 	if err == nil {
 		t.Error("LeagueStandingsForSeason() should error when standings fetch fails")
+	}
+}
+
+func TestGetJSON_ErrorBodyIncludedInMessage(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		_, _ = w.Write([]byte(`{"message":"season not found"}`))
+	}))
+	defer server.Close()
+
+	client := NewClientWithBaseURL(server.URL)
+	_, err := client.SeasonStandingManifest(context.Background())
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+	if !strings.Contains(err.Error(), "season not found") {
+		t.Errorf("error should surface the response body detail; got: %v", err)
+	}
+	var apiErr *APIError
+	if !errors.As(err, &apiErr) || apiErr.StatusCode != http.StatusNotFound {
+		t.Errorf("expected APIError with status 404; got %T: %v", err, err)
+	}
+}
+
+func TestClient_UserAgentHeader(t *testing.T) {
+	t.Run("custom user agent is sent", func(t *testing.T) {
+		var got string
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			got = r.Header.Get("User-Agent")
+			_, _ = w.Write([]byte(`{}`))
+		}))
+		defer server.Close()
+
+		client := &Client{httpClient: server.Client(), baseURLOverride: server.URL, userAgent: "custom/9.9"}
+		if _, err := client.SeasonStandingManifest(context.Background()); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if got != "custom/9.9" {
+			t.Errorf("User-Agent = %q, want custom/9.9", got)
+		}
+	})
+
+	t.Run("empty user agent falls back to default", func(t *testing.T) {
+		var got string
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			got = r.Header.Get("User-Agent")
+			_, _ = w.Write([]byte(`{}`))
+		}))
+		defer server.Close()
+
+		client := NewClientWithBaseURL(server.URL)
+		if _, err := client.SeasonStandingManifest(context.Background()); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if got != defaultUserAgent {
+			t.Errorf("User-Agent = %q, want default %q", got, defaultUserAgent)
+		}
+	})
+}
+
+func TestWithHTTPClientAndUserAgent(t *testing.T) {
+	custom := &http.Client{Timeout: 42 * time.Second}
+	cfg := NewClientConfig(WithHTTPClient(custom), WithUserAgent("ua/1"))
+
+	if cfg.ToHTTPClient() != custom {
+		t.Error("ToHTTPClient should return the supplied *http.Client unchanged")
+	}
+	client := NewClientWithConfig(cfg)
+	if client.httpClient != custom {
+		t.Error("client should use the supplied *http.Client")
+	}
+	if client.userAgent != "ua/1" {
+		t.Errorf("client.userAgent = %q, want ua/1", client.userAgent)
 	}
 }

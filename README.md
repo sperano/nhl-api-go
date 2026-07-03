@@ -43,11 +43,27 @@ func main() {
 
 ## Available Methods
 
-- **Standings**: `CurrentLeagueStandings`, `LeagueStandingsForDate`, `LeagueStandingsForSeason`
-- **Schedule**: `DailySchedule`, `WeeklySchedule`, `TeamWeeklySchedule`, `DailyScores`
+- **Standings**: `CurrentLeagueStandings`, `LeagueStandingsForDate`, `LeagueStandingsForSeason`, `SeasonStandingManifest`
+- **Schedule**: `DailySchedule`, `WeeklySchedule`, `TeamWeeklySchedule`, `ClubScheduleSeason`, `DailyScores`
 - **Games**: `Boxscore`, `PlayByPlay`, `Landing`, `GameStory`, `SeasonSeries`, `ShiftChart`
 - **Players**: `PlayerLanding`, `PlayerGameLog`, `SearchPlayer`
-- **Teams**: `Teams`, `Franchises`, `RosterCurrent`, `RosterSeason`, `ClubStats`
+- **Teams**: `Teams`, `Franchises`, `RosterCurrent`, `RosterSeason`, `ClubStats`, `ClubStatsSeason`
+- **Edge (skater)**: `EdgeSkaterDetail`, `EdgeSkaterSpeedDetail`, `EdgeSkaterDistanceDetail`, `EdgeSkaterShotSpeedDetail`, `EdgeSkaterShotLocationDetail`, `EdgeSkaterZoneTime`, `EdgeSkaterComparison`, `EdgeSkaterLanding`
+- **Edge (goalie)**: `EdgeGoalieDetail`, `EdgeGoalie5v5Detail`, `EdgeGoalieShotLocationDetail`, `EdgeGoalieSavePctgDetail`, `EdgeGoalieComparison`, `EdgeGoalieLanding`
+- **Edge (team)**: `EdgeTeamDetail`, `EdgeTeamSpeedDetail`, `EdgeTeamDistanceDetail`, `EdgeTeamShotSpeedDetail`, `EdgeTeamShotLocationDetail`, `EdgeTeamZoneTimeDetails`, `EdgeTeamComparison`, `EdgeTeamLanding`
+
+## Error Handling
+
+Non-2xx responses return an `*APIError` carrying the HTTP status code. Match well-known statuses with `errors.Is`:
+
+```go
+standings, err := client.CurrentLeagueStandings(ctx)
+if errors.Is(err, nhl.ErrRateLimited) {
+    // back off and retry
+}
+```
+
+Sentinels: `ErrBadRequest` (400), `ErrUnauthorized` (401), `ErrNotFound` (404), `ErrRateLimited` (429), `ErrServerError` (500, and matches any 5xx). Transport failures are wrapped in `RequestError` and decode failures in `JSONError`. When the API returns an unrecognized enum value, the decode fails with a typed `*UnknownEnumValueError` (recoverable via `errors.As` to learn which enum type and value were unknown).
 
 ## License
 

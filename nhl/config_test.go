@@ -276,3 +276,33 @@ func TestConfigOptions(t *testing.T) {
 		}
 	})
 }
+
+func TestToHTTPClient_InheritsDefaultTransport(t *testing.T) {
+	// The clone must carry DefaultTransport's connection-pool and proxy
+	// settings; a bare &http.Transport{} would leave these zero/nil.
+	transport, ok := DefaultClientConfig().ToHTTPClient().Transport.(*http.Transport)
+	if !ok {
+		t.Fatal("Transport should be *http.Transport")
+	}
+	if transport.MaxIdleConns == 0 {
+		t.Error("MaxIdleConns is 0; DefaultTransport defaults were not inherited")
+	}
+	if transport.Proxy == nil {
+		t.Error("Proxy is nil; DefaultTransport proxy support was not inherited")
+	}
+	// It must be a distinct instance, not a mutation of the shared default.
+	if transport == http.DefaultTransport {
+		t.Error("Transport must be a clone, not the shared http.DefaultTransport")
+	}
+}
+
+func TestNewClientWithConfig_NilConfig(t *testing.T) {
+	// Must not panic; nil falls back to the default configuration.
+	client := NewClientWithConfig(nil)
+	if client == nil || client.httpClient == nil {
+		t.Fatal("NewClientWithConfig(nil) should return a client with a default http.Client")
+	}
+	if client.httpClient.Timeout != DefaultConfigTimeout {
+		t.Errorf("Timeout = %v, want default %v", client.httpClient.Timeout, DefaultConfigTimeout)
+	}
+}

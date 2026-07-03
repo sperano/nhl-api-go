@@ -80,6 +80,7 @@ var enums = []EnumDef{
 		ErrorLabel: "period type",
 		HasCode:    true,
 		HasName:    true,
+		AllowEmpty: true,
 		Values: []ValueDef{
 			{Name: "PeriodTypeRegulation", Value: "REG", DisplayName: "Regulation", Aliases: []string{"REG", "Regulation"}, Doc: "PeriodTypeRegulation represents a regulation period."},
 			{Name: "PeriodTypeOvertime", Value: "OT", DisplayName: "Overtime", Aliases: []string{"OT", "Overtime"}, Doc: "PeriodTypeOvertime represents an overtime period."},

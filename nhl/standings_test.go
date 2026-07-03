@@ -70,6 +70,9 @@ func TestStandingToTeamConversion(t *testing.T) {
 	if team.TeamCommonName.Default != "Golden Knights" {
 		t.Errorf("expected TeamCommonName.Default = Golden Knights, got %s", team.TeamCommonName.Default)
 	}
+	if team.TeamPlaceName.Default != "Vegas" {
+		t.Errorf("expected TeamPlaceName.Default = Vegas, got %s", team.TeamPlaceName.Default)
+	}
 	if team.Tricode != "VGK" {
 		t.Errorf("expected Tricode = VGK, got %s", team.Tricode)
 	}
@@ -87,6 +90,32 @@ func TestStandingToTeamConversion(t *testing.T) {
 	}
 	if team.Division.Name != "Pacific" {
 		t.Errorf("expected Division.Name = Pacific, got %s", team.Division.Name)
+	}
+}
+
+func TestPlaceName(t *testing.T) {
+	tests := []struct {
+		name       string
+		fullName   string
+		commonName string
+		want       string
+	}{
+		{"common name at end", "Toronto Maple Leafs", "Maple Leafs", "Toronto"},
+		{"common name at start", "Maple Leafs Toronto", "Maple Leafs", "Toronto"},
+		{"single-word place", "Boston Bruins", "Bruins", "Boston"},
+		{"multi-word place", "Tampa Bay Lightning", "Lightning", "Tampa Bay"},
+		{"common name not found falls back to full name", "Vegas Golden Knights", "Senators", "Vegas Golden Knights"},
+		{"empty common name falls back to full name", "Vegas Golden Knights", "", "Vegas Golden Knights"},
+		{"full name equals common name yields empty", "Wild", "Wild", ""},
+		{"interior whitespace is collapsed", "Montreal Habs Canadiens", "Habs", "Montreal Canadiens"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := placeName(tt.fullName, tt.commonName); got != tt.want {
+				t.Errorf("placeName(%q, %q) = %q, want %q", tt.fullName, tt.commonName, got, tt.want)
+			}
+		})
 	}
 }
 
@@ -231,6 +260,9 @@ func TestStandingToTeamWithoutConference(t *testing.T) {
 	}
 	if team.TeamCommonName.Default != "Canadiens" {
 		t.Errorf("expected TeamCommonName.Default = Canadiens, got %s", team.TeamCommonName.Default)
+	}
+	if team.TeamPlaceName.Default != "Montreal" {
+		t.Errorf("expected TeamPlaceName.Default = Montreal, got %s", team.TeamPlaceName.Default)
 	}
 	if team.Tricode != "MTL" {
 		t.Errorf("expected Tricode = MTL, got %s", team.Tricode)

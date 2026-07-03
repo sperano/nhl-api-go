@@ -5,10 +5,10 @@ package nhl
 // EdgeGoalieDetail is the response from v1/edge/goalie-detail/{g}/{s}/{gt}.
 type EdgeGoalieDetail struct {
 	Player               EdgeGoaliePlayer                `json:"player"`
-	SeasonsWithEdgeStats []EdgeSeasonAvailability         `json:"seasonsWithEdgeStats"`
-	Stats                EdgeGoalieStatsSummary           `json:"stats"`
-	ShotLocationSummary  []EdgeGoalieShotLocationSummary  `json:"shotLocationSummary"`
-	ShotLocationDetails  []EdgeGoalieShotLocationArea     `json:"shotLocationDetails"`
+	SeasonsWithEdgeStats []EdgeSeasonAvailability        `json:"seasonsWithEdgeStats"`
+	Stats                EdgeGoalieStatsSummary          `json:"stats"`
+	ShotLocationSummary  []EdgeGoalieShotLocationSummary `json:"shotLocationSummary"`
+	ShotLocationDetails  []EdgeGoalieShotLocationArea    `json:"shotLocationDetails"`
 }
 
 // EdgeGoaliePlayer is the player metadata embedded in goalie Edge responses.
@@ -71,7 +71,7 @@ type EdgeGoalieShotLocationArea struct {
 
 // EdgeGoalie5v5Detail is the response from v1/edge/goalie-5v5-detail/{g}/{s}/{gt}.
 type EdgeGoalie5v5Detail struct {
-	Player               EdgeGoaliePlayer        `json:"player"`
+	Player               EdgeGoaliePlayer         `json:"player"`
 	SeasonsWithEdgeStats []EdgeSeasonAvailability `json:"seasonsWithEdgeStats"`
 	SavePctg5v5Last10    []EdgeGoalie5v5Entry     `json:"savePctg5v5Last10"`
 }
@@ -86,7 +86,7 @@ type EdgeGoalie5v5Entry struct {
 
 // EdgeGoalieShotLocationDetail is the response from v1/edge/goalie-shot-location-detail/{g}/{s}/{gt}.
 type EdgeGoalieShotLocationDetail struct {
-	Player               EdgeGoaliePlayer             `json:"player"`
+	Player               EdgeGoaliePlayer              `json:"player"`
 	SeasonsWithEdgeStats []EdgeSeasonAvailability      `json:"seasonsWithEdgeStats"`
 	ShotLocationDetails  []EdgeGoalieShotLocationEntry `json:"shotLocationDetails"`
 }
@@ -140,27 +140,27 @@ type EdgeGoalieComparisonShotDetail struct {
 
 // EdgeGoalieComparisonSavePctgDetails contains overall save percentage details.
 type EdgeGoalieComparisonSavePctgDetails struct {
-	GamesAbove900     int     `json:"gamesAbove900,omitempty"`
-	PctgGamesAbove900 float64 `json:"pctgGamesAbove900,omitempty"`
-	PointPctg         float64 `json:"pointPctg,omitempty"`
-	GoalsAgainstAvg   float64 `json:"goalsAgainstAvg,omitempty"`
-	SavePctg          float64 `json:"savePctg,omitempty"`
+	GamesAbove900     int     `json:"gamesAbove900"`
+	PctgGamesAbove900 float64 `json:"pctgGamesAbove900"`
+	PointPctg         float64 `json:"pointPctg"`
+	GoalsAgainstAvg   float64 `json:"goalsAgainstAvg"`
+	SavePctg          float64 `json:"savePctg"`
 }
 
 // EdgeGoalieComparisonSavePctg5v5Details contains 5v5 save percentage details.
 type EdgeGoalieComparisonSavePctg5v5Details struct {
-	SavePctg      float64 `json:"savePctg,omitempty"`
-	SavePctgClose float64 `json:"savePctgClose,omitempty"`
-	Shots         int     `json:"shots,omitempty"`
-	ShotsPer60    float64 `json:"shotsPer60,omitempty"`
+	SavePctg      float64 `json:"savePctg"`
+	SavePctgClose float64 `json:"savePctgClose"`
+	Shots         int     `json:"shots"`
+	ShotsPer60    float64 `json:"shotsPer60"`
 }
 
 // EdgeGoalieComparisonLast10Entry is a game entry in goalie last10 arrays.
 type EdgeGoalieComparisonLast10Entry struct {
 	GameDate     string  `json:"gameDate,omitempty"`
-	SavePctg     float64 `json:"savePctg,omitempty"`
-	ShotsAgainst int     `json:"shotsAgainst,omitempty"`
-	GoalsAgainst int     `json:"goalsAgainst,omitempty"`
+	SavePctg     float64 `json:"savePctg"`
+	ShotsAgainst int     `json:"shotsAgainst"`
+	GoalsAgainst int     `json:"goalsAgainst"`
 }
 
 // EdgeGoalieComparison is the response from v1/edge/goalie-comparison/{g}/{s}/{gt}.
@@ -190,6 +190,6 @@ type EdgeGoalieLeader struct {
 // EdgeGoalieLanding is the response from v1/edge/goalie-landing/{s}/{gt}.
 // League-wide leaders in each Edge category.
 type EdgeGoalieLanding struct {
-	SeasonsWithEdgeStats []EdgeSeasonAvailability   `json:"seasonsWithEdgeStats"`
+	SeasonsWithEdgeStats []EdgeSeasonAvailability    `json:"seasonsWithEdgeStats"`
 	Leaders              map[string]EdgeGoalieLeader `json:"leaders"`
 }

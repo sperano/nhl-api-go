@@ -1,6 +1,9 @@
 package nhl
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // Standing represents a team's standing entry with complete statistics.
 // Contains conference, division, team identification, and win/loss records.
@@ -42,13 +45,28 @@ func (s *Standing) conferenceName() string {
 	return *s.ConferenceName
 }
 
+// placeName derives a team's place name (e.g. "Toronto") from its full name
+// (e.g. "Toronto Maple Leafs") by removing the common name (e.g. "Maple
+// Leafs"). The NHL standings endpoint carries no dedicated place-name field,
+// so it must be reconstructed. The common name may sit at either the start or
+// the end of the full name, so the first occurrence is removed wherever it
+// appears and the remaining whitespace is normalized. If the common name is
+// empty or not found within the full name, the full name is returned unchanged.
+func placeName(fullName, commonName string) string {
+	if commonName == "" {
+		return fullName
+	}
+	stripped := strings.Replace(fullName, commonName, "", 1)
+	return strings.Join(strings.Fields(stripped), " ")
+}
+
 // ToTeam converts a Standing entry into a Team struct.
 // This is useful for extracting team metadata from standings data.
 func (s *Standing) ToTeam() Team {
 	return Team{
 		FullName:       s.TeamName.Default,
 		TeamCommonName: LocalizedString{Default: s.TeamCommonName.Default},
-		TeamPlaceName:  LocalizedString{Default: s.TeamName.Default},
+		TeamPlaceName:  LocalizedString{Default: placeName(s.TeamName.Default, s.TeamCommonName.Default)},
 		Tricode:        s.TeamAbbrev.Default,
 		TeamLogo:       s.TeamLogo,
 		Conference: Conference{

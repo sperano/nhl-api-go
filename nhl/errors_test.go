@@ -37,10 +37,10 @@ func TestAPIError_Error(t *testing.T) {
 
 func TestAPIError_Is(t *testing.T) {
 	tests := []struct {
-		name     string
-		err      error
-		target   error
-		wantIs   bool
+		name   string
+		err    error
+		target error
+		wantIs bool
 	}{
 		{
 			name:   "404 matches ErrNotFound",
@@ -307,4 +307,60 @@ func TestAPIError_UnmarshalJSON_InvalidJSON(t *testing.T) {
 	if err == nil {
 		t.Error("UnmarshalJSON() should error on invalid JSON")
 	}
+}
+
+func TestUnknownEnumValueError(t *testing.T) {
+	t.Run("string enum FromString returns typed error", func(t *testing.T) {
+		_, err := GameStateFromString("NEWSTATE")
+		var target *UnknownEnumValueError
+		if !errors.As(err, &target) {
+			t.Fatalf("errors.As failed; got %T: %v", err, err)
+		}
+		if target.EnumType != "game state" || target.Value != "NEWSTATE" {
+			t.Errorf("got {%q, %q}, want {\"game state\", \"NEWSTATE\"}", target.EnumType, target.Value)
+		}
+	})
+
+	t.Run("message is backward compatible", func(t *testing.T) {
+		err := &UnknownEnumValueError{EnumType: "game state", Value: "NEWSTATE"}
+		if got, want := err.Error(), `invalid game state: "NEWSTATE"`; got != want {
+			t.Errorf("Error() = %q, want %q", got, want)
+		}
+	})
+
+	t.Run("GameType from int and string", func(t *testing.T) {
+		var target *UnknownEnumValueError
+		if _, err := GameTypeFromInt(99); !errors.As(err, &target) || target.Value != "99" {
+			t.Errorf("GameTypeFromInt(99): got %v (value %q), want typed error value \"99\"", err, target.Value)
+		}
+		if _, err := GameTypeFromString("nope"); !errors.As(err, &target) || target.Value != "nope" {
+			t.Errorf("GameTypeFromString(nope): got %v, want typed error value \"nope\"", err)
+		}
+	})
+
+	t.Run("propagates through struct json.Unmarshal", func(t *testing.T) {
+		var b Boxscore
+		err := json.Unmarshal([]byte(`{"gameState":"NEWSTATE"}`), &b)
+		var target *UnknownEnumValueError
+		if !errors.As(err, &target) {
+			t.Fatalf("errors.As failed on nested unmarshal; got %T: %v", err, err)
+		}
+		if target.EnumType != "game state" || target.Value != "NEWSTATE" {
+			t.Errorf("got {%q, %q}, want {\"game state\", \"NEWSTATE\"}", target.EnumType, target.Value)
+		}
+	})
+
+	t.Run("survives JSONError wrapping as getJSON applies it", func(t *testing.T) {
+		enumErr := &UnknownEnumValueError{EnumType: "play event type", Value: "warp-drive"}
+		// Mirror client.getJSON: wrap the decode error with the request URL,
+		// then in a JSONError.
+		wrapped := NewJSONError(fmt.Errorf("unmarshaling response from %s: %w", "https://api-web.nhle.com/v1/gamecenter/1/play-by-play", enumErr))
+		var target *UnknownEnumValueError
+		if !errors.As(wrapped, &target) {
+			t.Fatalf("errors.As failed through JSONError; got %T: %v", wrapped, wrapped)
+		}
+		if target.Value != "warp-drive" {
+			t.Errorf("Value = %q, want \"warp-drive\"", target.Value)
+		}
+	})
 }

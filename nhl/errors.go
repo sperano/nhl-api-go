@@ -9,11 +9,11 @@ import (
 // Sentinel errors for well-known HTTP status codes.
 // Use errors.Is(err, nhl.ErrNotFound) to check error types.
 var (
-	ErrBadRequest    = &APIError{StatusCode: http.StatusBadRequest}
-	ErrUnauthorized  = &APIError{StatusCode: http.StatusUnauthorized}
-	ErrNotFound      = &APIError{StatusCode: http.StatusNotFound}
-	ErrRateLimited   = &APIError{StatusCode: http.StatusTooManyRequests}
-	ErrServerError   = &APIError{StatusCode: http.StatusInternalServerError}
+	ErrBadRequest   = &APIError{StatusCode: http.StatusBadRequest}
+	ErrUnauthorized = &APIError{StatusCode: http.StatusUnauthorized}
+	ErrNotFound     = &APIError{StatusCode: http.StatusNotFound}
+	ErrRateLimited  = &APIError{StatusCode: http.StatusTooManyRequests}
+	ErrServerError  = &APIError{StatusCode: http.StatusInternalServerError}
 )
 
 // APIError represents an NHL API error with an HTTP status code and message.

@@ -2,7 +2,6 @@ package nhl
 
 import (
 	"fmt"
-	"strconv"
 )
 
 // GameSituation represents a parsed game situation from situation code.
@@ -22,34 +21,55 @@ type GameSituation struct {
 	HomeGoalieIn bool
 }
 
+const (
+	// minSituationSkaters and maxSituationSkaters bound the skater count in a
+	// situation code (goalie excluded), per the documented 1-6 range.
+	minSituationSkaters = 1
+	maxSituationSkaters = 6
+)
+
 // GameSituationFromCode parses a situation code string (e.g., "1551").
-// Returns nil if the code is invalid (wrong length or contains non-digits).
+// Returns nil if the code is invalid: wrong length, any non-digit position, a
+// goalie flag other than 0/1, or a skater count outside 1-6. Every position is
+// validated (an earlier version only checked the two skater digits, so codes
+// like "a55b" slipped through with both goalies read as pulled).
 func GameSituationFromCode(code string) *GameSituation {
 	if len(code) != 4 {
 		return nil
 	}
 
-	awayGoalieDigit := code[0]
-	awaySkaterDigit := code[1]
-	homeSkaterDigit := code[2]
-	homeGoalieDigit := code[3]
-
-	awaySkaters, err := strconv.Atoi(string(awaySkaterDigit))
-	if err != nil {
+	awayGoalie, ok0 := situationDigit(code[0])
+	awaySkaters, ok1 := situationDigit(code[1])
+	homeSkaters, ok2 := situationDigit(code[2])
+	homeGoalie, ok3 := situationDigit(code[3])
+	if !ok0 || !ok1 || !ok2 || !ok3 {
 		return nil
 	}
 
-	homeSkaters, err := strconv.Atoi(string(homeSkaterDigit))
-	if err != nil {
+	// Goalie positions are boolean flags: in net (1) or pulled (0).
+	if awayGoalie > 1 || homeGoalie > 1 {
+		return nil
+	}
+	if awaySkaters < minSituationSkaters || awaySkaters > maxSituationSkaters ||
+		homeSkaters < minSituationSkaters || homeSkaters > maxSituationSkaters {
 		return nil
 	}
 
 	return &GameSituation{
 		AwaySkaters:  awaySkaters,
-		AwayGoalieIn: awayGoalieDigit == '1',
+		AwayGoalieIn: awayGoalie == 1,
 		HomeSkaters:  homeSkaters,
-		HomeGoalieIn: homeGoalieDigit == '1',
+		HomeGoalieIn: homeGoalie == 1,
 	}
+}
+
+// situationDigit converts a single ASCII digit byte to its int value,
+// reporting false if the byte is not '0'-'9'.
+func situationDigit(b byte) (int, bool) {
+	if b < '0' || b > '9' {
+		return 0, false
+	}
+	return int(b - '0'), true
 }
 
 // IsEvenStrength returns true if this is even strength (5v5, 4v4, or 3v3).
@@ -119,7 +139,7 @@ type PlayByPlay struct {
 	GameOutcome       *GameOutcome      `json:"gameOutcome,omitempty"`
 	Plays             []PlayEvent       `json:"plays"`
 	RosterSpots       []RosterSpot      `json:"rosterSpots"`
-	RegPeriods        *int              `json:"regPeriods,omitempty"`
+	RegPeriods        int               `json:"regPeriods"`
 	Summary           *GameSummary      `json:"summary,omitempty"`
 }
 
@@ -353,10 +373,10 @@ type MatchupTeam struct {
 
 // GameSummary represents game summary with scoring and penalties.
 type GameSummary struct {
-	Scoring    []PeriodScoring    `json:"scoring"`
-	Shootout   *[]ShootoutAttempt `json:"shootout,omitempty"`
-	ThreeStars *[]ThreeStar       `json:"threeStars,omitempty"`
-	Penalties  []PeriodPenalties  `json:"penalties"`
+	Scoring    []PeriodScoring   `json:"scoring"`
+	Shootout   []ShootoutAttempt `json:"shootout,omitempty"`
+	ThreeStars []ThreeStar       `json:"threeStars,omitempty"`
+	Penalties  []PeriodPenalties `json:"penalties"`
 }
 
 // PeriodScoring represents scoring summary for a period.

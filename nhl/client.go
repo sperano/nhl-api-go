@@ -32,6 +32,14 @@ const (
 	baseURLAPIStats  = "https://api.nhle.com/stats/rest/"
 	baseURLSearchV1  = "https://search.d3.nhle.com/api/v1/"
 	defaultUserAgent = "nhl-api-go/1.0"
+
+	// maxErrorBodyBytes bounds how much of a non-2xx response body is read
+	// into the error message, so a large/hostile body can't be slurped whole.
+	maxErrorBodyBytes = 4 * 1024
+
+	// defaultSearchLimit is the result limit used by SearchPlayer when the
+	// caller does not pass one.
+	defaultSearchLimit = 20
 )
 
 // baseURL returns the base URL for the given endpoint.
@@ -54,6 +62,7 @@ func (e Endpoint) baseURL() string {
 type Client struct {
 	httpClient      *http.Client
 	baseURLOverride string
+	userAgent       string
 }
 
 // NewClient creates a new NHL API client with default configuration.
@@ -62,10 +71,15 @@ func NewClient() *Client {
 	return NewClientWithConfig(config)
 }
 
-// NewClientWithConfig creates a new NHL API client with the provided configuration.
+// NewClientWithConfig creates a new NHL API client with the provided
+// configuration. If config is nil, the default configuration is used.
 func NewClientWithConfig(config *ClientConfig) *Client {
+	if config == nil {
+		config = DefaultClientConfig()
+	}
 	return &Client{
 		httpClient: config.ToHTTPClient(),
+		userAgent:  config.UserAgent,
 	}
 }
 
@@ -97,7 +111,7 @@ func buildURL(base, resource string) string {
 
 // getJSON performs an HTTP GET request and unmarshals the JSON response.
 // Returns an appropriate error type based on HTTP status code.
-func (c *Client) getJSON(ctx context.Context, endpoint Endpoint, resource string, queryParams map[string]string, result interface{}) error {
+func (c *Client) getJSON(ctx context.Context, endpoint Endpoint, resource string, queryParams map[string]string, result any) error {
 	var fullURL string
 	if c.baseURLOverride != "" {
 		fullURL = buildURL(c.baseURLOverride, resource)
@@ -125,7 +139,11 @@ func (c *Client) getJSON(ctx context.Context, endpoint Endpoint, resource string
 	}
 
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("User-Agent", defaultUserAgent)
+	userAgent := c.userAgent
+	if userAgent == "" {
+		userAgent = defaultUserAgent
+	}
+	req.Header.Set("User-Agent", userAgent)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -136,6 +154,14 @@ func (c *Client) getJSON(ctx context.Context, endpoint Endpoint, resource string
 	// Check for HTTP errors
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		message := fmt.Sprintf("Request to %s failed", resource)
+		// Read a bounded portion of the error body: it often carries useful
+		// detail from the NHL API, and consuming it lets the connection be
+		// reused. LimitReader guards against an unexpectedly large body.
+		if errBody, _ := io.ReadAll(io.LimitReader(resp.Body, maxErrorBodyBytes)); len(errBody) > 0 {
+			if trimmed := strings.TrimSpace(string(errBody)); trimmed != "" {
+				message = fmt.Sprintf("%s: %s", message, trimmed)
+			}
+		}
 		return ErrorFromStatusCode(resp.StatusCode, message)
 	}
 
@@ -366,7 +392,7 @@ func (c *Client) ShiftChart(ctx context.Context, gameID GameID) (*ShiftChart, er
 }
 
 // fetchGamecenter is a helper to fetch data from gamecenter endpoints.
-func (c *Client) fetchGamecenter(ctx context.Context, gameID GameID, resource string, result interface{}) error {
+func (c *Client) fetchGamecenter(ctx context.Context, gameID GameID, resource string, result any) error {
 	fullResource := fmt.Sprintf("gamecenter/%s/%s", gameID.String(), resource)
 	return c.getJSON(ctx, EndpointAPIWebV1, fullResource, nil, result)
 }
@@ -396,12 +422,13 @@ func (c *Client) PlayerGameLog(ctx context.Context, playerID PlayerID, season Se
 	return &response, nil
 }
 
-// SearchPlayer searches for players by name.
-// The limit parameter is optional; if nil, defaults to 20.
-func (c *Client) SearchPlayer(ctx context.Context, query string, limit *int) ([]PlayerSearchResult, error) {
-	limitValue := 20
-	if limit != nil {
-		limitValue = *limit
+// SearchPlayer searches for players by name. An optional result limit may be
+// passed; if omitted, defaultSearchLimit is used. Only the first value is
+// honored if several are given.
+func (c *Client) SearchPlayer(ctx context.Context, query string, limit ...int) ([]PlayerSearchResult, error) {
+	limitValue := defaultSearchLimit
+	if len(limit) > 0 {
+		limitValue = limit[0]
 	}
 
 	params := map[string]string{
