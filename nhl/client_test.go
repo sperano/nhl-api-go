@@ -1766,3 +1766,55 @@ func TestGetJSON_ErrorBodyIncludedInMessage(t *testing.T) {
 		t.Errorf("expected APIError with status 404; got %T: %v", err, err)
 	}
 }
+
+func TestClient_UserAgentHeader(t *testing.T) {
+	t.Run("custom user agent is sent", func(t *testing.T) {
+		var got string
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			got = r.Header.Get("User-Agent")
+			_, _ = w.Write([]byte(`{}`))
+		}))
+		defer server.Close()
+
+		client := &Client{httpClient: server.Client(), baseURLOverride: server.URL, userAgent: "custom/9.9"}
+		if _, err := client.SeasonStandingManifest(context.Background()); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if got != "custom/9.9" {
+			t.Errorf("User-Agent = %q, want custom/9.9", got)
+		}
+	})
+
+	t.Run("empty user agent falls back to default", func(t *testing.T) {
+		var got string
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			got = r.Header.Get("User-Agent")
+			_, _ = w.Write([]byte(`{}`))
+		}))
+		defer server.Close()
+
+		client := NewClientWithBaseURL(server.URL)
+		if _, err := client.SeasonStandingManifest(context.Background()); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if got != defaultUserAgent {
+			t.Errorf("User-Agent = %q, want default %q", got, defaultUserAgent)
+		}
+	})
+}
+
+func TestWithHTTPClientAndUserAgent(t *testing.T) {
+	custom := &http.Client{Timeout: 42 * time.Second}
+	cfg := NewClientConfig(WithHTTPClient(custom), WithUserAgent("ua/1"))
+
+	if cfg.ToHTTPClient() != custom {
+		t.Error("ToHTTPClient should return the supplied *http.Client unchanged")
+	}
+	client := NewClientWithConfig(cfg)
+	if client.httpClient != custom {
+		t.Error("client should use the supplied *http.Client")
+	}
+	if client.userAgent != "ua/1" {
+		t.Errorf("client.userAgent = %q, want ua/1", client.userAgent)
+	}
+}

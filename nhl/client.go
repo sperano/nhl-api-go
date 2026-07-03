@@ -58,6 +58,7 @@ func (e Endpoint) baseURL() string {
 type Client struct {
 	httpClient      *http.Client
 	baseURLOverride string
+	userAgent       string
 }
 
 // NewClient creates a new NHL API client with default configuration.
@@ -74,6 +75,7 @@ func NewClientWithConfig(config *ClientConfig) *Client {
 	}
 	return &Client{
 		httpClient: config.ToHTTPClient(),
+		userAgent:  config.UserAgent,
 	}
 }
 
@@ -133,7 +135,11 @@ func (c *Client) getJSON(ctx context.Context, endpoint Endpoint, resource string
 	}
 
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("User-Agent", defaultUserAgent)
+	userAgent := c.userAgent
+	if userAgent == "" {
+		userAgent = defaultUserAgent
+	}
+	req.Header.Set("User-Agent", userAgent)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
