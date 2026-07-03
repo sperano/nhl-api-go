@@ -502,7 +502,7 @@ func TestClientMethodSignatures(t *testing.T) {
 	// Player methods
 	var _ func(context.Context, PlayerID) (*PlayerLanding, error) = client.PlayerLanding
 	var _ func(context.Context, PlayerID, Season, GameType) (*PlayerGameLog, error) = client.PlayerGameLog
-	var _ func(context.Context, string, *int) ([]PlayerSearchResult, error) = client.SearchPlayer
+	var _ func(context.Context, string, ...int) ([]PlayerSearchResult, error) = client.SearchPlayer
 
 	// Team/Franchise methods
 	var _ func(context.Context) ([]Franchise, error) = client.Franchises
@@ -1160,8 +1160,7 @@ func TestSearchPlayer(t *testing.T) {
 	client := NewClientWithBaseURL(server.URL)
 
 	ctx := context.Background()
-	limit := 10
-	result, err := client.SearchPlayer(ctx, "McDavid", &limit)
+	result, err := client.SearchPlayer(ctx, "McDavid", 10)
 
 	if err != nil {
 		t.Fatalf("SearchPlayer() error = %v", err)
@@ -1183,7 +1182,7 @@ func TestSearchPlayer_NoLimit(t *testing.T) {
 	client := NewClientWithBaseURL(server.URL)
 
 	ctx := context.Background()
-	result, err := client.SearchPlayer(ctx, "McDavid", nil)
+	result, err := client.SearchPlayer(ctx, "McDavid")
 
 	if err != nil {
 		t.Fatalf("SearchPlayer() error = %v", err)
@@ -1589,7 +1588,7 @@ func TestClient_ErrorPaths(t *testing.T) {
 		client := NewClientWithBaseURL(server.URL)
 		ctx := context.Background()
 
-		_, err := client.SearchPlayer(ctx, "McDavid", nil)
+		_, err := client.SearchPlayer(ctx, "McDavid")
 		if err == nil {
 			t.Error("SearchPlayer() should error on HTTP error")
 		}

@@ -52,11 +52,11 @@ Above average: real assertions, all `httptest` servers closed, zero network call
 ## Smaller idiom items
 
 - `interface{}` instead of `any` in `client.go` (the module is Go 1.26).
-- `SearchPlayer(ctx, query, *int)` — a variadic or option would be more idiomatic than a pointer-for-optional.
+- ~~`SearchPlayer(ctx, query, *int)` — a variadic or option would be more idiomatic than a pointer-for-optional.~~ **✅ RESOLVED (2026-06-28).** Changed to `SearchPlayer(ctx, query, limit ...int)` with a `defaultSearchLimit` constant. Coordinated puckdb edits: `shared.NHLClient` interface, the `verify_unmatched.go` call, and both testify mocks (spread variadic into positional args).
 - ~~`Date.Equal` compares instants but documents calendar-day semantics.~~ **✅ RESOLVED (2026-06-28).** Now compares year/month/day components. Test `TestDate_Equal_CalendarDay`.
 - `Season.ID()` has a confusing throwaway variable (`date.go:402`).
 - ~~`GameDate.UnmarshalJSON` hand-rolls parsing that `ParseDate` already does (and skips range validation, so month 13 is accepted).~~ **✅ RESOLVED (2026-06-28).** `GameDate.UnmarshalJSON` now delegates to `ParseDate` (`time.Parse` with `DateLayout`), removing the duplicated split/Atoi and gaining strict range validation — `2024-13-40`/`2024-00-00` are now rejected instead of silently normalized. Regression cases added to `TestGameDate_UnmarshalJSON_InvalidDateFormat`.
-- Pointer-to-slice fields `*[]ShootoutAttempt`/`*[]ThreeStar` (`game_center.go:357`).
+- ~~Pointer-to-slice fields `*[]ShootoutAttempt`/`*[]ThreeStar` (`game_center.go:357`).~~ **✅ RESOLVED (2026-06-28).** `GameSummary.Shootout`/`ThreeStars` changed from `*[]T` to `[]T` (nil slice already encodes absent). Coordinated puckdb edits: removed the derefs in `import_game_story.go` and the `&stars` in tests.
 - ~~`RegPeriods` is `*int` in `PlayByPlay` but `int` in `GameMatchup`/`GameStory`.~~ **✅ RESOLVED (2026-06-28).** `PlayByPlay.RegPeriods` changed to plain `int` for consistency; verified zero puckdb consumers and that the workspace still builds.
 
 ## Suggested priority

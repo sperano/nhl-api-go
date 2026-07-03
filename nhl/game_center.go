@@ -373,10 +373,10 @@ type MatchupTeam struct {
 
 // GameSummary represents game summary with scoring and penalties.
 type GameSummary struct {
-	Scoring    []PeriodScoring    `json:"scoring"`
-	Shootout   *[]ShootoutAttempt `json:"shootout,omitempty"`
-	ThreeStars *[]ThreeStar       `json:"threeStars,omitempty"`
-	Penalties  []PeriodPenalties  `json:"penalties"`
+	Scoring    []PeriodScoring   `json:"scoring"`
+	Shootout   []ShootoutAttempt `json:"shootout,omitempty"`
+	ThreeStars []ThreeStar       `json:"threeStars,omitempty"`
+	Penalties  []PeriodPenalties `json:"penalties"`
 }
 
 // PeriodScoring represents scoring summary for a period.

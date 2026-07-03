@@ -36,6 +36,10 @@ const (
 	// maxErrorBodyBytes bounds how much of a non-2xx response body is read
 	// into the error message, so a large/hostile body can't be slurped whole.
 	maxErrorBodyBytes = 4 * 1024
+
+	// defaultSearchLimit is the result limit used by SearchPlayer when the
+	// caller does not pass one.
+	defaultSearchLimit = 20
 )
 
 // baseURL returns the base URL for the given endpoint.
@@ -418,12 +422,13 @@ func (c *Client) PlayerGameLog(ctx context.Context, playerID PlayerID, season Se
 	return &response, nil
 }
 
-// SearchPlayer searches for players by name.
-// The limit parameter is optional; if nil, defaults to 20.
-func (c *Client) SearchPlayer(ctx context.Context, query string, limit *int) ([]PlayerSearchResult, error) {
-	limitValue := 20
-	if limit != nil {
-		limitValue = *limit
+// SearchPlayer searches for players by name. An optional result limit may be
+// passed; if omitted, defaultSearchLimit is used. Only the first value is
+// honored if several are given.
+func (c *Client) SearchPlayer(ctx context.Context, query string, limit ...int) ([]PlayerSearchResult, error) {
+	limitValue := defaultSearchLimit
+	if len(limit) > 0 {
+		limitValue = limit[0]
 	}
 
 	params := map[string]string{
