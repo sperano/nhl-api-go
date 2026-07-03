@@ -1085,3 +1085,19 @@ func BenchmarkSeason_ID(b *testing.B) {
 		_ = season.ID()
 	}
 }
+
+func TestDate_Equal_CalendarDay(t *testing.T) {
+	// Same calendar day, different time-of-day → equal (the documented
+	// semantics; the old instant comparison would have returned false).
+	a := Date{time.Date(2024, 1, 15, 9, 30, 0, 0, time.UTC)}
+	b := Date{time.Date(2024, 1, 15, 23, 59, 59, 0, time.UTC)}
+	if !a.Equal(b) {
+		t.Error("Equal() = false for the same calendar day; want true")
+	}
+
+	// Different day → not equal.
+	c := Date{time.Date(2024, 1, 16, 0, 0, 0, 0, time.UTC)}
+	if a.Equal(c) {
+		t.Error("Equal() = true for different calendar days; want false")
+	}
+}

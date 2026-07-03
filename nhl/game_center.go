@@ -139,7 +139,7 @@ type PlayByPlay struct {
 	GameOutcome       *GameOutcome      `json:"gameOutcome,omitempty"`
 	Plays             []PlayEvent       `json:"plays"`
 	RosterSpots       []RosterSpot      `json:"rosterSpots"`
-	RegPeriods        *int              `json:"regPeriods,omitempty"`
+	RegPeriods        int               `json:"regPeriods"`
 	Summary           *GameSummary      `json:"summary,omitempty"`
 }
 

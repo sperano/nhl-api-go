@@ -59,9 +59,15 @@ func (d Date) String() string {
 	return d.Time.Format(DateLayout)
 }
 
-// Equal returns true if two dates represent the same calendar day.
+// Equal returns true if two dates represent the same calendar day. It compares
+// the year/month/day components rather than the underlying instants, so two
+// Date values for the same day compare equal even if their time-of-day or
+// location differ (the package constructors normalize to midnight UTC, but a
+// Date populated directly need not).
 func (d Date) Equal(other Date) bool {
-	return d.Time.Equal(other.Time)
+	y1, m1, d1 := d.Time.Date()
+	y2, m2, d2 := other.Time.Date()
+	return y1 == y2 && m1 == m2 && d1 == d2
 }
 
 // MarshalJSON implements json.Marshaler.
