@@ -47,11 +47,13 @@ func TestEnumsGenerated_NonStringJSONRejected(t *testing.T) {
 }
 
 // TestEnumsGenerated_EmptyStringAccepted verifies the empty-string branch
-// in UnmarshalJSON for the three enums whose template emits it. Empty is
-// treated as a valid zero value (e.g. an absent player position field in
-// the API), distinct from an invalid string which must still return an
-// error. The other six enums in enums_generated.go don't have this
-// branch and would reject empty-string input.
+// in UnmarshalJSON for the four enums whose template emits it. Empty is
+// treated as a valid zero value (e.g. an absent player position field, or
+// an absent zone code on some play-by-play events), distinct from an
+// invalid string which must still return an error. The other five enums
+// in enums_generated.go don't have this branch and would reject
+// empty-string input. (DefendingSide also has the branch but is covered
+// by its own dedicated tests in enums_test.go.)
 func TestEnumsGenerated_EmptyStringAccepted(t *testing.T) {
 	t.Run("Position", func(t *testing.T) {
 		var v Position
@@ -75,6 +77,16 @@ func TestEnumsGenerated_EmptyStringAccepted(t *testing.T) {
 
 	t.Run("PeriodType", func(t *testing.T) {
 		var v PeriodType
+		if err := json.Unmarshal([]byte(`""`), &v); err != nil {
+			t.Fatalf("UnmarshalJSON(\"\") error = %v", err)
+		}
+		if v != "" {
+			t.Errorf("UnmarshalJSON(\"\") = %q, want \"\"", v)
+		}
+	})
+
+	t.Run("ZoneCode", func(t *testing.T) {
+		var v ZoneCode
 		if err := json.Unmarshal([]byte(`""`), &v); err != nil {
 			t.Fatalf("UnmarshalJSON(\"\") error = %v", err)
 		}

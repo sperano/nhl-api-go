@@ -1461,6 +1461,19 @@ func TestZoneCode_MarshalJSON_Invalid(t *testing.T) {
 	}
 }
 
+func TestZoneCode_MarshalJSON_Empty(t *testing.T) {
+	// Empty strings are allowed because the NHL API can omit zoneCode
+	// (e.g. on some play-by-play events) or send it as an empty string.
+	empty := ZoneCode("")
+	data, err := json.Marshal(empty)
+	if err != nil {
+		t.Errorf("MarshalJSON() should allow empty string, got error: %v", err)
+	}
+	if string(data) != `""` {
+		t.Errorf("MarshalJSON() = %s, want \"\"", string(data))
+	}
+}
+
 func TestDefendingSide_MarshalJSON_Invalid(t *testing.T) {
 	invalid := DefendingSide("INVALID")
 	_, err := json.Marshal(invalid)
@@ -1662,6 +1675,17 @@ func TestZoneCode_UnmarshalJSON_InvalidValue(t *testing.T) {
 	err := json.Unmarshal([]byte(`"INVALID"`), &z)
 	if err == nil {
 		t.Error("UnmarshalJSON() should error on invalid zone code value")
+	}
+}
+
+func TestZoneCode_UnmarshalJSON_Empty(t *testing.T) {
+	var z ZoneCode
+	err := json.Unmarshal([]byte(`""`), &z)
+	if err != nil {
+		t.Errorf("UnmarshalJSON() should allow empty string: %v", err)
+	}
+	if z != "" {
+		t.Errorf("UnmarshalJSON() = %q, want empty string", z)
 	}
 }
 
