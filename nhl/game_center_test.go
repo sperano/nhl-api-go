@@ -530,6 +530,57 @@ func TestPlayEvent_Deserialization_Faceoff(t *testing.T) {
 	}
 }
 
+// TestPlayEvent_Deserialization_EmptyZoneCode covers a play-by-play event
+// with an empty-string zoneCode. ZoneCode allows empty strings the same
+// way Position, Handedness, and PeriodType do, so this must not fail the
+// whole PlayEvent unmarshal; the pointer field ends up non-nil, pointing
+// at the ZoneCode zero value.
+func TestPlayEvent_Deserialization_EmptyZoneCode(t *testing.T) {
+	jsonData := `{
+		"eventId": 152,
+		"periodDescriptor": {
+			"number": 1,
+			"periodType": "REG",
+			"maxRegulationPeriods": 3
+		},
+		"timeInPeriod": "00:00",
+		"timeRemaining": "20:00",
+		"situationCode": "1551",
+		"homeTeamDefendingSide": "right",
+		"typeCode": 502,
+		"typeDescKey": "faceoff",
+		"sortOrder": 11,
+		"details": {
+			"eventOwnerTeamId": 1,
+			"losingPlayerId": 8478043,
+			"winningPlayerId": 8480002,
+			"xCoord": 0,
+			"yCoord": 0,
+			"zoneCode": ""
+		}
+	}`
+
+	var event PlayEvent
+	if err := json.Unmarshal([]byte(jsonData), &event); err != nil {
+		t.Fatalf("json.Unmarshal() error = %v", err)
+	}
+
+	if event.Details == nil {
+		t.Fatal("Details = nil, want non-nil")
+	}
+
+	details := event.Details
+	if details.ZoneCode == nil {
+		t.Fatal("ZoneCode = nil, want non-nil pointer to zero value")
+	}
+	if *details.ZoneCode != ZoneCode("") {
+		t.Errorf("ZoneCode = %q, want empty string", *details.ZoneCode)
+	}
+	if details.ZoneCode.IsValid() {
+		t.Error("ZoneCode.IsValid() = true for empty zone code, want false")
+	}
+}
+
 func TestPlayEvent_Deserialization_BlockedShot(t *testing.T) {
 	jsonData := `{
 		"eventId": 63,

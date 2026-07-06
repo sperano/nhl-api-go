@@ -104,6 +104,7 @@ var enums = []EnumDef{
 		ErrorLabel:     "zone code",
 		HasCode:        true,
 		HasDisplayName: true,
+		AllowEmpty:     true,
 		Values: []ValueDef{
 			{Name: "ZoneCodeOffensive", Value: "O", DisplayName: "Offensive", Aliases: []string{"O", "Offensive"}, Doc: "ZoneCodeOffensive represents the offensive zone."},
 			{Name: "ZoneCodeDefensive", Value: "D", DisplayName: "Defensive", Aliases: []string{"D", "Defensive"}, Doc: "ZoneCodeDefensive represents the defensive zone."},

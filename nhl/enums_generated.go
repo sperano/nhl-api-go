@@ -566,10 +566,16 @@ func MustZoneCodeFromString(s string) ZoneCode {
 }
 
 // UnmarshalJSON implements custom JSON unmarshaling for ZoneCode.
+// An empty string is accepted and stored as the zero value, because the NHL API
+// omits the zone code in some responses.
 func (v *ZoneCode) UnmarshalJSON(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
 		return err
+	}
+	if s == "" {
+		*v = ""
+		return nil
 	}
 	parsed, err := ZoneCodeFromString(s)
 	if err != nil {
@@ -580,7 +586,12 @@ func (v *ZoneCode) UnmarshalJSON(data []byte) error {
 }
 
 // MarshalJSON implements custom JSON marshaling for ZoneCode.
+// The empty (zero-value) string is allowed so it round-trips through JSON;
+// other invalid values are rejected.
 func (v ZoneCode) MarshalJSON() ([]byte, error) {
+	if v == "" {
+		return json.Marshal("")
+	}
 	if !v.IsValid() {
 		return nil, fmt.Errorf("cannot marshal invalid zone code: %q", string(v))
 	}
