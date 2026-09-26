@@ -41,18 +41,6 @@ func (b *teamBuilder) withID(id int64) *teamBuilder {
 	return b
 }
 
-// withScore sets the team score.
-func (b *teamBuilder) withScore(score int) *teamBuilder {
-	b.score = intPtr(score)
-	return b
-}
-
-// withPlaceName sets the team place name.
-func (b *teamBuilder) withPlaceName(name string) *teamBuilder {
-	b.placeName = &LocalizedString{Default: name}
-	return b
-}
-
 // build returns the constructed ScheduleTeam.
 func (b *teamBuilder) build() ScheduleTeam {
 	return ScheduleTeam{
@@ -100,24 +88,6 @@ func (b *scheduleGameBuilder) withGameDate(date string) *scheduleGameBuilder {
 	return b
 }
 
-// withGameState sets the game state.
-func (b *scheduleGameBuilder) withGameState(state GameState) *scheduleGameBuilder {
-	b.gameState = state
-	return b
-}
-
-// withAwayScore sets the away team score.
-func (b *scheduleGameBuilder) withAwayScore(score int) *scheduleGameBuilder {
-	b.awayTeam.Score = intPtr(score)
-	return b
-}
-
-// withHomeScore sets the home team score.
-func (b *scheduleGameBuilder) withHomeScore(score int) *scheduleGameBuilder {
-	b.homeTeam.Score = intPtr(score)
-	return b
-}
-
 // build returns the constructed ScheduleGame.
 func (b *scheduleGameBuilder) build() ScheduleGame {
 	return ScheduleGame{
@@ -149,12 +119,6 @@ func newGameScoreBuilder(awayAbbrev, homeAbbrev string) *gameScoreBuilder {
 		awayTeam:  newTeamBuilder(awayAbbrev).withID(7).build(),
 		homeTeam:  newTeamBuilder(homeAbbrev).withID(10).build(),
 	}
-}
-
-// withID sets the game ID.
-func (b *gameScoreBuilder) withID(id int64) *gameScoreBuilder {
-	b.id = GameID(id)
-	return b
 }
 
 // withGameState sets the game state.

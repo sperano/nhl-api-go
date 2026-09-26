@@ -106,12 +106,14 @@ func (r *Roster) PlayerCount() int {
 
 // RosterPlayer represents a player on a team's roster.
 type RosterPlayer struct {
-	ID                 PlayerID         `json:"id"`
-	Headshot           string           `json:"headshot"`
-	FirstName          LocalizedString  `json:"firstName"`
-	LastName           LocalizedString  `json:"lastName"`
-	SweaterNumber      int              `json:"sweaterNumber"`
-	Position           Position         `json:"position"`
+	ID            PlayerID        `json:"id"`
+	Headshot      string          `json:"headshot"`
+	FirstName     LocalizedString `json:"firstName"`
+	LastName      LocalizedString `json:"lastName"`
+	SweaterNumber int             `json:"sweaterNumber"`
+	// Position is decoded strictly; an unknown positionCode causes roster JSON
+	// decoding to fail with an UnknownEnumValueError.
+	Position           Position         `json:"positionCode"`
 	ShootsCatches      Handedness       `json:"shootsCatches"`
 	HeightInInches     int              `json:"heightInInches"`
 	WeightInPounds     int              `json:"weightInPounds"`
